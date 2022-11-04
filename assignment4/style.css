@@ -43,7 +43,7 @@ footer{
 }
 .nav-btn{
     margin: auto;
-    width: 411px; /*(btn width*3)+(btn border*6)*/
+    width: 550px; /*(btn width*btnAmount)+(btn border*btnAmo)*/
     height: 50px;
     padding-top: 10px;
 }
