@@ -1,0 +1,22 @@
+@font-face{
+    font-family:party;
+    src: url(../canvasExamples/riddlesJS/fonts/PartyConfetti.ttf);
+}
+body,html{
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    background-color: aliceblue;
+    font-family: party;
+}
+#container{
+    width:1000px;
+}
+canvas{
+    border: 1px solid black;
+    margin: 4px;
+    background-color:white;
+}
+button{
+    margin: 10px;
+}
