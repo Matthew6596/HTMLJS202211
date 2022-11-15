@@ -8,6 +8,7 @@ body,html{
     text-align: center;
     background-color: aliceblue;
     font-family: party;
+    color:navy;
 }
 #container{
     width:1000px;

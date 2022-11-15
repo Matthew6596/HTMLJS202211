@@ -33,7 +33,7 @@ function playGame(playerChoice){
     //player rps image
     if(playerChoice=="rock"){ctx.drawImage(rockImg,0,0,c.width/2,c.height-200); ctx.fillText("You chose rock...",45,520); ctx.strokeText("You chose rock...",45,520);}
     if(playerChoice=="paper"){ctx.drawImage(paperImg,0,0,c.width/2,c.height-200); ctx.fillText("You chose paper...",30,520); ctx.strokeText("You chose paper...",30,520);}
-    if(playerChoice=="scissors"){ctx.drawImage(scissorsImg,0,0,c.width/2,c.height-200); ctx.fillText("You chose scissors...",15,520); ctx.strokeText("You chose scissors...",15,520);}
+    if(playerChoice=="scissors"){ctx.drawImage(scissorsImg,0,0,c.width/2,c.height-200); ctx.fillText("You chose scissors...",10,520); ctx.strokeText("You chose scissors...",10,520);}
 
     if(!rigged){cpuChoice = Math.floor(Math.random()*2.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999);}
     console.log(rps[cpuChoice], playerChoice);
@@ -53,7 +53,7 @@ function playGame(playerChoice){
     //cpu rps image
     if(cpuChoice==0){ctx.drawImage(rockImg,c.width/2,0,c.width/2,c.height-200); ctx.fillText("CPU chose rock...",45+c.width/2,520); ctx.strokeText("CPU chose rock...",45+c.width/2,520);}
     if(cpuChoice==1){ctx.drawImage(paperImg,c.width/2,0,c.width/2,c.height-200); ctx.fillText("CPU chose paper...",30+c.width/2,520); ctx.strokeText("CPU chose paper...",30+c.width/2,520);}
-    if(cpuChoice==2){ctx.drawImage(scissorsImg,c.width/2,0,c.width/2,c.height-200); ctx.fillText("CPU chose scissors...",15+c.width/2,520); ctx.strokeText("CPU chose scissors...",15+c.width/2,520);}
+    if(cpuChoice==2){ctx.drawImage(scissorsImg,c.width/2,0,c.width/2,c.height-200); ctx.fillText("CPU chose scissors...",10+c.width/2,520); ctx.strokeText("CPU chose scissors...",10+c.width/2,520);}
 
     //Results Text Display
 
