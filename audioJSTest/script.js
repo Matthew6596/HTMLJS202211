@@ -31,7 +31,7 @@ function onClick(e){
     mousex = Math.round(e.clientX - rect.left)
     mousey = Math.round(e.clientY - rect.top)
     if(mouseInside(mousex,mousey,300,500,200,400)){
-        if(!loading&&!active){loading = true; main(); p4.play();}
+        if(!loading&&!active){loading = true; main(); p4.play(); p4.volume = 0;}
     }
 }
 
@@ -44,8 +44,9 @@ function main(){
     if(loading){
         console.log("loading...");
         ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.fillText("Loading...",325,300);
-        if(!p4.paused&&p4.currentTime>0.01){p4.pause(); loading = false; active = true; console.log("loaded!");}
+        ctx.fillText("Ensuring Audio Is Loaded...",225,300);
+        console.log(p4.buffered);
+        if(!p4.paused&&p4.buffered.length==1){p4.pause(); loading = false; active = true; console.log("loaded!"); p4.volume = 0.5;}
     }
     if(active){
         ctx.fillStyle = "green";
