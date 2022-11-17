@@ -44,9 +44,8 @@ function main(){
     if(loading){
         console.log("loading...");
         ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.fillText("Ensuring Audio Is Loaded...",225,300);
-        console.log(p4.buffered);
-        if(!p4.paused&&p4.buffered.length==1){p4.pause(); loading = false; active = true; console.log("loaded!"); p4.volume = 0.5;}
+        ctx.fillText("Ensuring Audio is Loaded...",225,300);
+        if(!p4.paused&&p4.currentTime>5){p4.pause(); loading = false; active = true; console.log("loaded!"); p4.volume = 0.5;}
     }
     if(active){
         ctx.fillStyle = "green";
