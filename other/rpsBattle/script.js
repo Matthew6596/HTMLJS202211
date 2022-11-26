@@ -119,6 +119,8 @@ function changeScrn(scrn){
         buttons[8] = new Button(590,100,100,40,"lightgrey","blue",function(){changeStat(player,"ty","scissors");},function(){buttons[6].stroke="blue";buttons[7].stroke="blue";buttons[8].stroke="red";},"");
         buttons[9] = new Button(820,610,130,50,"lightgreen","green",debugB,function(){changeScrn("intro1");},"4");
     }else if(scrn=="intro1"){
+        player.hp++; player.at++; player.df++;
+        player.hp*=2; player.at*=2; player.df*=2;
         if(player.type=="rock"){player.hp+=30;player.at+=7;player.df+=6;}
         if(player.type=="paper"){player.hp+=60;player.at+=7;player.df+=3;}
         if(player.type=="scissors"){player.hp+=30;player.at+=14;player.df+=3;}
