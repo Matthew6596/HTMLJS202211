@@ -3,6 +3,6 @@ html,body{
     justify-content: center;
 }
 #canvas{
-    background-color: #dbdbdb;
+    background-color: whitesmoke;
     border: 1px solid black;
 }
