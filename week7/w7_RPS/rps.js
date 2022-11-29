@@ -23,11 +23,11 @@ var pUsed = "";
 var eUsed = "";
 
 var rImg = new Image();
-rImg.src = "../../week7/day2/images/rock.jpg";
+rImg.src = "images/rock.png";
 var pImg = new Image();
-pImg.src = "../../week7/day2/images/paper.jpg";
+pImg.src = "images/paper.png";
 var sImg = new Image();
-sImg.src = "../../week7/day2/images/scissors.jpg";
+sImg.src = "images/scissors.png";
 
 var typeCounter = 0;
 var typeDelay = -1;
@@ -167,7 +167,7 @@ function changeScrn(scrn){
     if(currentScrn=="title"){typewriter("Rock Paper Scissors: Part 2!",10,text[0]);}
     else if(currentScrn=="main"){
         gameOver = false;
-        textS = [textBoxText,"Rock","Paper","Scissors","Volume","Text Speed","+","-"];
+        textS = [textBoxText,"Rock","Paper","Scissors","Volume","Text Speed","+","-","press space to advance text"];
         var ohp = randNum(120,80);
         var oat = randNum(10,6);
         var odf = randNum(5,1);
@@ -362,6 +362,7 @@ function main(){ //MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --
         drawText(7,buttons[6].x+(buttons[6].width/2),buttons[6].y+(buttons[6].height/1.6),"black","18px Arial","center",false,false);
         drawText(4,50,45,"black","18px Arial","left",false,false);
         drawText(5,50,105,"black","18px Arial","left",false,false);
+        drawText(8,canvas.width-10,15,"black","12px Arial","right",false,false);
         for(i=0;i<buttons.length;i++){btnGrey(i);}
         barChange(0,player.hp);
         barChange(1,opponent.hp);
