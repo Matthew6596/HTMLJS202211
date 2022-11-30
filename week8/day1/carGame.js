@@ -15,6 +15,10 @@ var gameOver = true;
 var winner = "none";
 var cars = [];
 
+var carImg = new Image();
+carImg.src = "images/car.png";
+carImg.onload = function(){main();}
+
 var seconds = 3;
 var fps = 60;
 var frames = fps
@@ -37,10 +41,13 @@ function Car(fuel,color,spd,use,hi){
     this.fuelUse = use;
     this.speed = spd;
     this.y = hi;
+    this.carW = 40;
+    this.carH = 20;
 
     this.draw = function(){
         ctx.fillStyle = this.color;
-        ctx.fillRect(this.x,(canvas.height/2)+this.y,40,20);
+        ctx.fillRect(this.x,(canvas.height/2)+this.y,this.carW,this.carH);
+        ctx.drawImage(carImg,this.x,(canvas.height/2)+this.y,this.carW,this.carH);
     }
     this.move = function(){
         this.x+=this.speed;
@@ -90,7 +97,7 @@ function drawFuelBar(){
 }
 function carsFunc(){
     for(num=0;num<cars.length;num++){
-        if(wKey&&cars[num].fuel>0){cars[num].move();}
+        if(wKey&&cars[num].fuel>0&&winner=="none"){cars[num].move();}
         ctx.font = "12px Arial";
         ctx.textAlign = "left";
         ctx.fillStyle = cars[num].color;
@@ -121,7 +128,7 @@ function holdWText(){
 }
 function drawResults(){
     for(num=0;num<cars.length;num++){
-        if(cars[num].x+40>finish){
+        if(cars[num].x+cars[num].carW>finish){
             ctx.fillStyle = cars[num].color;
             ctx.font = "25px Arial";
             ctx.textAlign = "center";
