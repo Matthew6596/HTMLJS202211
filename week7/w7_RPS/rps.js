@@ -295,8 +295,8 @@ function musicLoop(){
 }
 function onClick(e){
     var rect = canvas.getBoundingClientRect();
-    mousex = Math.round(e.clientX - rect.left)
-    mousey = Math.round(e.clientY - rect.top)
+    mousex = Math.round(e.clientX - rect.left);
+    mousey = Math.round(e.clientY - rect.top);
 
     if(currentScrn=="title"&&e.which==1){console.log("noooo press space")}
     else if(currentScrn=="main"&&e.which==1){
