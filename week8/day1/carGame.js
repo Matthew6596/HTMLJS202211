@@ -3,25 +3,30 @@ var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 var timer = requestAnimationFrame(main);
 
-var start = 50;
-var finish = 750;
+var start = 58;
+var finish = 956;
 var carX = 2;
 var wKey = false;
 var startFuel = [];
 var fuelUses = [];
 var speeds = [];
-var fuelBarWidth = 300;
+var fuelBarWidth = 512;
 var gameOver = true;
 var winner = "none";
 var cars = [];
+var startFinishW = 10;
 
-var carImg = new Image();
-carImg.src = "images/car.png";
-carImg.onload = function(){main();}
+var rStar = new Image();
+rStar.src = "images/rStar.png";
+var gStar = new Image();
+gStar.src = "images/gStar.png";
+var bStar = new Image();
+bStar.src = "images/bStar.png";
+bStar.onload = function(){main();}
 
 var seconds = 3;
 var fps = 60;
-var frames = fps
+var frames = fps;
 
 reset();
 
@@ -45,9 +50,12 @@ function Car(fuel,color,spd,use,hi){
     this.carH = 20;
 
     this.draw = function(){
+        var img = 0;
+        if(this.color=="red"){img=rStar;}
+        if(this.color=="green"){img=gStar;}
+        if(this.color=="blue"){img=bStar;}
         ctx.fillStyle = this.color;
-        ctx.fillRect(this.x,(canvas.height/2)+this.y,this.carW,this.carH);
-        ctx.drawImage(carImg,this.x,(canvas.height/2)+this.y,this.carW,this.carH);
+        ctx.drawImage(img,this.x,(canvas.height/2)+this.y-this.carH,this.carW,this.carH);
     }
     this.move = function(){
         this.x+=this.speed;
@@ -73,15 +81,23 @@ function reset(){
     speeds = [Math.random()+randNum(3,1),Math.random()+randNum(3,1),Math.random()+randNum(3,1)];
     seconds = 3;
     fps = 60;
-    frames = fps
-    cars[0] = new Car(startFuel[0],"red",speeds[0],fuelUses[0],30);
+    frames = fps;
+    cars[0] = new Car(startFuel[0],"red",speeds[0],fuelUses[0],100);
     cars[1] = new Car(startFuel[1],"green",speeds[1],fuelUses[1],0);
-    cars[2] = new Car(startFuel[2],"blue",speeds[2],fuelUses[2],-30);
+    cars[2] = new Car(startFuel[2],"blue",speeds[2],fuelUses[2],-100);
 }
-function drawStartFinish(fill){
-    ctx.fillStyle = fill;
-    ctx.fillRect(start,50,10,500);
-    ctx.fillRect(finish,50,10,500);
+function drawStartFinish(){
+    ctx.fillStyle = "black";
+    var disFromScrn = 200;
+    for(i=0;i<35;i++){
+        if(i%2==0){ctx.fillStyle="black";ctx.strokeStyle="white";}
+        else{ctx.fillStyle="white";ctx.strokeStyle="black";}
+        ctx.fillRect(start,disFromScrn+(i*startFinishW),startFinishW,startFinishW);
+        ctx.strokeRect(start,disFromScrn+(i*startFinishW),startFinishW,startFinishW);
+        ctx.fillRect(finish,disFromScrn+(i*startFinishW),startFinishW,startFinishW);
+        ctx.strokeRect(finish,disFromScrn+(i*startFinishW),startFinishW,startFinishW);
+    }
+    
 }
 function drawFuelBar(){
     for(num=0;num<cars.length;num++){
@@ -98,10 +114,10 @@ function drawFuelBar(){
 function carsFunc(){
     for(num=0;num<cars.length;num++){
         if(wKey&&cars[num].fuel>0&&winner=="none"){cars[num].move();}
-        ctx.font = "12px Arial";
+        ctx.font = "12px Courier New";
         ctx.textAlign = "left";
         ctx.fillStyle = cars[num].color;
-        ctx.fillText("Fuel: "+cars[num].fuel,60*num,10);
+        ctx.fillText("Fuel: "+cars[num].fuel,(100*num)+180,20);
         if(cars[num].fuel<0){cars[num].fuel=0;}
         cars[num].draw();
     }
@@ -114,28 +130,32 @@ function runStartTimer(){
     }
 }
 function drawStartTimer(){
-    ctx.fillStyle = "black";
-    ctx.font = "25px Arial";
+    ctx.fillStyle = "gold";
+    ctx.strokeStyle = "lightgrey";
+    ctx.font = "48px Courier New";
     ctx.textAlign = "center";
     ctx.fillText(seconds,canvas.width/2,canvas.height/2);
+    ctx.strokeText(seconds,canvas.width/2,canvas.height/2);
 }
 function holdWText(){
-    ctx.fillStyle = "black";
-    ctx.font = "12px Arial";
+    ctx.fillStyle = "gold";
+    ctx.strokeStyle = "lightgrey";
+    ctx.font = "24px Courier New";
     ctx.textAlign = "right";
-    ctx.fillText("Hold W!",canvas.width-20,20);
+    ctx.fillText("Hold W!",canvas.width-60,60);
+    ctx.strokeText("Hold W!",canvas.width-60,60);
     
 }
 function drawResults(){
     for(num=0;num<cars.length;num++){
-        if(cars[num].x+cars[num].carW>finish){
+        if(cars[num].x-startFinishW>finish){
             ctx.fillStyle = cars[num].color;
-            ctx.font = "25px Arial";
+            ctx.font = "25px Courier New";
             ctx.textAlign = "center";
-            if(num==0&&(winner=="none"||winner=="red")){ctx.fillText("Red Car Won!",canvas.width/2,canvas.height/2); winner="red";}
-            if(num==1&&(winner=="none"||winner=="green")){ctx.fillText("Green Car Won!",canvas.width/2,canvas.height/2); winner="green";}
-            if(num==2&&(winner=="none"||winner=="blue")){ctx.fillText("Blue Car Won!",canvas.width/2,canvas.height/2); winner="blue";}
-            ctx.fillStyle = "black";
+            if(num==0&&(winner=="none"||winner=="red")){ctx.fillText("Red Star Won!",canvas.width/2,canvas.height/2); winner="red";}
+            if(num==1&&(winner=="none"||winner=="green")){ctx.fillText("Green Star Won!",canvas.width/2,canvas.height/2); winner="green";}
+            if(num==2&&(winner=="none"||winner=="blue")){ctx.fillText("Blue Star Won!",canvas.width/2,canvas.height/2); winner="blue";}
+            ctx.fillStyle = "gold";
             ctx.fillText("Press Space to Restart",canvas.width/2,(canvas.height/2)+30);
         }
     }
@@ -145,13 +165,15 @@ function main(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     //
     if(gameOver){
-        ctx.fillStyle = "black";
-        ctx.font = "30px Arial";
+        ctx.fillStyle = "gold";
+        ctx.strokeStyle = "lightgrey";
+        ctx.font = "30px Courier New";
         ctx.textAlign = "center";
         ctx.fillText("Press Space to Start", canvas.width/2, canvas.height/2);
+        ctx.strokeText("Press Space to Start", canvas.width/2, canvas.height/2);
     }else{
         if(seconds>0){wKey=false; runStartTimer(); drawStartTimer();}
-        drawStartFinish("black");
+        drawStartFinish();
         carsFunc();
         drawFuelBar();
         holdWText();
@@ -159,8 +181,8 @@ function main(){
             if(cars[num].x>finish || cars[num].fuel<=0){drawResults();}
         }
         if((cars[0].fuel==0&&cars[1].fuel==0&&cars[2].fuel==0)&&(winner=="none"||winner=="bruh")){
-            ctx.fillStyle = "black";
-            ctx.font = "25px Arial";
+            ctx.fillStyle = "gold";
+            ctx.font = "25px Courier New";
             ctx.textAlign = "center";
             ctx.fillText("Nobody Won!",canvas.width/2,canvas.height/2); winner="bruh";
             ctx.fillText("Press Space to Restart",canvas.width/2,(canvas.height/2)+30);
