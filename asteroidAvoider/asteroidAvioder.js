@@ -80,24 +80,26 @@ function Player(){
         ctx.closePath();
         ctx.restore();
         if(this.kW){ //Propulsion Flame
-            ctx.save();
-            ctx.strokeStyle = "orange";
-            ctx.lineWidth = "1";
-            ctx.beginPath();
-            ctx.moveTo(this.x+this.w*(3/16),this.y);
-            ctx.lineTo(this.x+this.w*(1/16),this.y+this.w/2);
-            ctx.lineTo(this.x+this.w*(3/16),this.y+this.w/7);
-            ctx.lineTo(this.x+this.w*(4.5/16),this.y+this.w*(3/4));
-            ctx.lineTo(this.x+this.w*(5.5/16),this.y+this.w/3);
-            ctx.lineTo(this.x+this.w*(8/16),this.y+this.w);
-            ctx.lineTo(this.x+this.w*(10.5/16),this.y+this.w/3);
-            ctx.lineTo(this.x+this.w*(11.5/16),this.y+this.w*(3/4));
-            ctx.lineTo(this.x+this.w*(13/16),this.y+this.w/7);
-            ctx.lineTo(this.x+this.w*(15/16),this.y+this.w/2);
-            ctx.lineTo(this.x+this.w*(13/16),this.y);
-            ctx.stroke();
-            ctx.closePath();
-            ctx.restore();
+            if(throttle.currentTime<24.9){
+                ctx.save();
+                ctx.strokeStyle = "orange";
+                ctx.lineWidth = "1";
+                ctx.beginPath();
+                ctx.moveTo(this.x+this.w*(3/16),this.y);
+                ctx.lineTo(this.x+this.w*(1/16),this.y+this.w/2);
+                ctx.lineTo(this.x+this.w*(3/16),this.y+this.w/7);
+                ctx.lineTo(this.x+this.w*(4.5/16),this.y+this.w*(3/4));
+                ctx.lineTo(this.x+this.w*(5.5/16),this.y+this.w/3);
+                ctx.lineTo(this.x+this.w*(8/16),this.y+this.w);
+                ctx.lineTo(this.x+this.w*(10.5/16),this.y+this.w/3);
+                ctx.lineTo(this.x+this.w*(11.5/16),this.y+this.w*(3/4));
+                ctx.lineTo(this.x+this.w*(13/16),this.y+this.w/7);
+                ctx.lineTo(this.x+this.w*(15/16),this.y+this.w/2);
+                ctx.lineTo(this.x+this.w*(13/16),this.y);
+                ctx.stroke();
+                ctx.closePath();
+                ctx.restore();
+            }
         }
     }
     this.move = function(){
@@ -118,7 +120,7 @@ function keyDown(e){//w:87 a:65 s:83 d:83
     if(!lost){
         if(e.which==65){player.kA = true;}
         if(e.which==68){player.kD = true;}
-        if(e.which==87){player.kW = true;doThrAudio(true);}
+        if(e.which==87){player.kW = true;}
         if(e.which==83){player.kS = true;}
     }
 }
@@ -126,7 +128,7 @@ function keyUp(e){//w:87 a:65 s:83 d:83
     if(!lost){
         if(e.which==65){player.kA = false;}
         if(e.which==68){player.kD = false;}
-        if(e.which==87){player.kW = false;doThrAudio(false);}
+        if(e.which==87){player.kW = false;}
         if(e.which==83){player.kS = false;}
     }
 }
@@ -162,7 +164,7 @@ function asteroidManage(n){
 function doThrAudio(on){
     if(on){
         if(throttle.paused){throttle.play();}
-        if(throttle.currentTime>=25){throttle.currentTime=5;}
+        if(throttle.currentTime>=25){throttle.currentTime=0;}
     }else{
         if(!throttle.paused){
             throttle.pause();
@@ -191,6 +193,8 @@ function main(){
         for(i=0;i<asteroids.length;i++){asteroidManage(i);}
         player.draw();
         player.move();
+        if(!lost&&player.kW){doThrAudio(true);}
+        if(lost||!player.kW){doThrAudio(false);}
     //
     timer = requestAnimationFrame(main);
 }
