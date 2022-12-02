@@ -117,7 +117,7 @@ function carsFunc(){
         ctx.font = "12px Courier New";
         ctx.textAlign = "left";
         ctx.fillStyle = cars[num].color;
-        ctx.fillText("Fuel: "+cars[num].fuel,(100*num)+180,20);
+        ctx.fillText("Energy: "+cars[num].fuel,(100*num)+180,20);
         if(cars[num].fuel<0){cars[num].fuel=0;}
         cars[num].draw();
     }
