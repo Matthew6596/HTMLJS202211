@@ -2,27 +2,34 @@
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 var timer = requestAnimationFrame(main);
-
+//Asteroid Attributes Vars
 var numAster = 10;
 var aLowSpd = 1;
 var aHighSpd = 5;
-var asteroids = [];
 var asteroidSize = 4;
+//Objects Vars
+var asteroids = [];
+var stars = [];
 var player = new Player();
-var lost = false;
-var started = false;
-var startTextY = canvas.height/2
-var startTextSize = 64;
-var explosions = [];
+var explosions = new Explosion(0,0,"rgba(0,0,0,0)",0,0);
+var explosions2 = new Explosion(0,0,"rgba(0,0,0,0)",0,0);
+//Score & Text Vars
 var score = 0;
 var scoreTextX = -1000;
+var startTextY = canvas.height/2;
+var startTextSize = 64;
 var highscore = 0;
+//State Vars
+var lost = false;
+var started = false;
 var firstStart = true;
-var stars = [];
-
+//Time Vars
 var fps = 60;
 var frames = fps;
-
+var trueFPS = 0;
+var fpsCounter = 0;
+var fpsModifier = 0;
+//Audio Vars
 var throttle = document.getElementById("thr");
 var boom1 = document.getElementById("boom1");
 var music = document.getElementById("music");
@@ -34,6 +41,8 @@ music.volume = 0.2;
 for(i=0;i<100;i++){
     stars[i] = new Star();
 }
+scoreCount();
+setTimeout(getFPS,1000);
 
 //Listeners
 document.addEventListener("keydown",keyDown);
@@ -108,43 +117,47 @@ function Player(){
 
     this.draw = function(){
         ctx.save(); //Main Ship
+        ctx.translate(this.x,this.y);
         ctx.strokeStyle = this.color;
         ctx.lineWidth = "2";
         ctx.beginPath();
-        ctx.moveTo(this.x,this.y);
-        ctx.lineTo(this.x+this.w,this.y);
-        ctx.lineTo(this.x+(this.w/2),this.y-this.w);
-        ctx.lineTo(this.x,this.y);
-        ctx.stroke();
+        ctx.moveTo(0,0);
+        ctx.lineTo(this.w,0);
+        ctx.lineTo((this.w/2),-this.w);
+        ctx.lineTo(0,0);
         ctx.closePath();
+        ctx.stroke();
         ctx.restore();
         if(this.kW){ //Propulsion Flame
             if(throttle.currentTime<24.9){
                 ctx.save();
+                ctx.translate(this.x,this.y);
                 ctx.strokeStyle = "orange";
                 ctx.lineWidth = "1";
                 ctx.beginPath();
-                ctx.moveTo(this.x+this.w*(3/16),this.y);
-                ctx.lineTo(this.x+this.w*(1/16),this.y+this.w/2);
-                ctx.lineTo(this.x+this.w*(3/16),this.y+this.w/7);
-                ctx.lineTo(this.x+this.w*(4.5/16),this.y+this.w*(3/4));
-                ctx.lineTo(this.x+this.w*(5.5/16),this.y+this.w/3);
-                ctx.lineTo(this.x+this.w*(8/16),this.y+this.w);
-                ctx.lineTo(this.x+this.w*(10.5/16),this.y+this.w/3);
-                ctx.lineTo(this.x+this.w*(11.5/16),this.y+this.w*(3/4));
-                ctx.lineTo(this.x+this.w*(13/16),this.y+this.w/7);
-                ctx.lineTo(this.x+this.w*(15/16),this.y+this.w/2);
-                ctx.lineTo(this.x+this.w*(13/16),this.y);
-                ctx.stroke();
+                ctx.moveTo(this.w*(3/16),0);
+                ctx.lineTo(this.w*(1/16),this.w/2);
+                ctx.lineTo(this.w*(3/16),this.w/7);
+                ctx.lineTo(this.w*(4.5/16),this.w*(3/4));
+                ctx.lineTo(this.w*(5.5/16),this.w/3);
+                ctx.lineTo(this.w*(8/16),this.w);
+                ctx.lineTo(this.w*(10.5/16),this.w/3);
+                ctx.lineTo(this.w*(11.5/16),this.w*(3/4));
+                ctx.lineTo(this.w*(13/16),this.w/7);
+                ctx.lineTo(this.w*(15/16),this.w/2);
+                ctx.lineTo(this.w*(13/16),0);
                 ctx.closePath();
+                ctx.stroke();
                 ctx.restore();
             }
         }
     }
     this.move = function(){
-        if(this.kD&&this.x<canvas.width-this.w){this.x+=this.spd;}
-        if(this.kA&&this.x>0){this.x-=this.spd;}
-        if(this.kW&&this.y>canvas.height/2){this.y-=this.spd;}
+        if(this.kD){this.x+=this.spd;}//Right
+        if(this.x>canvas.width-this.w){this.x=canvas.width-this.w;}
+        if(this.kA){this.x-=this.spd;}//Left
+        if(this.x<0){this.x=0;}
+        if(this.kW&&this.y>canvas.height/2){this.y-=this.spd;}//Vertical
         if(!(this.y>=canvas.height-10)){
             if(this.kS){this.y+=this.yspd*2;}
             else{this.y+=this.yspd;}
@@ -157,74 +170,81 @@ function Player(){
         if(this.y<=(canvas.height-10)){this.beginning=false;this.began=true;}
     }
 }
-function Explosion(x,y,color,speed,radius){
+function Explosion(x,y,color,speed,radius){ //Buggy, seems to only work once outside of player lose
     this.x = [x,x,x,x,x,x,x,x];
     this.y = [y,y,y,y,y,y,y,y];
     this.col = color;
     this.spd = speed;
     this.r = radius;
-    this.off = false;
     this.lwidth = 2;
-    if(this.col=="red"){this.lwidth=1;}
+    if(this.col=="red"||this.col=="orange"||this.col=="grey"||this.col=="yellow"){this.lwidth=1;}
     
 
     this.update = function(){
-        for(i=0;i<this.x.length;i++){
-            if(this.off){this.x[i]=-3-this.r;}
-            else if((((this.x[i]-this.r)>canvas.width)||((this.x[i]+this.r)<0))&&(((this.y[i]-this.r)>canvas.height)||((this.y[i]+this.r)<0))){this.off=true;}
-        }
-        if(!this.off){
-            var div = 1.5;
-            this.x[0] += this.spd;
-            this.x[1] += this.spd/div;//
-            //this.x[2]
-            this.x[3] -= this.spd/div;//
-            this.x[4] -= this.spd;
-            this.x[5] -= this.spd/div;//
-            //this.x[6]
-            this.x[7] += this.spd/div;//
-            //this.y[0]
-            this.y[1] -= this.spd/div;//
-            this.y[2] -= this.spd;
-            this.y[3] -= this.spd/div;//
-            //this.y[4]
-            this.y[5] += this.spd/div;//
-            this.y[6] += this.spd;
-            this.y[7] += this.spd/div;//
+        var div = 1.5;
+        var zero = false;
+        this.x[0] += this.spd;
+        this.x[1] += this.spd/div;//
+        //this.x[2]
+        this.x[3] -= this.spd/div;//
+        this.x[4] -= this.spd;
+        this.x[5] -= this.spd/div;//
+        //this.x[6]
+        this.x[7] += this.spd/div;//
+        //this.y[0]
+        this.y[1] -= this.spd/div;//
+        this.y[2] -= this.spd;
+        this.y[3] -= this.spd/div;//
+        //this.y[4]
+        this.y[5] += this.spd/div;//
+        this.y[6] += this.spd;
+        this.y[7] += this.spd/div;//
 
-            ctx.strokeStyle = this.col;
-            ctx.lineWidth = this.lwidth;
-            for(i=0;i<this.x.length;i++){
-                ctx.beginPath();
-                ctx.arc(this.x[i],this.y[i],this.r,0,Math.PI*2);
-                ctx.stroke();
-                ctx.closePath();
-            }
+        if((this.col=="red"||this.col=="orange"||this.col=="grey"||this.col=="yellow")&&!zero){this.r--;}
+        if(this.r<=0){this.r=0;}
+
+        ctx.strokeStyle = this.col;
+        ctx.lineWidth = this.lwidth;
+        for(i=0;i<this.x.length;i++){
+            ctx.beginPath();
+            ctx.arc(this.x[i],this.y[i],this.r,0,Math.PI*2);
+            ctx.stroke();
+            ctx.closePath();
         }
     }
 }
 //Input
 function keyDown(e){//w:87 a:65 s:83 d:83
-    if(e.which==32&&started){reset();/*location.reload();*/}
-    else if(e.which==32){started = true;}
+    if(e.which==32){
+        if(lost){reset();/*location.reload();*/}
+        else if(started){funnyFunction();}
+        else{started = true;}
+    }
     if(!lost){
-        if(e.which==65){player.kA = true;}
-        if(e.which==68){player.kD = true;}
-        if(e.which==87){player.kW = true;}
-        if(e.which==83){player.kS = true;}
+        if(e.which==65||e.which==37){player.kA = true;}
+        if(e.which==68||e.which==39){player.kD = true;}
+        if(e.which==87||e.which==38){player.kW = true;}
+        if(e.which==83||e.which==40){player.kS = true;}
     }
 }
 function keyUp(e){//w:87 a:65 s:83 d:83
     if(!lost){
-        if(e.which==65){player.kA = false;}
-        if(e.which==68){player.kD = false;}
-        if(e.which==87){player.kW = false;}
-        if(e.which==83){player.kS = false;}
+        if(e.which==65||e.which==37){player.kA = false;}
+        if(e.which==68||e.which==39){player.kD = false;}
+        if(e.which==87||e.which==38){player.kW = false;}
+        if(e.which==83||e.which==40){player.kS = false;}
     }
 }
 //Functions
 function randNum(low,high){
     return (Math.random()*(high-low)+low);
+}
+function funnyFunction(){
+    gameOver();
+}
+function cordsInside(mainx, mainy, x1,x2,y1,y2){
+    if(((mainx>x1)&&(mainx<x2))&&((mainy>y1)&&(mainy<y2))){return true;}
+    else{return false;}
 }
 function runStartTimer(){
     console.log(seconds);
@@ -247,8 +267,15 @@ function asteroidInstantiate(){
         }
     }
 }
+function collisionDetect(a){
+    var xDis = (player.x+player.w/2)-asteroids[a].x
+    var yDis = (player.y-player.w/2)-asteroids[a].y
+    var distance = Math.sqrt((xDis*xDis)+(yDis*yDis));
+    if(distance<(player.w/2+asteroids[a].radius)){return true;}
+    else{return false;}
+}
 function asteroidManage(n){
-    if((asteroids[n].x>(player.x-asteroids[n].radius)&&asteroids[n].x<(player.x+player.w+asteroids[n].radius)&&asteroids[n].y>player.y-player.w&&asteroids[n].y<player.y+asteroids[n].radius)){gameOver();}
+    if(collisionDetect(n)){gameOver();}
     if(asteroids[n].y-asteroids[n].radius>canvas.height){
         var colorN = randNum(0,4)
         asteroids[n].radius = randNum(asteroidSize,asteroidSize+12);
@@ -272,7 +299,8 @@ function reset(){
     player = new Player();
     lost = false;
     started = true;
-    explosions = [];
+    explosions = new Explosion(0,0,"rgba(0,0,0,0)",0,0);
+    explosions2 = new Explosion(0,0,"rgba(0,0,0,0)",0,0);
     score = 0;
     scoreTextX = -1000;
 }
@@ -291,12 +319,11 @@ function loadedAudio(e){
     console.log("loaded");
 }
 function scoreCount(){
-    frames--;
-    if(frames<0){
-        frames = fps;
+    if(!lost&&started){
         score++;
         difficulty();
     }
+    setTimeout(scoreCount,1000);
 }
 function startText(){
     ctx.lineWidth="1";
@@ -319,34 +346,50 @@ function endTextMove(){
     startTextY += ((canvas.height/2)-startTextY)*0.05;
     startTextSize += (startTextSize-12)*0.1;
 }
+function getFPS(){
+    trueFPS = fpsCounter;
+    fpsCounter = 0;
+    fpsModifier = (30/trueFPS)*4;
+    console.log(trueFPS);
+    setTimeout(getFPS,1000);
+}
+function FPSCount(){
+    fpsCounter++;
+}
 function scoreText(){
-    ctx.lineWidth="0.75";
-    ctx.font="24px Courier New";
+    ctx.lineWidth="0.8";
+    ctx.font="30px Courier New";
     ctx.strokeStyle="green";
     ctx.textAlign="left";
-    ctx.strokeText(score,scoreTextX,20);
+    ctx.strokeText(score,scoreTextX,24);
 }
 function scoreTextMove(first){
     if(first){scoreTextX += (5-scoreTextX)*0.05;}
     else{scoreTextX += ((-32*(score/10)-32)-scoreTextX)*0.01}
 }
 function difficulty(){
-    if(score%20==0){
-        asteroids[asteroids.length] = new Asteroid("red");
-
-        console.log(explosions.length);
-        console.log(asteroids.length);
+    var rand = Math.round(randNum(2,4));
+    if(score%rand==0){
+        explosions2 = new Explosion(randNum(0,canvas.width),0,"yellow",10,5);
     }
     if(score%10==0&&aHighSpd<14){
         if(aHighSpd-aLowSpd==4){aLowSpd++;}
         else{aHighSpd++;}
+        explosions2 = new Explosion(randNum(50,(canvas.width)-50),0,"orange",10,10);
     }
-    if(score%30==0&&asteroidSize<24){asteroidSize++;}
+    if(score%20==0){
+        asteroids[asteroids.length] = new Asteroid("red");
+        explosions = new Explosion(asteroids[asteroids.length-1].x,0,"red",10,16);
+
+        console.log(asteroids.length);
+    }
+    if(score%30==0&&asteroidSize<24){asteroidSize++; explosions = new Explosion(randNum(200,canvas.width-200),0,"grey",10,24);}
+    if(score%100==0){explosions2 = new Explosion(randNum(200,canvas.width-200),randNum(200,canvas.height-200),"violet",7,1);}
 }
 function gameOver(){
     if(!lost){
         boom1.play();
-        explosions[0] = new Explosion(player.x+player.w/2,player.y-player.w/2,"green",6,3.5);
+        explosions = new Explosion(player.x+player.w/2,player.y-player.w/2,"green",6,3.5);
     }
     firstStart = false;
     lost = true;
@@ -363,11 +406,12 @@ function gameOver(){
 function main(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     //
-    for(i=0;i<explosions.length;i++){explosions[i].update();}
+    FPSCount();
+    explosions.update();
+    explosions2.update();
     for(i=0;i<stars.length;i++){stars[i].draw();}
     if(startTextY>=-70||lost){startText();}
     if(started){
-        if(!lost){scoreCount();}
         if(lost&&scoreTextX>(-32*(score/10)-32)){scoreText(); scoreTextMove(false);}
         else if(!lost){scoreText();}
         if(!lost&&scoreTextX<5){scoreTextMove(true);}
