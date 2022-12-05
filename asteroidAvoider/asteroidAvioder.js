@@ -351,6 +351,7 @@ function getFPS(){
     fpsCounter = 0;
     fpsModifier = (30/trueFPS)*4;
     console.log(trueFPS);
+    console.log(fpsModifier);
     setTimeout(getFPS,1000);
 }
 function FPSCount(){
