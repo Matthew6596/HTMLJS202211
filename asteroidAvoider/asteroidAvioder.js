@@ -26,9 +26,9 @@ var firstStart = true;
 //Time Vars
 var fps = 60;
 var frames = fps;
-var trueFPS = 0;
+var trueFPS = 90;
 var fpsCounter = 0;
-var fpsModifier = 0;
+var fpsModifier = 1;
 //Audio Vars
 var throttle = document.getElementById("thr");
 var boom1 = document.getElementById("boom1");
@@ -347,11 +347,21 @@ function endTextMove(){
     startTextSize += (startTextSize-12)*0.1;
 }
 function getFPS(){
+    player.spd /= fpsModifier;
+    player.yspd /= fpsModifier;
+    explosions.spd /= fpsModifier;
+    explosions2.spd /= fpsModifier;
+    for(i=0;i<asteroids.length;i++){asteroids[i].vy = asteroids[i].vy/fpsModifier;}
+    for(i=0;i<stars.length;i++){stars[i].vy = stars[i].vy/fpsModifier;}
     trueFPS = fpsCounter;
     fpsCounter = 0;
     fpsModifier = (30/trueFPS)*4;
-    console.log(trueFPS);
-    console.log(fpsModifier);
+    player.spd *= fpsModifier;
+    player.yspd *= fpsModifier;
+    explosions.spd *= fpsModifier;
+    explosions2.spd *= fpsModifier;
+    for(i=0;i<stars.length;i++){stars[i].vy *= fpsModifier;}
+    for(i=0;i<asteroids.length;i++){asteroids[i].vy *= fpsModifier;}
     setTimeout(getFPS,1000);
 }
 function FPSCount(){
@@ -385,7 +395,7 @@ function difficulty(){
         console.log(asteroids.length);
     }
     if(score%30==0&&asteroidSize<24){asteroidSize++; explosions = new Explosion(randNum(200,canvas.width-200),0,"grey",10,24);}
-    if(score%100==0){explosions2 = new Explosion(randNum(200,canvas.width-200),randNum(200,canvas.height-200),"violet",7,1);}
+    if(score%50==0){explosions2 = new Explosion(randNum(200,canvas.width-200),randNum(200,canvas.height-200),"violet",7,1);}
 }
 function gameOver(){
     if(!lost){
