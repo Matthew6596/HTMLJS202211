@@ -1,4 +1,4 @@
-//Variables
+//Variables !A majority of this code was written before week 8, and thus isn't optimized well! *state machine
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 var timer = requestAnimationFrame(main);
@@ -13,6 +13,7 @@ var stars = [];
 var player = new Player();
 var explosions = new Explosion(0,0,"rgba(0,0,0,0)",0,0);
 var explosions2 = new Explosion(0,0,"rgba(0,0,0,0)",0,0);
+var starPos = 0;
 //Score & Text Vars
 var score = 0;
 var scoreTextX = -1000;
@@ -29,6 +30,7 @@ var frames = fps;
 var trueFPS = 90;
 var fpsCounter = 0;
 var fpsModifier = 1;
+var refresh = false;
 //Audio Vars
 var throttle = document.getElementById("thr");
 var boom1 = document.getElementById("boom1");
@@ -42,6 +44,7 @@ for(i=0;i<100;i++){
     stars[i] = new Star();
 }
 scoreCount();
+starPosRefresh(true);
 setTimeout(getFPS,1000);
 
 //Listeners
@@ -103,7 +106,7 @@ function Star(){
 }
 function Player(){
     this.w = 40;
-    this.x = canvas.width/2;
+    this.x = (canvas.width/2)-(this.w/2);
     this.y = canvas.height+this.w*2;
     this.color = "green";
     this.spd = 6;
@@ -114,8 +117,34 @@ function Player(){
     this.kS = false;
     this.beginning = false;
     this.began = false;
+    this.flameLength = 0.75;
 
     this.draw = function(){
+        if(this.kW){ //Propulsion Flame
+            if(throttle.currentTime<24.9){
+                ctx.save();
+                if(this.flameLength==0.75){this.flameLength=1;}
+                else{this.flameLength=0.75;}
+                ctx.translate(this.x,this.y);
+                ctx.strokeStyle = "orange";
+                ctx.lineWidth = "1";
+                ctx.beginPath();
+                ctx.moveTo(this.w*(3/16),0);
+                ctx.lineTo(this.w*(1/16),this.flameLength*this.w/2);
+                ctx.lineTo(this.w*(3/16),this.flameLength*this.w/7);
+                ctx.lineTo(this.w*(4.5/16),this.flameLength*this.w*(3/4));
+                ctx.lineTo(this.w*(5.5/16),this.flameLength*this.w/3);
+                ctx.lineTo(this.w*(8/16),this.flameLength*this.w);
+                ctx.lineTo(this.w*(10.5/16),this.flameLength*this.w/3);
+                ctx.lineTo(this.w*(11.5/16),this.flameLength*this.w*(3/4));
+                ctx.lineTo(this.w*(13/16),this.flameLength*this.w/7);
+                ctx.lineTo(this.w*(15/16),this.flameLength*this.w/2);
+                ctx.lineTo(this.w*(13/16),0);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
         ctx.save(); //Main Ship
         ctx.translate(this.x,this.y);
         ctx.strokeStyle = this.color;
@@ -128,41 +157,19 @@ function Player(){
         ctx.closePath();
         ctx.stroke();
         ctx.restore();
-        if(this.kW){ //Propulsion Flame
-            if(throttle.currentTime<24.9){
-                ctx.save();
-                ctx.translate(this.x,this.y);
-                ctx.strokeStyle = "orange";
-                ctx.lineWidth = "1";
-                ctx.beginPath();
-                ctx.moveTo(this.w*(3/16),0);
-                ctx.lineTo(this.w*(1/16),this.w/2);
-                ctx.lineTo(this.w*(3/16),this.w/7);
-                ctx.lineTo(this.w*(4.5/16),this.w*(3/4));
-                ctx.lineTo(this.w*(5.5/16),this.w/3);
-                ctx.lineTo(this.w*(8/16),this.w);
-                ctx.lineTo(this.w*(10.5/16),this.w/3);
-                ctx.lineTo(this.w*(11.5/16),this.w*(3/4));
-                ctx.lineTo(this.w*(13/16),this.w/7);
-                ctx.lineTo(this.w*(15/16),this.w/2);
-                ctx.lineTo(this.w*(13/16),0);
-                ctx.closePath();
-                ctx.stroke();
-                ctx.restore();
-            }
-        }
+        
     }
     this.move = function(){
         if(this.kD){this.x+=this.spd;}//Right
         if(this.x>canvas.width-this.w){this.x=canvas.width-this.w;}
         if(this.kA){this.x-=this.spd;}//Left
         if(this.x<0){this.x=0;}
-        if(this.kW&&this.y>canvas.height/2){this.y-=this.spd;}//Vertical
+        if(this.kW&&this.y>=canvas.height/2){this.y-=this.spd;}//Vertical
         if(!(this.y>=canvas.height-10)){
             if(this.kS){this.y+=this.yspd*2;}
             else{this.y+=this.yspd;}
         }
-        if(this.kW&&this.y<=canvas.height/2){this.y=canvas.height/2;}
+        if(this.y<canvas.height/2){this.y=canvas.height/2;}
     }
     this.begin = function(){
         this.beginning = true;
@@ -216,7 +223,8 @@ function Explosion(x,y,color,speed,radius){ //Buggy, seems to only work once out
 //Input
 function keyDown(e){//w:87 a:65 s:83 d:83
     if(e.which==32){
-        if(lost){reset();/*location.reload();*/}
+        if(lost){reset();}
+        else if(refresh){location.reload();}
         else if(started){funnyFunction();}
         else{started = true;}
     }
@@ -395,7 +403,23 @@ function difficulty(){
         console.log(asteroids.length);
     }
     if(score%30==0&&asteroidSize<24){asteroidSize++; explosions = new Explosion(randNum(200,canvas.width-200),0,"grey",10,24);}
-    if(score%50==0){explosions2 = new Explosion(randNum(200,canvas.width-200),randNum(200,canvas.height-200),"violet",7,1);}
+    if((score-highscore)==1){explosions2 = new Explosion(randNum(200,canvas.width-200),randNum(200,canvas.height-200),"violet",7,1);}
+}
+function starPosRefresh(first){
+    if(first){starPos = stars[0].y;}
+    else{
+        console.log("bruh");
+        if(starPos==stars[0].y){refresh=true;}
+    }
+    starPos = stars[0].y;
+    setTimeout(function(){starPosRefresh(false);},1000);
+}
+function refreshPage(){
+    ctx.lineWidth="1";
+    ctx.font="48px Courier New";
+    ctx.strokeStyle="red";
+    ctx.textAlign="center";
+    ctx.strokeText("Please refresh the page",canvas.width/2,canvas.height/2);
 }
 function gameOver(){
     if(!lost){
@@ -411,33 +435,49 @@ function gameOver(){
     player.kD = false;
     player.kW = false;
     doThrAudio(false);
-    if(score>highscore){highscore = score;}
+    if(score>highscore){highscore = score; explosions2 = new Explosion(canvas.width/2,canvas.height/2,"violet",5,5);}
+}
+function play(){
+    if(lost&&scoreTextX>(-32*(score/10)-32)){scoreText(); scoreTextMove(false);}
+    else if(!lost){scoreText();}
+    if(!lost&&scoreTextX<5){scoreTextMove(true);}
+    if(startTextY>=-70&&!lost){startTextMove();}
+    if(startTextSize<64&&lost){endTextMove();}
+    if(!player.began){player.begin();}
+    asteroidInstantiate();
+    for(i=0;i<asteroids.length;i++){asteroidManage(i);}
+    player.draw();
+    if(player.began){player.move();}
+    if(!lost&&player.kW){doThrAudio(true);}
+    else{doThrAudio(false);}
+    if(music.currentTime>=16){music.currentTime=0;}
+    if(music.paused){music.play();}
 }
 //Main
 function main(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     //
-    FPSCount();
-    explosions.update();
-    explosions2.update();
-    for(i=0;i<stars.length;i++){stars[i].draw();}
-    if(startTextY>=-70||lost){startText();}
-    if(started){
-        if(lost&&scoreTextX>(-32*(score/10)-32)){scoreText(); scoreTextMove(false);}
-        else if(!lost){scoreText();}
-        if(!lost&&scoreTextX<5){scoreTextMove(true);}
-        if(startTextY>=-70&&!lost){startTextMove();}
-        if(startTextSize<64&&lost){endTextMove();}
-        if(!player.began){player.begin();}
-        asteroidInstantiate();
-        for(i=0;i<asteroids.length;i++){asteroidManage(i);}
-        player.draw();
-        if(player.began){player.move();}
-        if(!lost&&player.kW){doThrAudio(true);}
-        if(lost||!player.kW){doThrAudio(false);}
-        if(music.currentTime>=16){music.currentTime=0;}
-        if(music.paused){music.play();}
-    }
+    if(!refresh){
+        FPSCount();
+        explosions.update();
+        explosions2.update();
+        for(i=0;i<stars.length;i++){stars[i].draw();}
+        if(startTextY>=-70||lost){startText();}
+        if(started){play();}
+    }else{refreshPage();}
     //
     timer = requestAnimationFrame(main);
 }
+
+//State machine: array of functions with code for that state
+/*
+var states = [];
+var currentState = 0;
+states[0] = function(){
+
+}
+states[1] = function(){
+
+}
+states[currentState]; in main
+*/
