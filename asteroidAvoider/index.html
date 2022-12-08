@@ -5,28 +5,24 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asteroid Avoider</title>
-    <style>
-        html,body{
-            display: flex;
-            justify-content: center;
-            background-color: black;
-        }
-        canvas{
-            border: 1px solid white
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>Asteroid Avoider</h1>
-    </header>
+    
     <audio autobuffer preload="metadata" src="sounds/asteroidAvioder.mp3" id="music"></audio>
     <audio autobuffer preload=”metadata” src="sounds/throttle.mp3" id="thr"></audio>
     <audio autobuffer preload=”metadata” src="sounds/shipBoom.mp3" id="boom1"></audio>
     <div id="container">
+        <header>
+            <h1>Asteroid Avoider</h1>
+        </header>
         <canvas id="canvas" width="1000" height="800"></canvas>
+        <footer>
+            <button id="switchMode">Toggle Graphics</button>
+            <p>&copy;2022 Matthew Satterfield HTML/JavaScript Class</p>
+        </footer>
     </div>
-    <footer></footer>
+    
     <script src="asteroidAvioder.js"></script>
 </body>
 </html>

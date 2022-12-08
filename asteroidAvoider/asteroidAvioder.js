@@ -1,7 +1,8 @@
-//Variables !A majority of this code was written before week 8, and thus isn't optimized well! *state machine
+//Variables !A majority of this code was written before week 8, and thus isn't optimized well! *cough cough state machine*
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 var timer = requestAnimationFrame(main);
+var graphics = "grade me mode aka the bad mode";//this could have been a bool, but no cause I feel spiteful, darn images
 //Asteroid Attributes Vars
 var numAster = 10;
 var aLowSpd = 1;
@@ -14,6 +15,7 @@ var player = new Player();
 var explosions = new Explosion(0,0,"rgba(0,0,0,0)",0,0);
 var explosions2 = new Explosion(0,0,"rgba(0,0,0,0)",0,0);
 var starPos = 0;
+var power = new PowerUp(-100,0);
 //Score & Text Vars
 var score = 0;
 var scoreTextX = -1000;
@@ -24,17 +26,27 @@ var highscore = 0;
 var lost = false;
 var started = false;
 var firstStart = true;
+var refresh = false;
 //Time Vars
 var fps = 60;
 var frames = fps;
 var trueFPS = 90;
 var fpsCounter = 0;
 var fpsModifier = 1;
-var refresh = false;
+var powerTime = 0;
 //Audio Vars
 var throttle = document.getElementById("thr");
 var boom1 = document.getElementById("boom1");
 var music = document.getElementById("music");
+//Image Vars
+var shipImg = new Image(40,40)
+shipImg.src = "images/ship.png";
+var astImg = new Image()
+astImg.src = "images/asteroid.png";
+var startMenuImg = new Image()
+startMenuImg.src = "images/AAStartMenu.png";
+var gameOverImg = new Image()
+gameOverImg.src = "images/AAGameOver.jpg";
 
 //Istantiation
 throttle.volume = 0.1;
@@ -45,11 +57,20 @@ for(i=0;i<100;i++){
 }
 scoreCount();
 starPosRefresh(true);
+powerColSwap();
 setTimeout(getFPS,1000);
+//startMenuImg.onload = function(){main();};
 
 //Listeners
 document.addEventListener("keydown",keyDown);
 document.addEventListener("keyup",keyUp);
+document.getElementById("switchMode").addEventListener('click',function(e){
+    if(e.pointerId==1){
+        if(graphics=="grade me mode aka the bad mode"){graphics="the correct mode";}
+        else{graphics="grade me mode aka the bad mode";}
+        console.log(graphics);
+    }
+});
 document.addEventListener("DOMContentLoaded",function(e){console.log("DOMContentLoaded");});
 throttle.addEventListener("loadedmetadata",function(e){console.log("loadedmetadata");});
 throttle.addEventListener("waiting",function(e){console.log("waiting");});
@@ -58,20 +79,24 @@ throttle.addEventListener("suspend",function(e){console.log("suspend");});
 //Objects
 function Asteroid(col){
     this.radius = randNum(asteroidSize,asteroidSize+12);
-    this.x = randNum(this.radius,canvas.width-this.radius);
-    this.y = randNum(this.radius,canvas.height-this.radius) - canvas.height;
+    this.x = randNum(this.radius,canvas.width-this.radius) + canvas.width;
+    this.y = randNum(this.radius,canvas.height-this.radius);
     this.vy = randNum(aLowSpd,aHighSpd);
     this.color = col;
 
     this.draw = function(){
-        ctx.save();
-        ctx.strokeStyle = this.color;
-        ctx.lineWidth = "1";
-        ctx.beginPath();
-        ctx.arc(this.x,this.y,this.radius,0,Math.PI*2);
-        ctx.stroke();
-        ctx.closePath();
-        ctx.restore();
+        if(graphics=="the correct mode"){
+            ctx.save();
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = "1";
+            ctx.beginPath();
+            ctx.arc(this.x,this.y,this.radius,0,Math.PI*2);
+            ctx.stroke();
+            ctx.closePath();
+            ctx.restore();
+        }else{
+            ctx.drawImage(astImg,(this.x-this.radius),(this.y-this.radius),this.radius*2,this.radius*2);
+        }
     }
 }
 function Star(){
@@ -92,11 +117,11 @@ function Star(){
         ctx.stroke();
         ctx.closePath();
         ctx.restore();
-        this.y+=this.vy;
-        if(this.y>canvas.height+2){
+        this.x-=this.vy;
+        if(this.x<-2){
             this.rand1 = randNum(0,3);
-            this.y = -2;
-            this.x = randNum(0,canvas.width);
+            this.x = canvas.width+2;
+            this.y = randNum(0,canvas.height);
             this.vy = randNum(0.1,1);
             if(this.rand1<=1){this.color="white";}
             else if(this.rand1<=2){this.color="violet";}
@@ -106,8 +131,8 @@ function Star(){
 }
 function Player(){
     this.w = 40;
-    this.x = (canvas.width/2)-(this.w/2);
-    this.y = canvas.height+this.w*2;
+    this.x = -this.w*2;
+    this.y = (canvas.height/2)-(this.w/2);
     this.color = "green";
     this.spd = 6;
     this.yspd = 2;
@@ -120,7 +145,7 @@ function Player(){
     this.flameLength = 0.75;
 
     this.draw = function(){
-        if(this.kW){ //Propulsion Flame
+        if(this.kD){ //Propulsion Flame
             if(throttle.currentTime<24.9){
                 ctx.save();
                 if(this.flameLength==0.75){this.flameLength=1;}
@@ -129,55 +154,59 @@ function Player(){
                 ctx.strokeStyle = "orange";
                 ctx.lineWidth = "1";
                 ctx.beginPath();
-                ctx.moveTo(this.w*(3/16),0);
-                ctx.lineTo(this.w*(1/16),this.flameLength*this.w/2);
-                ctx.lineTo(this.w*(3/16),this.flameLength*this.w/7);
-                ctx.lineTo(this.w*(4.5/16),this.flameLength*this.w*(3/4));
-                ctx.lineTo(this.w*(5.5/16),this.flameLength*this.w/3);
-                ctx.lineTo(this.w*(8/16),this.flameLength*this.w);
-                ctx.lineTo(this.w*(10.5/16),this.flameLength*this.w/3);
-                ctx.lineTo(this.w*(11.5/16),this.flameLength*this.w*(3/4));
-                ctx.lineTo(this.w*(13/16),this.flameLength*this.w/7);
-                ctx.lineTo(this.w*(15/16),this.flameLength*this.w/2);
-                ctx.lineTo(this.w*(13/16),0);
+                ctx.moveTo(0,this.w*(3/16)-this.w);
+                ctx.lineTo(-this.flameLength*this.w/2,this.w*(1/16)-this.w);
+                ctx.lineTo(-this.flameLength*this.w/7,this.w*(3/16)-this.w);
+                ctx.lineTo(-this.flameLength*this.w*(3/4),this.w*(4.5/16)-this.w);
+                ctx.lineTo(-this.flameLength*this.w/3,this.w*(5.5/16)-this.w);
+                ctx.lineTo(-this.flameLength*this.w,this.w*(8/16)-this.w);
+                ctx.lineTo(-this.flameLength*this.w/3,this.w*(10.5/16)-this.w);
+                ctx.lineTo(-this.flameLength*this.w*(3/4),this.w*(11.5/16)-this.w);
+                ctx.lineTo(-this.flameLength*this.w/7,this.w*(13/16)-this.w);
+                ctx.lineTo(-this.flameLength*this.w/2,this.w*(15/16)-this.w);
+                ctx.lineTo(0,this.w*(13/16)-this.w);
                 ctx.closePath();
                 ctx.stroke();
                 ctx.restore();
             }
         }
-        ctx.save(); //Main Ship
-        ctx.translate(this.x,this.y);
-        ctx.strokeStyle = this.color;
-        ctx.lineWidth = "2";
-        ctx.beginPath();
-        ctx.moveTo(0,0);
-        ctx.lineTo(this.w,0);
-        ctx.lineTo((this.w/2),-this.w);
-        ctx.lineTo(0,0);
-        ctx.closePath();
-        ctx.stroke();
-        ctx.restore();
+        if(graphics=="the correct mode"){
+            ctx.save(); //Main Ship
+            ctx.translate(this.x,this.y);
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = "2";
+            ctx.beginPath();
+            ctx.moveTo(0,0);
+            ctx.lineTo(0,-this.w);
+            ctx.lineTo(this.w,-(this.w/2));
+            ctx.lineTo(0,0);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.restore();
+        }else{
+            ctx.drawImage(shipImg,this.x,this.y-this.w);
+        }
         
     }
     this.move = function(){
-        if(this.kD){this.x+=this.spd;}//Right
-        if(this.x>canvas.width-this.w){this.x=canvas.width-this.w;}
-        if(this.kA){this.x-=this.spd;}//Left
-        if(this.x<0){this.x=0;}
-        if(this.kW&&this.y>=canvas.height/2){this.y-=this.spd;}//Vertical
-        if(!(this.y>=canvas.height-10)){
-            if(this.kS){this.y+=this.yspd*2;}
-            else{this.y+=this.yspd;}
+        if(this.kW){this.y-=this.spd;}//Up
+        if(this.y<this.w){this.y=this.w;}
+        if(this.kS){this.y+=this.spd;}//Down
+        if(this.y>canvas.height){this.y=canvas.height;}
+        if(this.kD&&this.x<canvas.width/2){this.x+=this.spd;}//Horizontal
+        if(!(this.x<10)){
+            if(this.kA){this.x-=this.yspd*2;}
+            else{this.x-=this.yspd;}
         }
-        if(this.y<canvas.height/2){this.y=canvas.height/2;}
+        if(this.x>canvas.width/2){this.x=canvas.width/2;}
     }
     this.begin = function(){
         this.beginning = true;
-        this.y -= (this.y-(canvas.height-11))*0.1;
-        if(this.y<=(canvas.height-10)){this.beginning=false;this.began=true;}
+        this.x -= (this.x-(11))*0.1;
+        if(this.x>(10)){this.beginning=false;this.began=true;}
     }
 }
-function Explosion(x,y,color,speed,radius){ //Buggy, seems to only work once outside of player lose
+function Explosion(x,y,color,speed,radius){
     this.x = [x,x,x,x,x,x,x,x];
     this.y = [y,y,y,y,y,y,y,y];
     this.col = color;
@@ -220,6 +249,32 @@ function Explosion(x,y,color,speed,radius){ //Buggy, seems to only work once out
         }
     }
 }
+function PowerUp(y,spd){
+    this.radius = 7;
+    this.x = canvas.width+this.radius
+    this.y = y;
+    this.spd = spd;
+    this.col = "violet";
+
+    this.draw = function(){
+        if(powerTime>0){
+            this.x = player.x+player.w/2.5;
+            this.y = player.y-player.w/2;
+            this.radius = player.w/1.5;
+        }
+        ctx.save();
+        ctx.strokeStyle = this.col;
+        ctx.lineWidth = "2";
+        ctx.beginPath();
+        ctx.arc(this.x,this.y,this.radius,0,Math.PI*2);
+        ctx.stroke();
+        ctx.closePath();
+        ctx.restore();
+
+        if(this.radius==player.w/1.5){}
+        if(this.x+this.radius>=0&&powerTime<=0){this.x-=this.spd;}
+    }
+}
 //Input
 function keyDown(e){//w:87 a:65 s:83 d:83
     if(e.which==32){
@@ -246,6 +301,9 @@ function keyUp(e){//w:87 a:65 s:83 d:83
 //Functions
 function randNum(low,high){
     return (Math.random()*(high-low)+low);
+}
+function toggleGraphics(){
+    
 }
 function funnyFunction(){
     gameOver();
@@ -282,20 +340,33 @@ function collisionDetect(a){
     if(distance<(player.w/2+asteroids[a].radius)){return true;}
     else{return false;}
 }
+function powerCollide(){
+    var xDis = (player.x+player.w/2)-power.x
+    var yDis = (player.y-player.w/2)-power.y
+    var distance = Math.sqrt((xDis*xDis)+(yDis*yDis));
+    if(distance<(player.w/2+power.radius)){return true;}
+    else{return false;}
+}
 function asteroidManage(n){
-    if(collisionDetect(n)){gameOver();}
-    if(asteroids[n].y-asteroids[n].radius>canvas.height){
+    if(powerCollide()&&power.radius==7){powerTime=6;}
+    if(power.radius==player.w/1.5&&powerTime<=0){
+        power.y=-100;
+        power.radius = 0;
+    }
+    if(collisionDetect(n)&&powerTime<=0){gameOver();}
+    else if(collisionDetect(n)&&powerTime>0){asteroids[n].radius=0;asteroids[n].y=-10}
+    if(asteroids[n].x+asteroids[n].radius<0){
         var colorN = randNum(0,4)
         asteroids[n].radius = randNum(asteroidSize,asteroidSize+12);
-        asteroids[n].x = randNum(asteroids[n].radius,canvas.width-asteroids[n].radius);
-        asteroids[n].y = -(asteroids[n].radius+100);
+        asteroids[n].x = (asteroids[n].radius+100+canvas.width)
+        asteroids[n].y = randNum(asteroids[n].radius,canvas.height-asteroids[n].radius);
         asteroids[n].vy = randNum(aLowSpd,aHighSpd);
         if(colorN<1){asteroids[n].color="red";}
         else if(colorN<=2){asteroids[n].color="grey";}
         else if(colorN<=3){asteroids[n].color="orange";}
         else if(colorN<=4){asteroids[n].color="yellow";}
     }
-    asteroids[n].y+=asteroids[n].vy;
+    asteroids[n].x-=asteroids[n].vy;
     asteroids[n].draw();
 }
 function reset(){
@@ -311,6 +382,8 @@ function reset(){
     explosions2 = new Explosion(0,0,"rgba(0,0,0,0)",0,0);
     score = 0;
     scoreTextX = -1000;
+    powerTime = 0;
+    power = new PowerUp(-100,0);
 }
 function doThrAudio(on){
     if(on){
@@ -330,6 +403,8 @@ function scoreCount(){
     if(!lost&&started){
         score++;
         difficulty();
+        if(powerTime>=0){powerTime--;}
+        console.log("pow: "+powerTime);
     }
     setTimeout(scoreCount,1000);
 }
@@ -389,29 +464,31 @@ function scoreTextMove(first){
 function difficulty(){
     var rand = Math.round(randNum(2,4));
     if(score%rand==0){
-        explosions2 = new Explosion(randNum(0,canvas.width),0,"yellow",10,5);
+        explosions2 = new Explosion(canvas.width,randNum(0,canvas.height),"yellow",10,5);
     }
     if(score%10==0&&aHighSpd<14){
         if(aHighSpd-aLowSpd==4){aLowSpd++;}
         else{aHighSpd++;}
-        explosions2 = new Explosion(randNum(50,(canvas.width)-50),0,"orange",10,10);
+        explosions2 = new Explosion(canvas.width,randNum(50,canvas.height-50),"orange",10,10);
+    }
+    if(score%10==0){
+        power = new PowerUp(randNum(7,canvas.height-7),randNum(2,4));
     }
     if(score%20==0){
         asteroids[asteroids.length] = new Asteroid("red");
-        explosions = new Explosion(asteroids[asteroids.length-1].x,0,"red",10,16);
+        explosions = new Explosion(canvas.width,asteroids[asteroids.length-1].y,"red",10,16);
 
         console.log(asteroids.length);
     }
-    if(score%30==0&&asteroidSize<24){asteroidSize++; explosions = new Explosion(randNum(200,canvas.width-200),0,"grey",10,24);}
+    if(score%30==0&&asteroidSize<24){asteroidSize++; explosions = new Explosion(canvas.width,randNum(200,canvas.height-200),"grey",10,24);}
     if((score-highscore)==1){explosions2 = new Explosion(randNum(200,canvas.width-200),randNum(200,canvas.height-200),"violet",7,1);}
 }
 function starPosRefresh(first){
-    if(first){starPos = stars[0].y;}
+    if(first){starPos = stars[0].x;}
     else{
-        console.log("bruh");
-        if(starPos==stars[0].y){refresh=true;}
+        if(starPos==stars[0].x){refresh=true;}
     }
-    starPos = stars[0].y;
+    starPos = stars[0].x;
     setTimeout(function(){starPosRefresh(false);},1000);
 }
 function refreshPage(){
@@ -437,7 +514,7 @@ function gameOver(){
     doThrAudio(false);
     if(score>highscore){highscore = score; explosions2 = new Explosion(canvas.width/2,canvas.height/2,"violet",5,5);}
 }
-function play(){
+function play1(){
     if(lost&&scoreTextX>(-32*(score/10)-32)){scoreText(); scoreTextMove(false);}
     else if(!lost){scoreText();}
     if(!lost&&scoreTextX<5){scoreTextMove(true);}
@@ -446,12 +523,36 @@ function play(){
     if(!player.began){player.begin();}
     asteroidInstantiate();
     for(i=0;i<asteroids.length;i++){asteroidManage(i);}
-    player.draw();
+    if(!lost){player.draw();}
+    power.draw();
     if(player.began){player.move();}
-    if(!lost&&player.kW){doThrAudio(true);}
+    if(!lost&&player.kD){doThrAudio(true);}
     else{doThrAudio(false);}
     if(music.currentTime>=16){music.currentTime=0;}
     if(music.paused){music.play();}
+}
+function powerColSwap(){
+    if(powerTime>1||power.radius==7){
+        if(power.col=="violet"){power.col="lightblue";}
+        else if(power.col=="lightblue"){power.col="white";}
+        else if(power.col=="white"){power.col="violet";}
+    }else{
+        if(power.col=="red"){power.col="orange";}
+        else{power.col="red";}
+    }
+    setTimeout(powerColSwap,100);
+}
+function imagesDraw(){
+    if(firstStart&&!started){ctx.drawImage(startMenuImg,0,0);}
+    if(lost){
+        ctx.drawImage(gameOverImg,0,0); 
+        ctx.lineWidth="1";
+        ctx.font="48px Courier New";
+        ctx.strokeStyle="green";
+        ctx.textAlign="center";
+        ctx.strokeText("Highscore: "+highscore,canvas.width/2,canvas.height/2-40);
+        ctx.strokeText("Score: "+score,canvas.width/2,canvas.height/2+40);
+    }
 }
 //Main
 function main(){
@@ -462,8 +563,9 @@ function main(){
         explosions.update();
         explosions2.update();
         for(i=0;i<stars.length;i++){stars[i].draw();}
-        if(startTextY>=-70||lost){startText();}
-        if(started){play();}
+        if((startTextY>=-70||lost)&&graphics=="the correct mode"){startText();}
+        if(graphics=="grade me mode aka the bad mode"){imagesDraw();}
+        if(started){play1();}
     }else{refreshPage();}
     //
     timer = requestAnimationFrame(main);

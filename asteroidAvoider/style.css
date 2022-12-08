@@ -1,0 +1,29 @@
+@font-face{
+    font-family:spacey;
+    src: url(fonts/Monofett-Regular.ttf);
+}
+html,body{
+    display: flex;
+    justify-content: center;
+    background-image: url(../asteroidAvoider/images/pageBackground.png);
+}
+canvas{
+    border: 1px solid white;
+}
+header{
+    text-align: center;
+    font-family:spacey;
+    color:grey;
+}
+footer{
+    text-align: center;
+    color:green
+}
+button{
+    align-self: baseline;
+    background-color: lightblue;
+}
+#container{
+    background-color: black;
+    border: 1px solid white;
+}
