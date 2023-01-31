@@ -12,7 +12,7 @@ var pewMaxDist = 400;
 var maxPews = 4;
 
 var asteroids = [];
-var level = 0;
+var level = -1;
 var numAsteroids = 5;
 var astMinSpd = 1;
 var astMaxSpd = 3;
@@ -29,6 +29,9 @@ var globalColor = "white";
 var gameOver = false;
 
 var player = new PlayerShip();
+var lives = 3;
+var respawnTime = -1;
+var levelTimer = false;
 
 //OBJECTS - O B J E C T S
 
@@ -67,7 +70,7 @@ function PlayerShip(){
     this.maxSpd = 2;
     this.backModify = 4;
     this.acc = 0.02;
-    this.dec = 0.002;
+    this.dec = 0;
     this.thrustReduce = 20;
     this.faceAngle = 90;
     this.moveAngle = 0;
@@ -114,24 +117,24 @@ function PlayerShip(){
     }
     this.move = function(){
 
-        var moveDX = Math.cos(toRadians(this.moveAngle))*this.moveMag;
-        var moveDY = Math.sin(toRadians(this.moveAngle))*this.moveMag;
+        this.finDX = Math.cos(toRadians(this.moveAngle))*this.moveMag;
+        this.finDY = Math.sin(toRadians(this.moveAngle))*this.moveMag;
 
-        moveDX += this.applyDX/this.thrustReduce;
-        moveDY += this.applyDY/this.thrustReduce;
+        this.finDX += this.applyDX/this.thrustReduce;
+        this.finDY += this.applyDY/this.thrustReduce;
 
-        this.x+=moveDX;
-        this.y+=moveDY;
+        this.x+=this.finDX;
+        this.y+=this.finDY;
 
-        this.moveAngle = getAngle(moveDX,moveDY);
-        this.moveMag = getMag(moveDX,moveDY);
+        this.moveAngle = getAngle(this.finDX,this.finDY);
+        this.moveMag = getMag(this.finDX,this.finDY);
         if(this.moveAngle<0){this.moveAngle+=360;}
 
         if(this.moveMag>this.maxSpd){this.moveMag=this.maxSpd;}
         if(this.moveMag>0){this.moveMag-=this.dec;}
 
-        //visualizeVector(this.x,this.y,this.moveAngle,this.moveMag,"green");
-       // visualizeVector(this.x,this.y,this.applyAngle,getMag(this.applyDX,this.applyDY),"red");
+        visualizeVector(this.x,this.y,this.moveAngle,this.moveMag,"green");
+        visualizeVector(this.x,this.y,this.applyAngle,getMag(this.applyDX,this.applyDY),"red");
 
         if(this.dx>this.maxSpd/this.backModify){this.dx=this.maxSpd/this.backModify;}
         if(this.dy>this.maxSpd/this.backModify){this.dy=this.maxSpd/this.backModify;}
@@ -234,7 +237,7 @@ function compareAngles(a1,a2){
 }
 
 function shoot(a){
-    if(pews.length<maxPews&&!gameOver){pews.push(new Pew(a));}
+    if(pews.length<maxPews&&respawnTime==-1){pews.push(new Pew(a));}
 }
 
 function managePews(){
@@ -245,13 +248,14 @@ function managePews(){
         var go = true;
         //Asteroid Collision
         for(z=0; z<asteroids.length; z++){
-            if(((pews[i].x+pews[i].r>asteroids[z].x-asteroids[z].size)&&(pews[i].x-pews[i].r<asteroids[z].x+asteroids[z].size))
+            if(go&&((pews[i].x+pews[i].r>asteroids[z].x-asteroids[z].size)&&(pews[i].x-pews[i].r<asteroids[z].x+asteroids[z].size))
             &&((pews[i].y+pews[i].r>asteroids[z].y-asteroids[z].size)&&(pews[i].y-pews[i].r<asteroids[z].y+asteroids[z].size))){
                 pews.splice(i,1);
                 generateAsteroids(asteroids[z].size,asteroids[z].x,asteroids[z].y);
                 asteroids.splice(z,1);
                 z=asteroids.length;
                 go = false;
+                if(z==0){setTimeout(levelManager,3000);}
             }
         }
 
@@ -300,7 +304,7 @@ function manageAsteroids(){
 
             asteroids[z].move();
 
-            if(!gameOver){playerCollision(z);}
+            if(respawnTime<=0){playerCollision(z);}
 
         }
     }
@@ -325,19 +329,65 @@ function generateAsteroids(size,x,y){
 }
 
 function playerCollision(id){ //Make collision more ACCURATE
-    if(((player.x+player.shipSize/10>asteroids[id].x-asteroids[id].size)&&(player.x-player.shipSize/10<asteroids[id].x+asteroids[id].size))
-    &&((player.y+player.shipSize/10>asteroids[id].y-asteroids[id].size)&&(player.y-player.shipSize/10<asteroids[id].y+asteroids[id].size))){
-        player.shipSize = 0;
-        adjustPlayerAngle(0);
-        gameOver = true;
-        removeID = id;
+    if(((player.x+player.shipSize*50>asteroids[id].x-asteroids[id].size)&&(player.x-player.shipSize*50<asteroids[id].x+asteroids[id].size))
+    &&((player.y+player.shipSize*50>asteroids[id].y-asteroids[id].size)&&(player.y-player.shipSize*50<asteroids[id].y+asteroids[id].size))){
+        if(respawnTime==0){
+            respawnTime += 2;
+        }
     }
+    if(paCollide(id)){
+        if(respawnTime==-1&&!gameOver){
+            player.shipSize = 0;
+            adjustPlayerAngle(0);
+            lives--;
+            removeID = id;
+            respawnTime = 4;
+            player.x = canvas.width/2;
+            player.y = canvas.height/2;
+            player.finDX = 0;
+            player.finDY = 0;
+            player.moveMag = 0;
+            if(lives>0){respawn();}
+        }
+    }
+    if(lives<=0){gameOver = true;}
+}
+
+function paCollide(id){
+    return (((player.x+player.shipSize/10>asteroids[id].x-asteroids[id].size)&&(player.x-player.shipSize/10<asteroids[id].x+asteroids[id].size))
+    &&((player.y+player.shipSize/10>asteroids[id].y-asteroids[id].size)&&(player.y-player.shipSize/10<asteroids[id].y+asteroids[id].size)))
+}
+
+function respawn(){
+    respawnTime--;
+    if(respawnTime>=0){setTimeout(respawn,1000);}
+    else{
+        respawnTime = -1;
+        player.shipSize = 20;
+        adjustPlayerAngle(0);
+    }
+}
+
+function lockMove(){
+    player.x = canvas.width/2;
+    player.y = canvas.height/2;
+    player.finDX = 0;
+    player.finDY = 0;
+    player.moveMag = 0;
 }
 
 function removeAst(){
     generateAsteroids(asteroids[removeID].size,asteroids[removeID].x,asteroids[removeID].y);
     asteroids.splice(removeID,1);
     removeID = -1;
+}
+
+function levelManager(){
+    level++;
+    if(level==1){
+        numAsteroids += 5;
+    }
+    generateAsteroids(0);
 }
 //
 
@@ -355,8 +405,10 @@ function main(){ //MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --
     player.move();
     manageAsteroids();
     if(removeID!=-1){removeAst();}
+    if(respawnTime!=-1||gameOver){lockMove();}
+    console.log(level);
     //
     timer = requestAnimationFrame(main);
 }
 
-generateAsteroids(0);
+levelManager();
