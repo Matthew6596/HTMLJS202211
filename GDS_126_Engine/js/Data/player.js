@@ -315,6 +315,16 @@ var playerData ={
 			[
 				{width:256, height:768, startX:0*256, startY:0},
 			]
+		},
+		//Animation for the projectile
+		projectile:
+		{
+			fps:3,
+			cycle:true,
+			frames:
+			[
+				{width:256, height:768, startX:0*256, startY:0},
+			]
 		}
 	}
 	
