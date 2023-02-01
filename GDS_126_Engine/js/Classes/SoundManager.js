@@ -7,13 +7,27 @@ class SoundManager
              this[_soundNodes[i].getAttribute(`name`)]=_soundNodes[i]
         }
     }
-    play(_sound, _start=0, _loop=false)
+    play(_sound, _start=0, _loop=false, _vol=.5)
     {
         try
         {
             this[_sound].currentTime=_start
             this[_sound].loop = _loop
+            this[_sound].volume = _vol
             this[_sound].play();
+        }
+        catch
+        {
+           throw new Error(`Sound is not loaded`)
+        }
+    }
+    manualLoop(_sound,_startVal,_endVal)
+    {
+        try
+        {
+            if(this[_sound].currentTime>=_endVal){
+                this[_sound].currentTime=_startVal;
+            }
         }
         catch
         {

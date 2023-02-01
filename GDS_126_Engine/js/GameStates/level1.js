@@ -102,6 +102,8 @@ var chargin;
 
 gameStates[`level1`] = function()
 {
+	sounds.manualLoop(`lvlMusic`,56,112);
+
 	if(wiz.currentState==`land`||wiz.currentState==`walkLand`){landTimer--;}
 	else{landTimer=6;}
 
