@@ -2,14 +2,17 @@ var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 var timer = requestAnimationFrame(main);
 
+
 //
 document.addEventListener("keydown",keyDown);
 document.addEventListener("keyup",keyUp);
+
 
 //Vars
 var pews = [];
 var pewMaxDist = 400;
 var maxPews = 4;
+
 
 var asteroids = [];
 var level = -1;
@@ -17,6 +20,7 @@ var numAsteroids = 5;
 var astMinSpd = 1;
 var astMaxSpd = 3;
 var removeID = -1;
+
 
 var mousex = 0;
 var mousey = 0;
@@ -28,12 +32,19 @@ var shootLock = false;
 var globalColor = "white";
 var gameOver = false;
 
+
 var player = new PlayerShip();
 var lives = 3;
 var respawnTime = -1;
 var levelTimer = false;
 
-//OBJECTS - O B J E C T S
+
+var frameByFrame = false;
+var frameAdvance = !frameByFrame;
+
+
+//OBJECTS - O B J E C T S ---------------------------------------------------------------------------------------------------------
+
 
 function Pew(angle){
     this.x = player.x+player.rotPoints[0][0];
@@ -43,12 +54,15 @@ function Pew(angle){
     this.angle = angle+180;
     this.dist = 0;
 
+
     this.move = function(){
         this.x+=Math.cos(toRadians(this.angle))*this.spd;
         this.y+=Math.sin(toRadians(this.angle))*this.spd;
 
+
         this.x=screenWrap(this.x,this.r,canvas.width);
         this.y=screenWrap(this.y,this.r,canvas.height);
+
 
         this.dist+=Math.sqrt(Math.pow(Math.cos(toRadians(this.angle))*this.spd,2)+Math.pow(Math.sin(toRadians(this.angle))*this.spd,2))
     }
@@ -58,7 +72,8 @@ function Pew(angle){
     }
 }
 
-function PlayerShip(){
+
+function PlayerShip(){ // _______________________________________________________________________________________________SHIP
     this.x = canvas.width/2;
     this.y = canvas.height/2;
     this.dx = 0;
@@ -77,6 +92,7 @@ function PlayerShip(){
     this.applyAngle = 0;
     this.moveMag = 0;
     this.rotPoints = [[0,-15],[-10,15],[10,15]];
+    this.points = [[0,0],[0,0],[0,0]]
     this.shipSize = 20;
     this.pAngles = [0,0,0];
     this.turnSpd = 1.5;
@@ -108,6 +124,7 @@ function PlayerShip(){
             this.dy-=this.acc/this.backModify;
         }
 
+
         this.applyDX=Math.cos(toRadians(this.faceAngle+180))*this.dx;
         this.applyDY=Math.sin(toRadians(this.faceAngle+180))*this.dy;
         this.applyAngle = getAngle(this.applyDX,this.applyDY);
@@ -117,50 +134,70 @@ function PlayerShip(){
     }
     this.move = function(){
 
+
         this.finDX = Math.cos(toRadians(this.moveAngle))*this.moveMag;
         this.finDY = Math.sin(toRadians(this.moveAngle))*this.moveMag;
+
 
         this.finDX += this.applyDX/this.thrustReduce;
         this.finDY += this.applyDY/this.thrustReduce;
 
+
         this.x+=this.finDX;
         this.y+=this.finDY;
+
 
         this.moveAngle = getAngle(this.finDX,this.finDY);
         this.moveMag = getMag(this.finDX,this.finDY);
         if(this.moveAngle<0){this.moveAngle+=360;}
 
+
         if(this.moveMag>this.maxSpd){this.moveMag=this.maxSpd;}
         if(this.moveMag>0){this.moveMag-=this.dec;}
+
 
         visualizeVector(this.x,this.y,this.moveAngle,this.moveMag,"green");
         visualizeVector(this.x,this.y,this.applyAngle,getMag(this.applyDX,this.applyDY),"red");
 
+
         if(this.dx>this.maxSpd/this.backModify){this.dx=this.maxSpd/this.backModify;}
         if(this.dy>this.maxSpd/this.backModify){this.dy=this.maxSpd/this.backModify;}
 
+
         this.x = screenWrap(this.x,this.shipSize,canvas.width);
         this.y = screenWrap(this.y,this.shipSize,canvas.height);
+
+
+        for(iii=0; iii<this.points.length; iii++){
+            this.points[iii][0] = this.rotPoints[iii][0] + this.x;
+            this.points[iii][1] = this.rotPoints[iii][1] + this.y;
+        }
     }
 }
 
-function Asteroid(x,y,size){
+
+function Asteroid(x,y,size){ //_______________________________________________________________________________________ASTEROID
     this.x = x;
     this.y = y;
     this.angle = randNum(0,360);
     this.size = size;
     this.mag = randNum(astMinSpd,astMaxSpd)/this.size;
-    
+   
     this.rotPoints = [[0,12],[17,0],[10,-13],[-10,-17],[-20,0]];
     this.pAngles = [0,0,0];
     this.rotateSpd = randNum(-20/this.size,20/this.size);
+
+
+    this.points = [[0,0],[0,0],[0,0],[0,0],[0,0]];
     while(Math.abs(this.rotateSpd)<10/this.size){this.rotateSpd=randNum(-20/this.size,20/this.size)}
+
 
     for(i=0; i<this.rotPoints.length; i++){
         this.pAngles[i] = getAngle(this.rotPoints[i][0],this.rotPoints[i][1]);
         this.rotPoints[i][0] = Math.cos(toRadians(this.pAngles[i]))*this.size;
         this.rotPoints[i][1] = Math.sin(toRadians(this.pAngles[i]))*this.size;
     }
+
 
     this.draw = function(){
         ctx.save();
@@ -179,11 +216,19 @@ function Asteroid(x,y,size){
         this.x += getPoint(this.mag,this.angle,"x");
         this.y += getPoint(this.mag,this.angle,"y");
 
+
         this.x = screenWrap(this.x,this.size,canvas.width);
         this.y = screenWrap(this.y,this.size,canvas.height);
+
+
+        for(ii=0; ii<this.points.length; ii++){
+            this.points[ii][0] = this.rotPoints[ii][0] + this.x;
+            this.points[ii][1] = this.rotPoints[ii][1] + this.y;
+        }
     }
 }
-//Input Functions
+//Input Functions ---------------------------------------------------------------------------------------------------------------
+
 
 function keyDown(e){//w:87 a:65 s:83 d:83
     if(e.which==32&&!shootLock){shoot(player.faceAngle); shootLock = true;}
@@ -191,6 +236,7 @@ function keyDown(e){//w:87 a:65 s:83 d:83
     if(e.which==68||e.which==39){right = true;}
     if(e.which==87||e.which==38){up = true;}
     if(e.which==83||e.which==40){down = true;}
+    if(e.which==70&&frameByFrame){frameAdvance=true;}
 }
 function keyUp(e){//w:87 a:65 s:83 d:83
     if(e.which==32){shootLock = false;}
@@ -198,10 +244,13 @@ function keyUp(e){//w:87 a:65 s:83 d:83
     if(e.which==68||e.which==39){right = false;}
     if(e.which==87||e.which==38){up = false;}
     if(e.which==83||e.which==40){down = false;}
+    if(e.which==70&&frameByFrame){frameAdvance=false;}
 }
 
-//FUNCTIONS - F U N C T I O N S
+
+//FUNCTIONS - F U N C T I O N S -----------------------------------------------------------------------------------------------------
 function randNum(low, high){return Math.random()*(high-low)+low;}
+
 
 function getAngle(a,b){
     if(b==0){return (a>0) ? 0:180;}
@@ -216,6 +265,7 @@ function getPoint(mag,dir,XorY){
 }
 function toRadians(deg){return deg*(Math.PI/180);}
 function toDegrees(rad){return rad*(180/Math.PI);}
+
 
 function visualizeVector(originX, originY, angle, mag, color){
     var x = getPoint(mag*80,angle,"x");
@@ -232,18 +282,22 @@ function visualizeVector(originX, originY, angle, mag, color){
     ctx.restore();
 }
 
+
 function compareAngles(a1,a2){
     return (Math.abs(getPoint(1,a1,"x")-getPoint(1,a2,"x"))<0.1&&Math.abs(getPoint(1,a1,"y")-getPoint(1,a2,"y"))<0.1);
 }
+
 
 function shoot(a){
     if(pews.length<maxPews&&respawnTime==-1){pews.push(new Pew(a));}
 }
 
+
 function managePews(){
     for(i=0; i<pews.length; i++){
         pews[i].move();
         pews[i].draw();
+
 
         var go = true;
         //Asteroid Collision
@@ -259,9 +313,11 @@ function managePews(){
             }
         }
 
+
         if(go&&pews[i].dist>pewMaxDist){pews.splice(i,1);}
     }
 }
+
 
 function screenWrap(val,size,canv){
     if(val<-size){return canv+size;} //Wrap around screen
@@ -269,7 +325,9 @@ function screenWrap(val,size,canv){
     else{return val;}
 }
 
+
 function adjustPlayerAngle(rotateAmount){
+
 
     //Rotate
     player.faceAngle += rotateAmount;
@@ -277,16 +335,20 @@ function adjustPlayerAngle(rotateAmount){
         player.pAngles[i] += rotateAmount;
         //Refresh Point Locations
 
+
         player.rotPoints[i][0] = Math.cos(toRadians(player.pAngles[i]))*player.shipSize;
         player.rotPoints[i][1] = Math.sin(toRadians(player.pAngles[i]))*player.shipSize;
+
 
         if(player.pAngles[i]>360){player.pAngles[i]-=360;}
         if(player.pAngles[i]<0){player.pAngles[i]+=360;}
         if(player.faceAngle>360){player.faceAngle-=360;}
         if(player.faceAngle<0){player.faceAngle+=360;}
 
+
     }
 }
+
 
 function manageAsteroids(){
     for(z=0; z<asteroids.length; z++){
@@ -294,21 +356,27 @@ function manageAsteroids(){
             asteroids[z].pAngles[i] += asteroids[z].rotateSpd;
             //Refresh Point Locations
 
+
             asteroids[z].rotPoints[i][0] = Math.cos(toRadians(asteroids[z].pAngles[i]))*asteroids[z].size;
             asteroids[z].rotPoints[i][1] = Math.sin(toRadians(asteroids[z].pAngles[i]))*asteroids[z].size;
+
 
             if(asteroids[z].pAngles[i]>360){asteroids[z].pAngles[i]-=360;}
             if(asteroids[z].pAngles[i]<0){asteroids[z].pAngles[i]+=360;}
             if(asteroids[z].faceAngle>360){asteroids[z].angle-=360;}
             if(asteroids[z].faceAngle<0){asteroids[z].angle+=360;}
 
+
             asteroids[z].move();
 
+
             if(respawnTime<=0){playerCollision(z);}
+
 
         }
     }
 }
+
 
 function generateAsteroids(size,x,y){
     if(size==0){
@@ -328,6 +396,7 @@ function generateAsteroids(size,x,y){
     }
 }
 
+
 function playerCollision(id){ //Make collision more ACCURATE
     if(((player.x+player.shipSize*50>asteroids[id].x-asteroids[id].size)&&(player.x-player.shipSize*50<asteroids[id].x+asteroids[id].size))
     &&((player.y+player.shipSize*50>asteroids[id].y-asteroids[id].size)&&(player.y-player.shipSize*50<asteroids[id].y+asteroids[id].size))){
@@ -336,6 +405,7 @@ function playerCollision(id){ //Make collision more ACCURATE
         }
     }
     if(paCollide(id)){
+        console.log("bruh");
         if(respawnTime==-1&&!gameOver){
             player.shipSize = 0;
             adjustPlayerAngle(0);
@@ -353,10 +423,135 @@ function playerCollision(id){ //Make collision more ACCURATE
     if(lives<=0){gameOver = true;}
 }
 
+
 function paCollide(id){
-    return (((player.x+player.shipSize/10>asteroids[id].x-asteroids[id].size)&&(player.x-player.shipSize/10<asteroids[id].x+asteroids[id].size))
-    &&((player.y+player.shipSize/10>asteroids[id].y-asteroids[id].size)&&(player.y-player.shipSize/10<asteroids[id].y+asteroids[id].size)))
+    /*return (((player.x+player.shipSize/10>asteroids[id].x-asteroids[id].size)&&(player.x-player.shipSize/10<asteroids[id].x+asteroids[id].size))
+    &&((player.y+player.shipSize/10>asteroids[id].y-asteroids[id].size)&&(player.y-player.shipSize/10<asteroids[id].y+asteroids[id].size)))*/
+
+
+    for(iz=0; iz<player.points.length; iz++){
+        var A = player.points[iz];
+        var B, Ax, Bx, Ay, By, ABm, ABy;
+
+
+        if(iz==player.points.length-1){B = player.points[0];}
+        else{B = player.points[iz+1];}
+        Ax = A[0];
+        Ay = A[1];
+        Bx = B[0];
+        By = B[1];
+
+
+        for(zz=0; zz<asteroids[id].points.length; zz++){
+            var C = asteroids[id].points[zz];
+            var D, Cx, Dx, Cy, Dy, CDm, CDy, midX1, midX2, minX, maxX;
+            if(zz==player.points.length-1){D = asteroids[id].points[0];}
+            else{D = asteroids[id].points[zz+1];}
+            Cx = C[0];
+            Cy = C[1];
+            Dx = D[0];
+            Dy = D[1];
+
+
+            if(Ax>=Bx){ //Horrible but still correct way to sort
+                maxX = Ax;
+                minX = Bx;
+            }else{
+                minX = Ax;
+                maxX = Bx;
+            }
+            if(Cx>=maxX){
+                midX1 = maxX;
+                maxX = Cx;
+            }else if(Cx>=minX){
+                midX1 = Cx;
+            }else{
+                midX1 = minX;
+                minX = Cx;
+            }
+            if(Dx>=maxX){
+                midX2 = midX1;
+                midX1 = maxX;
+                maxX = Dx;
+            }else if(Dx>=midX1){
+                midX2 = midX1;
+                midX1 = Dx;
+            }else if(Dx>=minX){
+                midX2 = Dx;
+            }else{
+                midX2 = minX;
+                minX = Dx;
+            } //Sort end (maxX, midX1, midX2, minX)
+
+
+
+
+            if(Ax-Bx==0&&Cx-Dx==0){
+                return (Ax==Cx);
+            }
+            else if(Cx-Dx==0){
+                ABy = function(x,Ax,Ay,ABm){return (ABm*(x-Ax)+Ay);};
+                if(Cy>Dy){
+                    return (ABy(Cx,Ax,Ay,ABm)<Cy && ABy(Cx,Ax,Ay,ABm)>Dy);
+                }else{
+                    return (ABy(Cx,Ax,Ay,ABm)>Cy && ABy(Cx,Ax,Ay,ABm)<Dy);
+                }
+            }
+            else if(Ax-Bx==0){
+                CDy = function(x,Cx,Cy,CDm){return (CDm*(x-Cx)+Cy);};
+                if(Ay>By){
+                    return (CDy(Ax,Cx,Cy,CDm)<Ay && CDy(Ax,Cx,Cy,CDm)>By);
+                }else{
+                    return (CDy(Ax,Cx,Cy,CDm)>Ay && CDy(Ax,Cx,Cy,CDm)<By);
+                }
+            }
+            else{
+                ABm = ((Ay-By)/(Ax-Bx));
+                CDm = ((Cy-Dy)/(Cx-Dx));
+                ABy = function(x,Ax,Ay,ABm){return (ABm*(x-Ax)+Ay);};
+                CDy = function(x,Cx,Cy,CDm){return (CDm*(x-Cx)+Cy);};
+               
+                if((ABm-CDm)!=0){
+
+
+                    /*var returnVar = false;
+                    for(zi=midX2; zi<midX1; zi++){
+                        if(ABy(zi,Ax,Ay,ABm)==CDy(zi,Cx,Cy,CDm)){
+                            console.log("ok then");
+                            returnVar = true;
+                        }
+                    }
+                    return returnVar;*/
+
+
+                    /*var thisVal = ((ABm*-Ax+Ay)-(CDm*-Cx+Cy))/(ABm-CDm);
+                    console.log(midX2+", "+thisVal+", "+midX1);
+                    if(thisVal>midX2 && thisVal<midX1){
+                        console.log("y = "+ABm+"*(x-"+Ax+")+"+Ay);
+                        console.log("y = "+CDm+"*(x-"+Cx+")+"+Cy);
+                        console.log("midX2: "+midX2+", thisVal: "+thisVal+", midX1: "+midX1);
+                    }
+                    return (thisVal>midX2 && thisVal<midX1)*/
+
+
+                    return false;
+
+
+                }else{
+                    return (CDy(midX1,Cx,Cy,CDm)==ABy(midX1,Ax,Ay,ABm));
+                }
+
+
+            }
+
+
+        }
+    }
 }
+/*function paCollide(id){
+    return false;
+}*/
+
 
 function respawn(){
     respawnTime--;
@@ -368,6 +563,7 @@ function respawn(){
     }
 }
 
+
 function lockMove(){
     player.x = canvas.width/2;
     player.y = canvas.height/2;
@@ -376,13 +572,15 @@ function lockMove(){
     player.moveMag = 0;
 }
 
+
 function removeAst(){
     generateAsteroids(asteroids[removeID].size,asteroids[removeID].x,asteroids[removeID].y);
     asteroids.splice(removeID,1);
     removeID = -1;
 }
 
-function levelManager(){
+
+function levelManager(){ //First level is 0, var starts at -1, gets increased
     level++;
     if(level==1){
         numAsteroids += 5;
@@ -391,24 +589,31 @@ function levelManager(){
 }
 //
 
+
 function main(){ //MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN
     ctx.clearRect(0,0,canvas.width,canvas.height);
     //
-    managePews();
-    player.draw();
-    for(a=0; a<asteroids.length; a++){asteroids[a].draw();}
-    if(left){adjustPlayerAngle(-player.turnSpd);}
-    if(right){adjustPlayerAngle(player.turnSpd);}
-    if(up){player.thrust(true);}
-    //else if(down){player.thrust(false);}
-    else{player.applyDX=0; player.applyDY=0; player.dx=0; player.dy=0;}
-    player.move();
-    manageAsteroids();
-    if(removeID!=-1){removeAst();}
-    if(respawnTime!=-1||gameOver){lockMove();}
-    console.log(level);
+    if(frameAdvance){
+        managePews();
+        if(left){adjustPlayerAngle(-player.turnSpd);}
+        if(right){adjustPlayerAngle(player.turnSpd);}
+        if(up){player.thrust(true);}
+        //else if(down){player.thrust(false);}
+        else{player.applyDX=0; player.applyDY=0; player.dx=0; player.dy=0;}
+        player.move();
+        manageAsteroids();
+        if(removeID!=-1){removeAst();}
+        if(respawnTime!=-1||gameOver){lockMove();}
+    }
+
+
+        player.draw();
+        for(a=0; a<asteroids.length; a++){asteroids[a].draw();}
+
+
     //
     timer = requestAnimationFrame(main);
 }
+
 
 levelManager();
