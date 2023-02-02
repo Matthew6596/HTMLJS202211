@@ -53,6 +53,7 @@ function Pew(angle){
     this.spd = 3;
     this.angle = angle+180;
     this.dist = 0;
+    this.points = [[this.x-this.r,this.y-this.r],[this.x-this.r,this.y+this.r],[this.x+this.r,this.y+this.r],[this.x+this.r,this.y-this.r]];
 
 
     this.move = function(){
@@ -63,6 +64,7 @@ function Pew(angle){
         this.x=screenWrap(this.x,this.r,canvas.width);
         this.y=screenWrap(this.y,this.r,canvas.height);
 
+        this.points = [[this.x-this.r,this.y-this.r],[this.x-this.r,this.y+this.r],[this.x+this.r,this.y+this.r],[this.x+this.r,this.y-this.r]];
 
         this.dist+=Math.sqrt(Math.pow(Math.cos(toRadians(this.angle))*this.spd,2)+Math.pow(Math.sin(toRadians(this.angle))*this.spd,2))
     }
@@ -298,12 +300,10 @@ function managePews(){
         pews[i].move();
         pews[i].draw();
 
-
         var go = true;
         //Asteroid Collision
         for(z=0; z<asteroids.length; z++){
-            if(go&&((pews[i].x+pews[i].r>asteroids[z].x-asteroids[z].size)&&(pews[i].x-pews[i].r<asteroids[z].x+asteroids[z].size))
-            &&((pews[i].y+pews[i].r>asteroids[z].y-asteroids[z].size)&&(pews[i].y-pews[i].r<asteroids[z].y+asteroids[z].size))){
+            if(paCollide(asteroids[z],pews[i])){
                 pews.splice(i,1);
                 generateAsteroids(asteroids[z].size,asteroids[z].x,asteroids[z].y);
                 asteroids.splice(z,1);
@@ -312,7 +312,6 @@ function managePews(){
                 if(z==0){setTimeout(levelManager,3000);}
             }
         }
-
 
         if(go&&pews[i].dist>pewMaxDist){pews.splice(i,1);}
     }
@@ -404,7 +403,7 @@ function playerCollision(id){ //Make collision more ACCURATE
             respawnTime += 2;
         }
     }
-    if(paCollide(id)){
+    if(paCollide(asteroids[id],player)||paCollide(player,asteroids[id])){
         console.log("bruh");
         if(respawnTime==-1&&!gameOver){
             player.shipSize = 0;
@@ -424,20 +423,19 @@ function playerCollision(id){ //Make collision more ACCURATE
 }
 
 
-function paCollide(id){
+function paCollide(innerObj, pointObj){
     /*return (((player.x+player.shipSize/10>asteroids[id].x-asteroids[id].size)&&(player.x-player.shipSize/10<asteroids[id].x+asteroids[id].size))
     &&((player.y+player.shipSize/10>asteroids[id].y-asteroids[id].size)&&(player.y-player.shipSize/10<asteroids[id].y+asteroids[id].size)))*/
 
+    var ltc = 0;
+    var gtc = 0;
 
-    for(zz=0; zz<asteroids[id].points.length; zz++){ //For each asteroid line
-        var C = asteroids[id].points[zz];
-        var D, Cx, Dx, Cy, Dy, CDm, CDy; //comment!
+    for(zz=0; zz<innerObj.points.length; zz++){ //For each asteroid line _______________ Player Point in Asteroid
+        var C = innerObj.points[zz];
+        var D, Cx, Dx, Cy, Dy, CDm, CDy;
 
-        if(zz==asteroids[id].points.length-1){D = asteroids[id].points[0];}//First and last point get paired
-        else{D = asteroids[id].points[zz+1];} //Points get paired
-
-        CDm = function(){return Cx;}
-        console.log(CDm());
+        if(zz==innerObj.points.length-1){D = innerObj.points[0];}//First and last point get paired
+        else{D = innerObj.points[zz+1];} //Points get paired
         
         if(C[0]>D[0]){ //Making sure points are in order
             var temp = C;
@@ -450,18 +448,24 @@ function paCollide(id){
         Dx = D[0]; //D is right-most point
         Dy = D[1];
 
-        
+        if(Dx-Cx==0){return false;} //Vertical Line
+        else{
+            CDm = (Dy-Cy)/(Dx-Cx);
+            CDy = function(x, CDm, Cx, Cy){return CDm*(x-Cx)+Cy;} //Line equation
+        }
 
-        for(iz=0; iz<player.points.length; iz++){ //For  each player point
-            var A = player.points[iz];
-
+        for(iz=0; iz<pointObj.points.length; iz++){ //For each player point
+            var A = pointObj.points[iz];
+            if(A[0]>Cx&&A[0]<Dx){//Domain
+                if(A[1]>CDy(A[0],CDm,Cx,Cy)){ltc=true;}//Point is under/above line
+                else{gtc=true;}
+            }
+            if(gtc>2||ltc>2){iz=pointObj.points.length; zz=innerObj.points.length;}
+            else if(gtc>=1&&ltc>=1){return true;}
         }
     }
     return false;
 }
-/*function paCollide(id){
-    return false;
-}*/
 
 
 function respawn(){
