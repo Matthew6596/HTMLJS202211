@@ -429,124 +429,35 @@ function paCollide(id){
     &&((player.y+player.shipSize/10>asteroids[id].y-asteroids[id].size)&&(player.y-player.shipSize/10<asteroids[id].y+asteroids[id].size)))*/
 
 
-    for(iz=0; iz<player.points.length; iz++){
-        var A = player.points[iz];
-        var B, Ax, Bx, Ay, By, ABm, ABy;
+    for(zz=0; zz<asteroids[id].points.length; zz++){ //For each asteroid line
+        var C = asteroids[id].points[zz];
+        var D, Cx, Dx, Cy, Dy, CDm, CDy;
 
+        if(zz==asteroids[id].points.length-1){D = asteroids[id].points[0];}//First and last point get paired
+        else{D = asteroids[id].points[zz+1];} //Points get paired
 
-        if(iz==player.points.length-1){B = player.points[0];}
-        else{B = player.points[iz+1];}
-        Ax = A[0];
-        Ay = A[1];
-        Bx = B[0];
-        By = B[1];
+        CDm = function(){return Cx;}
+        console.log(CDm());
+        
+        if(C[0]>D[0]){ //Making sure points are in order
+            var temp = C;
+            C = D;
+            D = temp;
+        }
 
+        Cx = C[0]; //C is left-most point
+        Cy = C[1];
+        Dx = D[0]; //D is right-most point
+        Dy = D[1];
 
-        for(zz=0; zz<asteroids[id].points.length; zz++){
-            var C = asteroids[id].points[zz];
-            var D, Cx, Dx, Cy, Dy, CDm, CDy, midX1, midX2, minX, maxX;
-            if(zz==player.points.length-1){D = asteroids[id].points[0];}
-            else{D = asteroids[id].points[zz+1];}
-            Cx = C[0];
-            Cy = C[1];
-            Dx = D[0];
-            Dy = D[1];
+        
 
-
-            if(Ax>=Bx){ //Horrible but still correct way to sort
-                maxX = Ax;
-                minX = Bx;
-            }else{
-                minX = Ax;
-                maxX = Bx;
-            }
-            if(Cx>=maxX){
-                midX1 = maxX;
-                maxX = Cx;
-            }else if(Cx>=minX){
-                midX1 = Cx;
-            }else{
-                midX1 = minX;
-                minX = Cx;
-            }
-            if(Dx>=maxX){
-                midX2 = midX1;
-                midX1 = maxX;
-                maxX = Dx;
-            }else if(Dx>=midX1){
-                midX2 = midX1;
-                midX1 = Dx;
-            }else if(Dx>=minX){
-                midX2 = Dx;
-            }else{
-                midX2 = minX;
-                minX = Dx;
-            } //Sort end (maxX, midX1, midX2, minX)
-
-
-
-
-            if(Ax-Bx==0&&Cx-Dx==0){
-                return (Ax==Cx);
-            }
-            else if(Cx-Dx==0){
-                ABy = function(x,Ax,Ay,ABm){return (ABm*(x-Ax)+Ay);};
-                if(Cy>Dy){
-                    return (ABy(Cx,Ax,Ay,ABm)<Cy && ABy(Cx,Ax,Ay,ABm)>Dy);
-                }else{
-                    return (ABy(Cx,Ax,Ay,ABm)>Cy && ABy(Cx,Ax,Ay,ABm)<Dy);
-                }
-            }
-            else if(Ax-Bx==0){
-                CDy = function(x,Cx,Cy,CDm){return (CDm*(x-Cx)+Cy);};
-                if(Ay>By){
-                    return (CDy(Ax,Cx,Cy,CDm)<Ay && CDy(Ax,Cx,Cy,CDm)>By);
-                }else{
-                    return (CDy(Ax,Cx,Cy,CDm)>Ay && CDy(Ax,Cx,Cy,CDm)<By);
-                }
-            }
-            else{
-                ABm = ((Ay-By)/(Ax-Bx));
-                CDm = ((Cy-Dy)/(Cx-Dx));
-                ABy = function(x,Ax,Ay,ABm){return (ABm*(x-Ax)+Ay);};
-                CDy = function(x,Cx,Cy,CDm){return (CDm*(x-Cx)+Cy);};
-               
-                if((ABm-CDm)!=0){
-
-
-                    /*var returnVar = false;
-                    for(zi=midX2; zi<midX1; zi++){
-                        if(ABy(zi,Ax,Ay,ABm)==CDy(zi,Cx,Cy,CDm)){
-                            console.log("ok then");
-                            returnVar = true;
-                        }
-                    }
-                    return returnVar;*/
-
-
-                    /*var thisVal = ((ABm*-Ax+Ay)-(CDm*-Cx+Cy))/(ABm-CDm);
-                    console.log(midX2+", "+thisVal+", "+midX1);
-                    if(thisVal>midX2 && thisVal<midX1){
-                        console.log("y = "+ABm+"*(x-"+Ax+")+"+Ay);
-                        console.log("y = "+CDm+"*(x-"+Cx+")+"+Cy);
-                        console.log("midX2: "+midX2+", thisVal: "+thisVal+", midX1: "+midX1);
-                    }
-                    return (thisVal>midX2 && thisVal<midX1)*/
-
-
-                    return false;
-
-
-                }else{
-                    return (CDy(midX1,Cx,Cy,CDm)==ABy(midX1,Ax,Ay,ABm));
-                }
-
-
-            }
-
+        for(iz=0; iz<player.points.length; iz++){ //For  each player point
+            var A = player.points[iz];
 
         }
     }
+    return false;
 }
 /*function paCollide(id){
     return false;
