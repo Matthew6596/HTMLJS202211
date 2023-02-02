@@ -431,7 +431,7 @@ function paCollide(id){
 
     for(zz=0; zz<asteroids[id].points.length; zz++){ //For each asteroid line
         var C = asteroids[id].points[zz];
-        var D, Cx, Dx, Cy, Dy, CDm, CDy;
+        var D, Cx, Dx, Cy, Dy, CDm, CDy; //comment!
 
         if(zz==asteroids[id].points.length-1){D = asteroids[id].points[0];}//First and last point get paired
         else{D = asteroids[id].points[zz+1];} //Points get paired
