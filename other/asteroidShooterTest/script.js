@@ -10,6 +10,7 @@ document.addEventListener("keyup",keyUp);
 
 //Vars
 var pews = [];
+var ePews = [];
 var pewMaxDist = 400;
 var maxPews = 4;
 
@@ -55,7 +56,6 @@ function Pew(angle){
     this.dist = 0;
     this.points = [[this.x-this.r,this.y-this.r],[this.x-this.r,this.y+this.r],[this.x+this.r,this.y+this.r],[this.x+this.r,this.y-this.r]];
 
-
     this.move = function(){
         this.x+=Math.cos(toRadians(this.angle))*this.spd;
         this.y+=Math.sin(toRadians(this.angle))*this.spd;
@@ -71,6 +71,28 @@ function Pew(angle){
     this.draw = function(){
         ctx.fillStyle = globalColor;
         ctx.fillRect(this.x-this.r/2,this.y-this.r/2,this.r,this.r);
+    }
+}
+
+function UFO(){ // ____________________________________________________________________________________________________UFO
+    this.x;
+    this.y;
+    this.dx; //move by this amount
+    this.dy;
+    this.points; //collision points
+    this.size; //const
+    this.shotRate;
+    this.shotAngle;
+
+    this.draw = function(){
+
+    }
+    this.move = function(){
+        this.x += this.dx;
+        this.y += this.dy;
+    }
+    this.shoot = function(){
+        shoot(this.shotAngle,true);
     }
 }
 
@@ -290,8 +312,9 @@ function compareAngles(a1,a2){
 }
 
 
-function shoot(a){
-    if(pews.length<maxPews&&respawnTime==-1){pews.push(new Pew(a));}
+function shoot(a,ufo){
+    if(ufo){ePews.push(new Pew(a));}
+    else if(pews.length<maxPews&&respawnTime==-1){pews.push(new Pew(a));}
 }
 
 
@@ -311,6 +334,18 @@ function managePews(){
                 go = false;
                 if(z==0){setTimeout(levelManager,3000);}
             }
+        }
+
+        if(go&&pews[i].dist>pewMaxDist){pews.splice(i,1);}
+    }
+    for(i=0; i<ePews.length; i++){
+        pews[i].move();
+        pews[i].draw();
+
+        var go = true;
+        if(playerCollision(ePews[i],true)){
+            ePews.splice(i,1);
+            go = false;
         }
 
         if(go&&pews[i].dist>pewMaxDist){pews.splice(i,1);}
@@ -369,7 +404,7 @@ function manageAsteroids(){
             asteroids[z].move();
 
 
-            if(respawnTime<=0){playerCollision(z);}
+            if(respawnTime<=0){playerCollision(asteroids[z]);}
 
 
         }
@@ -396,14 +431,14 @@ function generateAsteroids(size,x,y){
 }
 
 
-function playerCollision(id){ //Make collision more ACCURATE
+function playerCollision(obj,returnHit){ //Make collision more ACCURATE
     if(((player.x+player.shipSize*50>asteroids[id].x-asteroids[id].size)&&(player.x-player.shipSize*50<asteroids[id].x+asteroids[id].size))
     &&((player.y+player.shipSize*50>asteroids[id].y-asteroids[id].size)&&(player.y-player.shipSize*50<asteroids[id].y+asteroids[id].size))){
         if(respawnTime==0){
             respawnTime += 2;
         }
     }
-    if(paCollide(asteroids[id],player)||paCollide(player,asteroids[id])){
+    if(paCollide(obj,player)||paCollide(player,obj)){
         console.log("bruh");
         if(respawnTime==-1&&!gameOver){
             player.shipSize = 0;
@@ -418,8 +453,10 @@ function playerCollision(id){ //Make collision more ACCURATE
             player.moveMag = 0;
             if(lives>0){respawn();}
         }
+        if(returnHit){return true;}
     }
     if(lives<=0){gameOver = true;}
+    if(returnHit){return false;}
 }
 
 
