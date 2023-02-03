@@ -55,6 +55,7 @@ function Pew(angle){
     this.angle = angle+180;
     this.dist = 0;
     this.points = [[this.x-this.r,this.y-this.r],[this.x-this.r,this.y+this.r],[this.x+this.r,this.y+this.r],[this.x+this.r,this.y-this.r]];
+    this.size=this.r;
 
     this.move = function(){
         this.x+=Math.cos(toRadians(this.angle))*this.spd;
@@ -404,7 +405,9 @@ function manageAsteroids(){
             asteroids[z].move();
 
 
-            if(respawnTime<=0){playerCollision(asteroids[z]);}
+            if(respawnTime<=0){
+                if(playerCollision(asteroids[z],true)){removeID = z;}
+            }
 
 
         }
@@ -432,8 +435,8 @@ function generateAsteroids(size,x,y){
 
 
 function playerCollision(obj,returnHit){ //Make collision more ACCURATE
-    if(((player.x+player.shipSize*50>asteroids[id].x-asteroids[id].size)&&(player.x-player.shipSize*50<asteroids[id].x+asteroids[id].size))
-    &&((player.y+player.shipSize*50>asteroids[id].y-asteroids[id].size)&&(player.y-player.shipSize*50<asteroids[id].y+asteroids[id].size))){
+    if(((player.x+player.shipSize*50>obj.x-obj.size)&&(player.x-player.shipSize*50<obj.x+obj.size))
+    &&((player.y+player.shipSize*50>obj.y-obj.size)&&(player.y-player.shipSize*50<obj.y+obj.size))){
         if(respawnTime==0){
             respawnTime += 2;
         }
@@ -444,7 +447,6 @@ function playerCollision(obj,returnHit){ //Make collision more ACCURATE
             player.shipSize = 0;
             adjustPlayerAngle(0);
             lives--;
-            removeID = id;
             respawnTime = 4;
             player.x = canvas.width/2;
             player.y = canvas.height/2;
@@ -455,7 +457,6 @@ function playerCollision(obj,returnHit){ //Make collision more ACCURATE
         }
         if(returnHit){return true;}
     }
-    if(lives<=0){gameOver = true;}
     if(returnHit){return false;}
 }
 
@@ -556,6 +557,7 @@ function main(){ //MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --
         manageAsteroids();
         if(removeID!=-1){removeAst();}
         if(respawnTime!=-1||gameOver){lockMove();}
+        if(lives<=0){gameOver = true;}
     }
 
 
