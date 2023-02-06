@@ -60,8 +60,8 @@ function Pew(angle,x,y,e){
 
         if(!this.enemy){
             this.x=screenWrap(this.x,this.r,canvas.width);
-            this.y=screenWrap(this.y,this.r,canvas.height);
         }
+        this.y=screenWrap(this.y,this.r,canvas.height);
 
         this.points = [[this.x-this.r,this.y-this.r],[this.x-this.r,this.y+this.r],[this.x+this.r,this.y+this.r],[this.x+this.r,this.y-this.r]];
 
