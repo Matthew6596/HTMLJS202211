@@ -1,3 +1,21 @@
+/*
+THINGS TO DO:
+
+-Improve UFOs {multiple sizes, varying shot accuracy, vertical movement}
+-Explosion Particle Effect
+-Framerate consistency
+-UI{
+    -Title
+    -Score
+    -Lives
+    -Game Over
+}
+-Audio
+-Ship Flame Animation
+-Improve Level Progression
+-Fix Respawn Over Asteroid / Invincibility Frames
+
+*/
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 var timer = requestAnimationFrame(main);
@@ -391,7 +409,7 @@ function ufoSpawn(){
     if(rand<ufoChance&&ufoSpawnTime<=0){
         var ufoHeight = randNum(20,canvas.height-20);
         var xSide = (((Math.round(rand)%2)*-2)+1)*-200+((Math.round(rand)%2)*canvas.width);
-        var uSpd = 1 //change to rand, relative to size?
+        var uSpd = 1+(rand%2); //change to rand, relative to size?
         var uDir = (((Math.round(rand)%2)*-2)+1)*uSpd;
         var uSize = 5; //Change to rand, based on difficulty/level
         ufos.push(new UFO(xSide,ufoHeight,uSize,uDir));
@@ -567,6 +585,9 @@ function levelManager(){ //First level is 0, var starts at -1, gets increased
     }
     else if(level%2==0){
         numAsteroids++;
+    }
+    else if(level%5==0){
+        lives++;
     }
     else{ufoChance++;}
     generateAsteroids(0);
