@@ -1,9 +1,7 @@
 /*
 THINGS TO DO:
 
--Improve UFOs {multiple sizes, varying shot accuracy, vertical movement}
 -Explosion Particle Effect
--Framerate consistency
 -UI{
     -Title
     -Score
@@ -18,7 +16,9 @@ THINGS TO DO:
 */
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
-var timer = requestAnimationFrame(main);
+
+var interval = 1000/140; //Framerate consistency (lags tho)
+var timer = setInterval(main, interval);
 
 //
 document.addEventListener("keydown",keyDown);
@@ -38,7 +38,7 @@ var astMaxSpd = 3;
 var removeID = -1;
 
 var ufos = [];
-var ufoChance = 0;
+var ufoChance = 100;
 var ufoSpawnTime = 0;
 
 var mousex = 0;
@@ -95,14 +95,18 @@ function UFO(x,y,size,dir){ // _________________________________________________
     this.x = x;
     this.y = y;
     this.dx=0.75*dir; //move by this amount
-    this.dy=0;
-    this.dPoints = [[-1,-3],[1,-3],[1,-2],[-2,-2],[-4,-1],[4,-1],[-4,-1],[-2,0],[2,0],[4,-1],[2,-2],[-1,-2]]; //collision points
+    this.dy=randNum(0.4,1);
+    this.dPoints = [[-1,-3],[1,-3],[1,-2],[-2,-2],[-4,-1],[4,-1],[-4,-1],[-2,0],[2,0],[4,-1],[2,-2],[-1,-2]]; //drawn points
     this.points = [[-1,-3],[1,-3],[4,-1],[2,0],[-2,0],[-4,-1]]; //collision points
     this.size = size; //const
     this.shotRate=120;
     this.shotAngle=randNum(0,359);
     this.shotTime = 0;
     this.id = -1;
+    this.snipe = (size==3);
+    this.abovePlayer = (this.y>=player.y);
+
+    flipDY(this,1000);
 
     this.draw = function(){
         ctx.save();
@@ -137,11 +141,19 @@ function UFO(x,y,size,dir){ // _________________________________________________
         this.points[4][1] = this.dPoints[7][1]*this.size+this.y;
         this.points[5][0] = this.dPoints[4][0]*this.size+this.x;
         this.points[5][1] = this.dPoints[4][1]*this.size+this.y;
+
+        this.y = screenWrap(this.y,this.size,canvas.height);
+        this.abovePlayer = (this.y>=player.y);
     }
     this.shoot = function(){
+        this.shotAngle=randNum(0,359);
+        if(this.snipe){
+            if(this.abovePlayer){this.shotAngle=randNum(0,180);}
+            else{this.shotAngle=randNum(180,359);}
+        }
         shoot(this.shotAngle,true,this.x,this.y);
         this.shotTime=this.shotRate;
-        this.shotAngle=randNum(0,359);
+        
     }
 }
 
@@ -409,13 +421,21 @@ function ufoSpawn(){
     if(rand<ufoChance&&ufoSpawnTime<=0){
         var ufoHeight = randNum(20,canvas.height-20);
         var xSide = (((Math.round(rand)%2)*-2)+1)*-200+((Math.round(rand)%2)*canvas.width);
-        var uSpd = 1+(rand%2); //change to rand, relative to size?
+        var uSize = 5;
+        if(Math.round(rand)%4==0){uSize=3;}
+        var uSpd = 1+(rand%2)*(5/uSize);
         var uDir = (((Math.round(rand)%2)*-2)+1)*uSpd;
-        var uSize = 5; //Change to rand, based on difficulty/level
         ufos.push(new UFO(xSide,ufoHeight,uSize,uDir));
         ufoSpawnTime = 400;
     }
     setTimeout(ufoSpawn,1000);
+}
+
+function flipDY(obj,duration){
+    if(obj.dy<0){obj.dy = randNum(0.4,1);}
+    else if(obj.dy>0){obj.dy = randNum(-1,-0.4);}
+    else if(Math.round(randNum(0,3))==2){obj.dy=0;}
+    setTimeout(function(){flipDY(obj,randNum(1000,3000));},duration);
 }
 
 function adjustPlayerAngle(rotateAmount){
@@ -616,7 +636,7 @@ function main(){ //MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --
         for(a=0; a<asteroids.length; a++){asteroids[a].draw();}
 
     //
-    timer = requestAnimationFrame(main);
+    //timer = requestAnimationFrame(main);
 }
 
 ufoSpawn();
