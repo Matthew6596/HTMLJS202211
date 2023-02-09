@@ -9,15 +9,12 @@ THINGS TO DO:
     -Game Over
 }
 -Audio
--Ship Flame Animation
--Improve Level Progression
--Fix Respawn Over Asteroid / Invincibility Frames
 
 */
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
-var interval = 1000/140; //Framerate consistency (lags tho)
+var interval = 1000/140; //Framerate consistency (lags sometimes tho)
 var timer = setInterval(main, interval);
 
 //
@@ -38,8 +35,9 @@ var astMaxSpd = 3;
 var removeID = -1;
 
 var ufos = [];
-var ufoChance = 100;
+var ufoChance = 0;
 var ufoSpawnTime = 0;
+var ufoSpawnRate = 400;
 
 var mousex = 0;
 var mousey = 0;
@@ -55,6 +53,7 @@ var player = new PlayerShip();
 var lives = 3;
 var respawnTime = -1;
 var levelTimer = false;
+var invTime = 0;
 
 var frameByFrame = false;
 var frameAdvance = !frameByFrame;
@@ -179,25 +178,47 @@ function PlayerShip(){ // ______________________________________________________
     this.points = [[0,0],[0,0],[0,0]]
     this.shipSize = 20;
     this.pAngles = [0,0,0];
-    this.turnSpd = 1.5;
+    this.turnSpd = 1.2;
+    this.flameTime = 0;
+
     for(i=0; i<this.rotPoints.length; i++){
         this.pAngles[i] = getAngle(this.rotPoints[i][0],this.rotPoints[i][1]);
         this.rotPoints[i][0] = Math.cos(toRadians(this.pAngles[i]))*this.shipSize;
         this.rotPoints[i][1] = Math.sin(toRadians(this.pAngles[i]))*this.shipSize;
     }
+
     this.draw = function(){
-        ctx.save();
-        ctx.translate(this.x,this.y);
-        ctx.strokeStyle = globalColor;
-        ctx.lineWidth = "2";
-        ctx.beginPath();
-        ctx.moveTo(this.rotPoints[0][0],this.rotPoints[0][1]);
-        ctx.lineTo(this.rotPoints[1][0],this.rotPoints[1][1]);
-        ctx.lineTo(this.rotPoints[2][0],this.rotPoints[2][1]);
-        ctx.lineTo(this.rotPoints[0][0],this.rotPoints[0][1]);
-        ctx.closePath();
-        ctx.stroke();
-        ctx.restore();
+        if(invTime<=0||invTime%2==0){
+            ctx.save();
+            ctx.translate(this.x,this.y);
+            ctx.strokeStyle = globalColor;
+            ctx.lineWidth = "2";
+            ctx.beginPath();
+            ctx.moveTo(this.rotPoints[0][0],this.rotPoints[0][1]);
+            ctx.lineTo(this.rotPoints[1][0],this.rotPoints[1][1]);
+            ctx.lineTo(this.rotPoints[2][0],this.rotPoints[2][1]);
+            ctx.lineTo(this.rotPoints[0][0],this.rotPoints[0][1]);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.restore();
+            //
+            if(up&&this.flameTime==0){
+                ctx.save();
+                ctx.translate(this.x,this.y);
+                ctx.strokeStyle = globalColor;
+                ctx.lineWidth = "2";
+                ctx.beginPath();
+                ctx.moveTo(this.rotPoints[0][0]*-1.8,this.rotPoints[0][1]*-1.8);
+                ctx.lineTo(this.rotPoints[1][0]/1.4,this.rotPoints[1][1]/1.4);
+                ctx.lineTo(this.rotPoints[2][0]/1.4,this.rotPoints[2][1]/1.4);
+                ctx.lineTo(this.rotPoints[0][0]*-1.8,this.rotPoints[0][1]*-1.8);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+        if(this.flameTime==1){this.flameTime=0;}
+        else{this.flameTime=1;}
     }
     this.thrust = function(up){
         if(up){
@@ -233,8 +254,8 @@ function PlayerShip(){ // ______________________________________________________
         if(this.moveMag>this.maxSpd){this.moveMag=this.maxSpd;}
         if(this.moveMag>0){this.moveMag-=this.dec;}
 
-        visualizeVector(this.x,this.y,this.moveAngle,this.moveMag,"green");
-        visualizeVector(this.x,this.y,this.applyAngle,getMag(this.applyDX,this.applyDY),"red");
+        //visualizeVector(this.x,this.y,this.moveAngle,this.moveMag,"green");
+        //visualizeVector(this.x,this.y,this.applyAngle,getMag(this.applyDX,this.applyDY),"red");
 
         if(this.dx>this.maxSpd/this.backModify){this.dx=this.maxSpd/this.backModify;}
         if(this.dy>this.maxSpd/this.backModify){this.dy=this.maxSpd/this.backModify;}
@@ -426,7 +447,7 @@ function ufoSpawn(){
         var uSpd = 1+(rand%2)*(5/uSize);
         var uDir = (((Math.round(rand)%2)*-2)+1)*uSpd;
         ufos.push(new UFO(xSide,ufoHeight,uSize,uDir));
-        ufoSpawnTime = 400;
+        ufoSpawnTime = ufoSpawnRate;
     }
     setTimeout(ufoSpawn,1000);
 }
@@ -473,7 +494,7 @@ function manageAsteroids(){
 
             asteroids[z].move();
 
-            if(respawnTime<=0){
+            if(respawnTime<=0&&invTime<=0){
                 if(playerCollision(asteroids[z],true)){removeID = z;}
             }
         }
@@ -508,6 +529,7 @@ function playerCollision(obj,returnHit){
     if(paCollide(obj,player)||paCollide(player,obj)){
         console.log("bruh");
         if(respawnTime==-1&&!gameOver){
+            invTime = 800;
             player.shipSize = 0;
             adjustPlayerAngle(0);
             lives--;
@@ -598,18 +620,25 @@ function levelManager(){ //First level is 0, var starts at -1, gets increased
         
     }
     else if(level==1){
-        numAsteroids = 6;
+        numAsteroids = 5;
     }
     else if(level==2){
-        ufoChance=2;
+        ufoChance = 2;
     }
     else if(level%2==0){
         numAsteroids++;
     }
+    else if(level%3==0){
+        astMinSpd+=0.1;
+        astMaxSpd+=0.2;
+    }
+    else if(level%4==0){
+        if(ufoChance<100){ufoChance++;}
+    }
     else if(level%5==0){
         lives++;
     }
-    else{ufoChance++;}
+    else if(ufoSpawnRate>100){ufoSpawnRate-=10;}
     generateAsteroids(0);
 }
 //
@@ -630,6 +659,7 @@ function main(){ //MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --
         if(respawnTime!=-1||gameOver){lockMove();}
         if(lives<=0){gameOver = true;}
         manageUfos();
+        if(invTime>0){invTime--;}
     }
 
         player.draw();
