@@ -6,6 +6,7 @@ THINGS TO DO:
     -Title
     -Score
     -Lives
+    -Level
     -Game Over
 }
 -Audio
@@ -93,7 +94,7 @@ function Pew(angle,x,y,e){
 function UFO(x,y,size,dir){ // ____________________________________________________________________________________________________UFO
     this.x = x;
     this.y = y;
-    this.dx=0.75*dir; //move by this amount
+    this.dx=0.6*dir; //move by this amount
     this.dy=randNum(0.4,1);
     this.dPoints = [[-1,-3],[1,-3],[1,-2],[-2,-2],[-4,-1],[4,-1],[-4,-1],[-2,0],[2,0],[4,-1],[2,-2],[-1,-2]]; //drawn points
     this.points = [[-1,-3],[1,-3],[4,-1],[2,0],[-2,0],[-4,-1]]; //collision points
@@ -202,20 +203,20 @@ function PlayerShip(){ // ______________________________________________________
             ctx.stroke();
             ctx.restore();
             //
-            if(up&&this.flameTime==0){
-                ctx.save();
-                ctx.translate(this.x,this.y);
-                ctx.strokeStyle = globalColor;
-                ctx.lineWidth = "2";
-                ctx.beginPath();
-                ctx.moveTo(this.rotPoints[0][0]*-1.8,this.rotPoints[0][1]*-1.8);
-                ctx.lineTo(this.rotPoints[1][0]/1.4,this.rotPoints[1][1]/1.4);
-                ctx.lineTo(this.rotPoints[2][0]/1.4,this.rotPoints[2][1]/1.4);
-                ctx.lineTo(this.rotPoints[0][0]*-1.8,this.rotPoints[0][1]*-1.8);
-                ctx.closePath();
-                ctx.stroke();
-                ctx.restore();
-            }
+        }
+        if(up&&this.flameTime==0){
+            ctx.save();
+            ctx.translate(this.x,this.y);
+            ctx.strokeStyle = globalColor;
+            ctx.lineWidth = "2";
+            ctx.beginPath();
+            ctx.moveTo(this.rotPoints[0][0]*-1.8,this.rotPoints[0][1]*-1.8);
+            ctx.lineTo(this.rotPoints[1][0]/1.1,this.rotPoints[1][1]/1.1);
+            ctx.lineTo(this.rotPoints[2][0]/1.1,this.rotPoints[2][1]/1.1);
+            ctx.lineTo(this.rotPoints[0][0]*-1.8,this.rotPoints[0][1]*-1.8);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.restore();
         }
         if(this.flameTime==1){this.flameTime=0;}
         else{this.flameTime=1;}
@@ -406,17 +407,17 @@ function managePews(){
 
         if(go&&pews[i].dist>pewMaxDist){pews.splice(i,1);}
     }
-    for(i=0; i<ePews.length; i++){
-        ePews[i].move();
-        ePews[i].draw();
+    for(ix=0; ix<ePews.length; ix++){
+        ePews[ix].move();
+        ePews[ix].draw();
 
         var go = true;
-        if(playerCollision(ePews[i],true)){
+        if(playerCollision(ePews[ix],true)){
             ePews.splice(i,1);
             go = false;
         }
 
-        if(go&&ePews[i].dist>pewMaxDist){ePews.splice(i,1);}
+        if(go&&ePews[ix].dist>pewMaxDist){ePews.splice(ix,1);}
     }
 }
 
@@ -444,7 +445,7 @@ function ufoSpawn(){
         var xSide = (((Math.round(rand)%2)*-2)+1)*-200+((Math.round(rand)%2)*canvas.width);
         var uSize = 5;
         if(Math.round(rand)%4==0){uSize=3;}
-        var uSpd = 1+(rand%2)*(5/uSize);
+        var uSpd = 1+(5/uSize);
         var uDir = (((Math.round(rand)%2)*-2)+1)*uSpd;
         ufos.push(new UFO(xSide,ufoHeight,uSize,uDir));
         ufoSpawnTime = ufoSpawnRate;
@@ -526,12 +527,12 @@ function playerCollision(obj,returnHit){
             respawnTime += 2;
         }
     }
-    if(paCollide(obj,player)||paCollide(player,obj)){
+    if(paCollide(obj,player)||paCollide(player,obj)&&invTime<=0){
         console.log("bruh");
         if(respawnTime==-1&&!gameOver){
             invTime = 800;
             player.shipSize = 0;
-            adjustPlayerAngle(0);
+            adjustPlayerAngle(180-(player.faceAngle+90));
             lives--;
             respawnTime = 4;
             player.x = canvas.width/2;
@@ -616,29 +617,25 @@ function removeAst(){
 
 function levelManager(){ //First level is 0, var starts at -1, gets increased
     level++;
-    if(level==0){
-        
-    }
-    else if(level==1){
-        numAsteroids = 5;
-    }
-    else if(level==2){
+    if(level==2){
         ufoChance = 2;
     }
-    else if(level%2==0){
-        numAsteroids++;
+    if(level!=0){
+        if(level%2==0){
+            numAsteroids++;
+        }
+        if(level%3==0){
+            astMinSpd+=0.1;
+            astMaxSpd+=0.2;
+        }
+        if(level%4==0){
+            if(ufoChance<100){ufoChance++;}
+        }
+        if(level%5==0){
+            lives++;
+            if(ufoSpawnRate>100){ufoSpawnRate-=10;}
+        }
     }
-    else if(level%3==0){
-        astMinSpd+=0.1;
-        astMaxSpd+=0.2;
-    }
-    else if(level%4==0){
-        if(ufoChance<100){ufoChance++;}
-    }
-    else if(level%5==0){
-        lives++;
-    }
-    else if(ufoSpawnRate>100){ufoSpawnRate-=10;}
     generateAsteroids(0);
 }
 //
@@ -648,8 +645,8 @@ function main(){ //MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --- MAIN --
     //
     if(frameAdvance){
         managePews();
-        if(left){adjustPlayerAngle(-player.turnSpd);}
-        if(right){adjustPlayerAngle(player.turnSpd);}
+        if(left&&player.shipSize==20){adjustPlayerAngle(-player.turnSpd);}
+        if(right&&player.shipSize==20){adjustPlayerAngle(player.turnSpd);}
         if(up){player.thrust(true);}
         //else if(down){player.thrust(false);}
         else{player.applyDX=0; player.applyDY=0; player.dx=0; player.dy=0;}
