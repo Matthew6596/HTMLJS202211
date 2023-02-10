@@ -1,8 +1,0 @@
-html,body{
-    display: flex;
-    justify-content: center;
-}
-#canvas{
-    background-color: whitesmoke;
-    border: 1px solid black;
-}

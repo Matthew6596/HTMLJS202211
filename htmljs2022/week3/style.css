@@ -1,9 +1,0 @@
-html, body{
-    background-color: pink;
-    color: blue;
-}
-h1{margin: auto; border: 10px solid red; padding: 40px; 
-    background-color: goldenrod; font-family: Arial;
-    text-align: center;}
- p{width: 400px; margin-left: 100px; border: 15px dotted blue;
-   padding: 500px; font-family: 'Courier New', Courier, monospace;}

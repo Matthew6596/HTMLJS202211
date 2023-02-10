@@ -1,9 +1,0 @@
-html,body{
-    display: flex;
-    justify-content: center;
-    background-color: darkgrey;
-}
-#canvas{
-    background-color: black;
-    border: 5px solid darkblue;
-}
