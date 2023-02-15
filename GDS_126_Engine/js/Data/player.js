@@ -244,7 +244,8 @@ var playerData ={
 			cycle:true,
 			frames:
 			[
-				{width:256, height:768, startX:0*256, startY:0},
+				{width:256, height:768, startX:0*256, startY:3*768},
+				{width:256, height:768, startX:1*256, startY:3*768},
 			]
 		},
 		jumpPeak:
@@ -253,7 +254,10 @@ var playerData ={
 			cycle:false,
 			frames:
 			[
-				{width:256, height:768, startX:0*256, startY:0},
+				{width:256, height:768, startX:2*256, startY:3*768},
+				{width:256, height:768, startX:3*256, startY:3*768},
+				{width:256, height:768, startX:4*256, startY:3*768},
+				{width:256, height:768, startX:5*256, startY:3*768},
 			]
 		},
 		fall:
@@ -262,7 +266,8 @@ var playerData ={
 			cycle:true,
 			frames:
 			[
-				{width:256, height:768, startX:0*256, startY:0},
+				{width:256, height:768, startX:6*256, startY:3*768},
+				{width:256, height:768, startX:7*256, startY:3*768},
 			]
 		},
 		//The crouch animation 
@@ -281,7 +286,6 @@ var playerData ={
 		{
 			fps:3,
 			cycle:false,
-			//width:300,
 			frames:
 			[
 				{width:256, height:768, startX:0*256, startY:0},
@@ -290,8 +294,7 @@ var playerData ={
 		charging:
 		{
 			fps:3,
-			cycle:false,
-			//width:300,
+			cycle:true,
 			frames:
 			[
 				{width:256, height:768, startX:0*256, startY:0},
@@ -310,21 +313,27 @@ var playerData ={
 		//Landing while still
 		land:
 		{
-			fps:3,
+			fps:1,
 			cycle:false,
 			frames:
 			[
-				{width:256, height:768, startX:0*256, startY:0},
+				{width:256, height:768, startX:8*256, startY:3*768},
+				{width:256, height:768, startX:9*256, startY:3*768},
+				{width:256, height:768, startX:10*256, startY:3*768},
+				{width:256, height:768, startX:11*256, startY:3*768},
 			]
 		},
 		//Landing while walking
 		walkLand:
 		{
-			fps:3,
+			fps:1,
 			cycle:false,
 			frames:
 			[
-				{width:256, height:768, startX:0*256, startY:0},
+				{width:256, height:768, startX:8*256, startY:3*768},
+				{width:256, height:768, startX:9*256, startY:3*768},
+				{width:256, height:768, startX:10*256, startY:3*768},
+				{width:256, height:768, startX:11*256, startY:3*768},
 			]
 		},
 		//Animation for the projectile

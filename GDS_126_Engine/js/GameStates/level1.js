@@ -99,11 +99,16 @@ var attCool = -1;
 var size;
 var chargeTime = 0;
 var chargin;
+var initIdle = true;
 
 gameStates[`level1`] = function()
 {
 	sounds.manualLoop(`lvlMusic`,56,112);
-
+	if(initIdle){
+		wiz.canJump=true;
+		wiz.changeState(`idle`);
+		initIdle=false;
+	}
 	if(wiz.currentState==`land`||wiz.currentState==`walkLand`){landTimer--;}
 	else{landTimer=6;}
 
@@ -124,7 +129,7 @@ gameStates[`level1`] = function()
 
 	if(!keys[`W`] && !keys[`S`] && !keys[`D`] && !keys[`A`] && !keys[` `] && canShoot && wiz.canJump && attCool<0 && wiz.currentState!=`charging`)
 	{
-		if((wiz.currentState==`fall`|| wiz.currentState==`land`)&&landTimer>0&&wiz.vy==0){
+		if((wiz.currentState==`fall`|| wiz.currentState==`land`||wiz.currentState==`jumpPeak`)&&landTimer>0&&wiz.vy==0){
 			wiz.changeState(`land`);
 		}else{
 			if(wiz.dir==-1){
@@ -149,9 +154,9 @@ gameStates[`level1`] = function()
 	if(keys[`D`] && !chargin && attCool<0)
 	{
 		wiz.dir=1;
-		if(wiz.currentState != `crouch`) 
+		if(!keys[`S`]) 
 		{
-			if((wiz.currentState==`fall`|| wiz.currentState==`walkLand`)&&wiz.canJump&&landTimer>0&&wiz.vy==0){
+			if((wiz.currentState==`fall`|| wiz.currentState==`walkLand`||wiz.currentState==`jumpPeak`)&&wiz.canJump&&landTimer>0&&wiz.vy==0){
 				wiz.changeState(`walkLand`);
 			}else{
 				wiz.changeState(`walk`);
@@ -164,9 +169,9 @@ gameStates[`level1`] = function()
 	if(keys[`A`]&& !chargin && attCool<0)
 	{
 		wiz.dir=-1;
-		if(wiz.currentState != `crouch` ) 
+		if(!keys[`S`]) 
 		{
-			if((wiz.currentState==`fall`|| wiz.currentState==`walkLand`)&&wiz.canJump&&landTimer>0&&wiz.vy==0){
+			if((wiz.currentState==`fall`|| wiz.currentState==`walkLand`||wiz.currentState==`jumpPeak`)&&wiz.canJump&&landTimer>0&&wiz.vy==0){
 				wiz.changeState(`walkLand`);
 			}else{
 				wiz.changeState(`walk`);
@@ -181,9 +186,11 @@ gameStates[`level1`] = function()
 		wiz.vy = wiz.jumpHeight;
 		//sounds.play(`splode`,1)
 	}
-	if(((wiz.vy>0&&wiz.canJump && attCool<0) || wiz.vy>10)&& !chargin){wiz.changeState(`fall`);}
+	if(((wiz.vy>0&&wiz.canJump) || wiz.vy>5)&& !chargin && attCool<0){
+		wiz.changeState(`fall`);
+	}
 	if(!wiz.canJump&& !chargin && attCool<0){
-		if(Math.abs(wiz.vy)<10){
+		if(Math.abs(wiz.vy)<5){
 			wiz.changeState(`jumpPeak`);
 		}
 		else if(wiz.vy<0){
@@ -199,7 +206,6 @@ gameStates[`level1`] = function()
 	{
 		canShoot=false;
 	}
-
 	if(keys[` `]||(chargeTime<20&&chargin))
 	{
 		if(canShoot && !chargin && attCool<0)

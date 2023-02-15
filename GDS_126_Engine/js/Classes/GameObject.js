@@ -74,7 +74,7 @@ function GameObject(obj)
 	this._hitBoxHeight = this.height
 	//whether or not the object can jump
 	this.canJump = false;
-	this.jumpHeight = -35;
+	this.jumpHeight = -26;
 	
 	this.collisionPoints = {
 		top:{x:0,y: -this.hitBoxHeight/2},
