@@ -1,7 +1,7 @@
 var x=false;
 var caveData ={
 	info:{
-		layout:[
+		layout:[ //Front of cave
 			[0,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,2],
 			[2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],
 			[2,x,x,7,x,x,7,x,x,x,x,x,x,7,7,x,7,7,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,2],
@@ -17,11 +17,11 @@ var caveData ={
 	},
 	states:
 	[		
-			{
+			{ //Images in layout
 				fps:5,
 				cycle:false,
 				frames:[
-					{width:64, height:64, startX:0, startY:0}
+					{width:64, height:64, startX:0, startY:0} //animatable
 				]
 			},
 			{
@@ -68,7 +68,7 @@ var caveData ={
 	}
 	var caveBackData ={
 		info:{
-			layout:[
+			layout:[ //Back of cave
 			[0,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8],
 			[x,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8],
 			[x,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8],
@@ -79,12 +79,12 @@ var caveData ={
 			],
 			src:`images/bg2.png`,
 		},
-		states:caveData.states
+		states:caveData.states //duplicated above spritesheet
 		}
 
 		var caveHitData={
 			info:{
-				layout:[
+				layout:[ //Cave hit boxes
 					[0,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,2],
 					[2,8,1,8,1,1,8,1,1,1,1,1,1,8,8,1,8,8,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],
 					[2,x,x,8,x,x,8,x,x,x,x,x,x,8,8,x,1,1,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,2],

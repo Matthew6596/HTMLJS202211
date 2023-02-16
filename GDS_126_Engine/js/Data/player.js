@@ -284,11 +284,14 @@ var playerData ={
 		//The attack animation 
 		startUp:
 		{
-			fps:3,
+			fps:5,
 			cycle:false,
 			frames:
 			[
-				{width:256, height:768, startX:0*256, startY:0},
+				{width:256, height:768, startX:0*256, startY:4*768},
+				{width:256, height:768, startX:1*256, startY:4*768},
+				{width:256, height:768, startX:2*256, startY:4*768},
+				{width:256, height:768, startX:3*256, startY:4*768},
 			]
 		},
 		charging:
@@ -297,17 +300,19 @@ var playerData ={
 			cycle:true,
 			frames:
 			[
-				{width:256, height:768, startX:0*256, startY:0},
+				{width:256, height:768, startX:4*256, startY:4*768},
+				{width:256, height:768, startX:5*256, startY:4*768},
 			]
 		},
 		attack:
 		{
 			fps:3,
-			cycle:false,
-			//width:300,
+			cycle:true,
+			width:80,
 			frames:
 			[
-				{width:256, height:768, startX:0*256, startY:0},
+				{width:320, height:768, startX:6*256, startY:4*768},
+				{width:320, height:768, startX:6*256+320, startY:4*768},
 			]
 		},
 		//Landing while still
@@ -337,16 +342,14 @@ var playerData ={
 			]
 		},
 		//Animation for the projectile
-		projectile:
+		projectile: //128x128 - 6 Frames
 		{
 			fps:3,
 			cycle:true,
 			frames:
 			[
-				{width:256, height:768, startX:0*256, startY:0},
+				{width:128, height:128, startX:0*256, startY:0},
 			]
 		}
 	}
-	
-		
 }

@@ -22,11 +22,11 @@ ground.world = level;
 plat.world = level;
 
 //Cave foreground Tile Grid
-var cave = new Grid(caveData, {world:level, x:1024, tileHeight:64, tileWidth:64});
+var cave = new Grid(caveData, {world:level, x:1024, tileHeight:64, tileWidth:64}); //Change Cave location here
 //Cave background Tile Grid
-var caveBack = new Grid(caveBackData, {world:level, x:1024, tileHeight:64, tileWidth:64});
+var caveBack = new Grid(caveBackData, {world:level, x:1024, tileHeight:64, tileWidth:64}); //and here
 //cave hitbox grid
-var caveHit = new Grid(caveHitData, {world:level, x:1024, tileHeight:64, tileWidth:64});
+var caveHit = new Grid(caveHitData, {world:level, x:1024, tileHeight:64, tileWidth:64}); //and here!
 
 var leftBorder = new GameObject({x:0, height:canvas.height, world:level});
 
@@ -225,7 +225,7 @@ gameStates[`level1`] = function()
 			bullets[currentBullet].vy = 0;
 			bullets[currentBullet].world = level; //need
 			bullets[currentBullet].x = wiz.x-level.x + (wiz.dir * 32) ; //player xpos
-			bullets[currentBullet].y = wiz.y + 5; //player ypos
+			bullets[currentBullet].y = wiz.y - 20; //player ypos
 			bullets[currentBullet].dir = wiz.dir; //direction
 			
 			//sounds.play(`splode`,1)
@@ -240,7 +240,7 @@ gameStates[`level1`] = function()
 		if(chargin){
 			//ADD PROJECTILE CHARGE
 			bullets[currentBullet].vy = 0;
-			bullets[currentBullet].y = wiz.y + 5; //player ypos
+			bullets[currentBullet].y = wiz.y - 20; //player ypos
 			if(size<80){
 				bullets[currentBullet].width ++;
 				bullets[currentBullet].height ++;
