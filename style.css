@@ -1,23 +1,53 @@
 body{
     display: flex;
     justify-content: center;
+    background-color: rgb(252, 232, 218);
 }
 #container{
-    width: 1000px;
-    background-color: lightgrey;
+    width: 1420px;
+    height: 2160px;
+    align-items: center;
     border: 1px solid black;
+    background-color: rgb(228, 255, 228);
 }
 header{
-    background-color: darkgrey;
+    width:910px;
+    height: 256px;
+    margin-top: 20px;
+    margin-left: 255px;
+    padding-top: 20px;
+    background-color: rgb(129, 255, 160);
+}
+nav{
+    margin-top: -80px;
+    margin-right: 10px;
+    float: right;
 }
 h1{
-    margin:0;
+    font-size:100px;
+    font-family:monospace;
+    margin-top:-20px;
+    margin-left:20px;
+    margin-bottom:-55px;
 }
-a{
+.btn{
+    display:flex;
+    justify-content: right;
+    width:100px;
     border: 1px solid black;
     background-color: aliceblue;
+    color:black;
+    padding-right:5px;
     text-decoration: none;
-    text-align: center;
+    text-align: right;
+}
+#contact-info{
+    margin-top: 100px;
+    margin-left: 15px;
+}
+.contact{
+    margin-left:-45px;
+    list-style-type: none;
 }
 a:hover{
     background-color: rgb(157, 182, 228);
@@ -27,4 +57,15 @@ li{
 }
 h2{
     margin: 10px;
+}
+footer{
+    background-color: rgb(162, 255, 255);
+    float: none;
+}
+
+#temp{
+    border:2px solid black;
+    background-color: rgb(227, 169, 169);
+    margin:40px;
+    padding:40px;
 }

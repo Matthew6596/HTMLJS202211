@@ -100,9 +100,11 @@ var size;
 var chargeTime = 0;
 var chargin;
 var initIdle = true;
+var wasAttack = false;
 
 gameStates[`level1`] = function()
 {
+
 	sounds.manualLoop(`lvlMusic`,56,112);
 	if(initIdle){
 		wiz.canJump=true;
@@ -125,6 +127,7 @@ gameStates[`level1`] = function()
 	}
 	if(wiz.currentState==`attack`){
 		attCool--;
+		wasAttack = true;
 	}
 
 	if(!keys[`W`] && !keys[`S`] && !keys[`D`] && !keys[`A`] && !keys[` `] && canShoot && wiz.canJump && attCool<0 && wiz.currentState!=`charging`)
@@ -186,7 +189,7 @@ gameStates[`level1`] = function()
 		wiz.vy = wiz.jumpHeight;
 		//sounds.play(`splode`,1)
 	}
-	if(((wiz.vy>0&&wiz.canJump) || wiz.vy>5)&& !chargin && attCool<0){
+	if(((wiz.vy>0&&wiz.canJump) || wiz.vy>5)&& !chargin && attCool<0 && !wasAttack){
 		wiz.changeState(`fall`);
 	}
 	if(!wiz.canJump&& !chargin && attCool<0){
