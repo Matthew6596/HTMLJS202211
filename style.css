@@ -4,8 +4,7 @@ body{
     background-color: rgb(252, 232, 218);
 }
 #container{
-    max-width: 1420px;
-    min-width: 940px;
+    width: 1420px;
     height: 2160px;
     align-items: center;
     border: 1px solid black;
