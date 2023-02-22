@@ -22,11 +22,11 @@ ground.world = level;
 plat.world = level;
 
 //Cave foreground Tile Grid
-var cave = new Grid(caveData, {world:level, x:1024, tileHeight:64, tileWidth:64}); //Change Cave location here
+var cave = new Grid(caveData, {world:level, x:3072, tileHeight:32, tileWidth:32}); //Change Cave location here
 //Cave background Tile Grid
-var caveBack = new Grid(caveBackData, {world:level, x:1024, tileHeight:64, tileWidth:64}); //and here
+var caveBack = new Grid(caveBackData, {world:level, x:3072, tileHeight:32, tileWidth:32}); //and here
 //cave hitbox grid
-var caveHit = new Grid(caveHitData, {world:level, x:1024, tileHeight:64, tileWidth:64}); //and here!
+var caveHit = new Grid(caveHitData, {world:level, x:3072, tileHeight:32, tileWidth:32}); //and here!
 
 var leftBorder = new GameObject({x:0, height:canvas.height, world:level});
 
