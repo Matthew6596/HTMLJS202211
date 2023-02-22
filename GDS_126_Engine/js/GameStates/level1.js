@@ -317,8 +317,19 @@ gameStates[`level1`] = function()
 	
 
 	//Makes the level move
-	wiz.x -= offset.x;
-	level.x -= offset.x;
+	console.log("levelx: "+level.x);
+	console.log("wizx: "+wiz.x);
+	var atLeftEdge = false;
+	var atRightEdge = false;
+
+
+	atLeftEdge = level.x>0;
+	atRightEdge = level<-4096;
+
+
+
+	if(!atLeftEdge&&!atRightEdge){wiz.x -= offset.x;}
+	if((!atLeftEdge&&!keys[`D`]&&wiz.x<=512)||(!atRightEdge&&!keys[`A`]&&wiz.x>=512)){level.x -= offset.x;}
 
 	//moves repeating background
 	rbg.x = level.x*.5;
@@ -334,8 +345,6 @@ gameStates[`level1`] = function()
 		rbg.x=0; 
 	}
 
-	
-	
 	//Sets up pattern for the ground
 	var groundPattern = context.createPattern(ground.img, `repeat`);
 	//Applies pattern to ground and platform
