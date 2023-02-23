@@ -1,4 +1,19 @@
+/*
+List of things to do:
 
+-Sound effects
+-Projectile Animation
+-Enemy img/sprites
+-Player death animation
+-Wall
+-Platforms/level layout
+-multiple enemies*
+-Improve cave/building
+-Game over screen overlay / Restart Option
+-Game win state*
+-Environmental Hazards*
+
+*/
 /*------------Use this if you want to implement States---------------*/
 var gravity = 1;
 var friction = {x:.85,y:.97};
@@ -8,6 +23,9 @@ var stage = new GameObject({width:canvas.width, height:canvas.height});
 //Avatar
 var wiz = new GameObject({y:canvas.height/2-64,width:64, height:192, spriteData:playerData}).makeSprite(playerData);
 wiz.force=1;
+var alive = true;
+var enemy = new GameObject({y:canvas.height/2-64, x:1024, width:64, height:128, color:"orange"});
+enemy.force=0.5;
 
 //The ground
 var ground = new GameObject({width:canvas.width*10, x:(canvas.width*10/2)-32,height:32,y:canvas.height-16, color:"green"});
@@ -15,18 +33,20 @@ ground.img.src=`images/ground.png`;
 
 //A platform
 var plat = new GameObject({width:256, height:64,y:canvas.height-200, color:"green"});
+var wall = new GameObject({width:64, height:256,y:canvas.height-160, x:1024, color:"grey"});
 
 //A level object when it is moved other objects move with it.
 var level = new GameObject({x:0,y:0});
 ground.world = level;
 plat.world = level;
+wall.world = level;
 
 //Cave foreground Tile Grid
-var cave = new Grid(caveData, {world:level, x:4016, tileHeight:32, tileWidth:32}); //Change Cave location here
+var cave = new Grid(caveData, {world:level, x:4016, tileHeight:32, tileWidth:32});
 //Cave background Tile Grid
-var caveBack = new Grid(caveBackData, {world:level, x:4016, tileHeight:32, tileWidth:32}); //and here
+var caveBack = new Grid(caveBackData, {world:level, x:4016, tileHeight:32, tileWidth:32});
 //cave hitbox grid
-var caveHit = new Grid(caveHitData, {world:level, x:4016, tileHeight:32, tileWidth:32}); //and here!
+var caveHit = new Grid(caveHitData, {world:level, x:4016, tileHeight:32, tileWidth:32});
 
 var leftBorder = new GameObject({x:-56, height:canvas.height, world:level});
 
@@ -35,14 +55,14 @@ var g1 = new Group();
 g1.color= `rgb(251,0,254)`;
 
 //Adds items to a group
-g1.add([ground,leftBorder, caveHit.grid]);
+g1.add([ground,leftBorder, caveHit.grid, wall]);
 
 //removes items from a group
 //g1.remove([plat, cave.grid])
 
 //Used to draw the rectangles
 var rects = new Group();
-rects.add([ground,plat]);
+rects.add([ground,plat,wall]);
 
 //used to render the sprites
 var sprites = new Group();
@@ -53,7 +73,7 @@ front.add([cave.grid]);
 
 //list of items to be rendered in the level
 var levelItems=new Group();
-levelItems.add([caveBack.grid, ground, plat, cave.grid]);
+levelItems.add([caveBack.grid, ground, plat, wall, cave.grid]);
 
 //Very back background
 var sky = new GameObject({width:canvas.width*4, height:canvas.height, color:"cyan", x:100});
@@ -94,6 +114,30 @@ for(let i=0; i<100; i++)
 
 /*------------------^^BULLET STUFF^^----------------------*/
 
+var enemyMoveCount = 120;
+var rand3 = Math.round(rand(0,1))==0;
+
+function enemyAI()
+{
+	var randNum1 = rand(20,100);
+	var randNum2 = rand(20,140);
+	
+	if(enemyMoveCount>=randNum1){
+		rand3 = Math.round(rand(0,1))==0;
+		enemyMoveCount=-randNum2;
+	}
+	else if(enemyMoveCount<0){
+		if(rand3){enemy.vx += -enemy.force; enemy.dir=-1;}
+		else{enemy.vx += enemy.force; enemy.dir=1;}
+	}
+	enemyMoveCount++;
+}
+
+function gameOver(){
+
+}
+
+/*------------------------vv-Player Gamestates-vv------------------------*/
 var landTimer = 6;
 var attCool = -1;
 var size;
@@ -106,169 +150,176 @@ gameStates[`level1`] = function()
 {
 
 	sounds.manualLoop(`lvlMusic`,56,112);
-	if(initIdle){
-		wiz.canJump=true;
-		wiz.changeState(`idle`);
-		initIdle=false;
-	}
-	if(wiz.currentState==`land`||wiz.currentState==`walkLand`){landTimer--;}
-	else{landTimer=6;}
+	if(!alive){wiz.changeState(`dead`)}
+	else{
+		if(initIdle){
+			wiz.canJump=true;
+			wiz.changeState(`idle`);
+			initIdle=false;
+		}
+		if(wiz.currentState==`land`||wiz.currentState==`walkLand`){landTimer--;}
+		else{landTimer=6;}
 
-	if(chargin&&!keys[` `]&&chargeTime>=20){
-		wiz.changeState(`attack`);
-		chargin = false;
-		wiz.vy=0;
-		attCool=20;
-		//ADD RELEASE PROJECTILE
-		bullets[currentBullet].vx = 10*wiz.dir; //direction/speed
-		bullets[currentBullet].setHitBox({width:size,height:size}); //direction/speed
-
-		currentBullet++;
-	}
-	if(wiz.currentState==`attack`){
-		attCool--;
-		wasAttack = true;
-	}
-
-	if(((!keys[`W`] && !keys[`S`] && !keys[`D`] && !keys[`A`] && !keys[` `])||(keys[`A`]&&keys[`D`])) && canShoot && wiz.canJump && attCool<0 && wiz.currentState!=`charging`)
-	{
-		if((wiz.currentState==`fall`|| wiz.currentState==`land`||wiz.currentState==`jumpPeak`)&&landTimer>0&&wiz.vy==0){
-			wiz.changeState(`land`);
-		}else{
-			if(wiz.dir==-1){
-				wiz.changeState(`idle`);
-			}else{
-				wiz.changeState(`idle2`);
-			}
-		}
-	}
-	
-	
-	if(keys[`S`]&& !chargin && attCool<0 && wiz.canJump)
-	{
-		wiz.top={x:0,y:0};
-		wiz.changeState(`crouch`);
-	}
-	else
-	{
-		wiz.top={x:0,y:-wiz.hitBoxHeight/2};
-	}
-
-	if(keys[`D`] && !chargin && attCool<0&&!keys[`A`])
-	{
-		wiz.dir=1;
-		if(!keys[`S`]) 
-		{
-			if((wiz.currentState==`fall`|| wiz.currentState==`walkLand`||wiz.currentState==`jumpPeak`)&&wiz.canJump&&landTimer>0&&wiz.vy==0){
-				wiz.changeState(`walkLand`);
-			}else{
-				wiz.changeState(`walk`);
-			}
-			wiz.vx += wiz.force;
-			
-		}
-		
-	}
-	if(keys[`A`]&& !chargin && attCool<0&&!keys[`D`])
-	{
-		wiz.dir=-1;
-		if(!keys[`S`]) 
-		{
-			if((wiz.currentState==`fall`|| wiz.currentState==`walkLand`||wiz.currentState==`jumpPeak`)&&wiz.canJump&&landTimer>0&&wiz.vy==0){
-				wiz.changeState(`walkLand`);
-			}else{
-				wiz.changeState(`walk`);
-			}
-			wiz.vx += -wiz.force;
-		}
-		
-	}
-	if(keys[`W`] && wiz.canJump &&!chargin && attCool<0)
-	{
-		wiz.canJump = false;
-		wiz.vy = wiz.jumpHeight;
-		//sounds.play(`splode`,1)
-	}
-	if(((wiz.vy>0&&wiz.canJump) || wiz.vy>5)&& !chargin && attCool<0 && !wasAttack){
-		wiz.changeState(`fall`);
-	}
-	if(!wiz.canJump&& !chargin && attCool<0){
-		if(Math.abs(wiz.vy)<5){
-			wiz.changeState(`jumpPeak`);
-		}
-		else if(wiz.vy<0){
-			wiz.changeState(`jump`);
-		}
-	}
-	shotTimer--;
-	if(shotTimer <=0)
-	{
-		canShoot=true;
-	}
-	else
-	{
-		canShoot=false;
-	}
-	if(keys[` `]||(chargeTime<20&&chargin))
-	{
-		if(canShoot && !chargin && attCool<0)
-		{
-			wiz.changeState(`startUp`);
-			chargin = true;
+		if(chargin&&!keys[` `]&&chargeTime>=20){
+			wiz.changeState(`attack`);
+			chargin = false;
 			wiz.vy=0;
-			wiz.vx=0;
-			shotTimer = shotDelay;
-			size = 2;
-			chargeTime = 0;
-			//console.log(`Boom`)
+			attCool=20;
+			//ADD RELEASE PROJECTILE
+			bullets[currentBullet].vx = 10*wiz.dir; //direction/speed
+			bullets[currentBullet].setHitBox({width:size,height:size}); //direction/speed
 
-			//INSTANTIATE PROJECTILE
+			currentBullet++;
+		}
+		if(wiz.currentState==`attack`){
+			attCool--;
+			wasAttack = true;
+		}
 
-			bullets[currentBullet].vx = 0; //direction/speed
-			bullets[currentBullet].vy = 0;
-			bullets[currentBullet].world = level; //need
-			bullets[currentBullet].x = wiz.x-level.x + (wiz.dir * 32) ; //player xpos
-			bullets[currentBullet].y = wiz.y - 20; //player ypos
-			bullets[currentBullet].dir = wiz.dir; //direction
-			
-			//sounds.play(`splode`,1)
+		if(((!keys[`W`] && !keys[`S`] && !keys[`D`] && !keys[`A`] && !keys[` `])||(keys[`A`]&&keys[`D`])) && canShoot && wiz.canJump && attCool<0 && wiz.currentState!=`charging`)
+		{
+			if((wiz.currentState==`fall`|| wiz.currentState==`land`||wiz.currentState==`jumpPeak`)&&landTimer>0&&wiz.vy==0){
+				wiz.changeState(`land`);
+			}else{
+				if(wiz.dir==-1){
+					wiz.changeState(`idle`);
+				}else{
+					wiz.changeState(`idle2`);
+				}
+			}
+		}
+		
+		
+		if(keys[`S`]&& !chargin && attCool<0 && wiz.canJump)
+		{
+			wiz.top={x:0,y:0};
+			wiz.changeState(`crouch`);
+		}
+		else
+		{
+			wiz.top={x:0,y:-wiz.hitBoxHeight/2};
+		}
 
-			
-			if(currentBullet>=bullets.length)
+		if(keys[`D`] && !chargin && attCool<0&&!keys[`A`])
+		{
+			wiz.dir=1;
+			if(!keys[`S`]) 
 			{
-				currentBullet=0;
+				if((wiz.currentState==`fall`|| wiz.currentState==`walkLand`||wiz.currentState==`jumpPeak`)&&wiz.canJump&&landTimer>0&&wiz.vy==0){
+					wiz.changeState(`walkLand`);
+				}else{
+					wiz.changeState(`walk`);
+				}
+				wiz.vx += wiz.force;
+				
 			}
+			
+		}
+		if(keys[`A`]&& !chargin && attCool<0&&!keys[`D`])
+		{
+			wiz.dir=-1;
+			if(!keys[`S`]) 
+			{
+				if((wiz.currentState==`fall`|| wiz.currentState==`walkLand`||wiz.currentState==`jumpPeak`)&&wiz.canJump&&landTimer>0&&wiz.vy==0){
+					wiz.changeState(`walkLand`);
+				}else{
+					wiz.changeState(`walk`);
+				}
+				wiz.vx += -wiz.force;
+			}
+			
+		}
+		if(keys[`W`] && wiz.canJump &&!chargin && attCool<0)
+		{
+			wiz.canJump = false;
+			wiz.vy = wiz.jumpHeight;
+			//sounds.play(`splode`,1)
+		}
+		if(((wiz.vy>0&&wiz.canJump) || wiz.vy>5)&& !chargin && attCool<0 && !wasAttack){
+			wiz.changeState(`fall`);
+		}
+		if(!wiz.canJump&& !chargin && attCool<0){
+			if(Math.abs(wiz.vy)<5){
+				wiz.changeState(`jumpPeak`);
+			}
+			else if(wiz.vy<0){
+				wiz.changeState(`jump`);
+			}
+		}
+		shotTimer--;
+		if(shotTimer <=0)
+		{
+			canShoot=true;
+		}
+		else
+		{
+			canShoot=false;
+		}
+		if(keys[` `]||(chargeTime<20&&chargin))
+		{
+			if(canShoot && !chargin && attCool<0)
+			{
+				wiz.changeState(`startUp`);
+				chargin = true;
+				wiz.vy=0;
+				wiz.vx=0;
+				shotTimer = shotDelay;
+				size = 2;
+				chargeTime = 0;
+				//console.log(`Boom`)
 
-		}
-		if(chargin){
-			//ADD PROJECTILE CHARGE
-			bullets[currentBullet].vy = 0;
-			bullets[currentBullet].y = wiz.y - 20; //player ypos
-			if(size<80){
-				bullets[currentBullet].width ++;
-				bullets[currentBullet].height ++;
-				size++;
+				//INSTANTIATE PROJECTILE
+
+				bullets[currentBullet].vx = 0; //direction/speed
+				bullets[currentBullet].vy = 0;
+				bullets[currentBullet].world = level; //need
+				bullets[currentBullet].x = wiz.x-level.x + (wiz.dir * 32) ; //player xpos
+				bullets[currentBullet].y = wiz.y - 20; //player ypos
+				bullets[currentBullet].dir = wiz.dir; //direction
+				
+				//sounds.play(`splode`,1)
+
+				
+				if(currentBullet>=bullets.length)
+				{
+					currentBullet=0;
+				}
+
 			}
-			chargeTime++;
-			if(chargeTime>=20){
-				wiz.changeState(`charging`);
+			if(chargin){
+				//ADD PROJECTILE CHARGE
+				bullets[currentBullet].vy = 0;
+				bullets[currentBullet].y = wiz.y - 20; //player ypos
+				if(size<80){
+					bullets[currentBullet].width ++;
+					bullets[currentBullet].height ++;
+					size++;
+				}
+				chargeTime++;
+				if(chargeTime>=20){
+					wiz.changeState(`charging`);
+				}
 			}
 		}
-	}
-	else
-	{
-		shotTimer=0;
+		else
+		{
+			shotTimer=0;
+		}
 	}
 	
 	//-----Player movement-----///
-	wiz.vy+= gravity;
-	wiz.vx *= friction.x;
-	wiz.vy *= friction.y;
-	wiz.x += Math.round(wiz.vx);
-	if(chargin){gravity=0.02;}
-	else if(attCool>=0){gravity=0.4;}
-	else{gravity=1;}
-	wiz.y += Math.round(wiz.vy);
+	if(alive){
+		wiz.vy+= gravity;
+		wiz.vx *= friction.x;
+		wiz.vy *= friction.y;
+		wiz.x += Math.round(wiz.vx);
+		if(chargin){gravity=0.02;}
+		else if(attCool>=0){gravity=0.4;}
+		else{gravity=1;}
+		wiz.y += Math.round(wiz.vy);
+	}else{
+		gameOver();
+	}
 
 	let offset = {x:Math.round(wiz.vx), y:Math.round(wiz.vy)}
 	
@@ -279,6 +330,7 @@ gameStates[`level1`] = function()
 		wiz.y--;
 		offset.y--;
 	}
+
 
 	/*---------Player Collision---------*/
 	/*if(wiz.overlap(plat,`bottom`,`x`))
@@ -313,6 +365,48 @@ gameStates[`level1`] = function()
 			wiz.x--;
 			offset.x--;
 	}
+
+
+	//---Enemy Movement && Collision---//
+
+	if(enemy.x<5600){
+
+		enemy.vy += gravity;
+		enemy.vx *= friction.x;
+		enemy.vy *= friction.y;
+		enemy.x += Math.round(enemy.vx);
+		enemy.y += Math.round(enemy.vy);
+		enemyAI();
+
+	}
+	else{enemy.x=5600}
+
+	while(g1.collide(enemy.bottom) && enemy.vy>=0)
+	{
+		enemy.canJump = true;
+			enemy.vy=0;
+			enemy.y--;
+	}
+	while(g1.collide(enemy.top) && enemy.vy<=0 )
+	{
+			enemy.vy=0;
+			enemy.y++;
+	}
+	while(g1.collide(enemy.left) && enemy.vx<=0 )
+	{
+			
+			enemy.vx=0;
+			enemy.x++;
+	}
+	while(g1.collide(enemy.right) && enemy.vx>=0 )
+	{
+			
+			enemy.vx=0;
+			enemy.x--;
+	}
+
+	//Enemy Player Collision
+	if(enemy.overlap(wiz)){wiz.y=canvas.height+400; alive=false;}
 	
 	
 
@@ -324,11 +418,11 @@ gameStates[`level1`] = function()
 	atLeftEdge = level.x>0;
 	atRightEdge = level.x<-4096;
 
-	if(level.x>=2){level.x--; wiz.x--;}//12
-	if(level.x<=-4098){level.x++; wiz.x++;}//4108
+	while(level.x>=2){level.x--; wiz.x--; enemy.x--;}//12
+	while(level.x<=-4098){level.x++; wiz.x++; enemy.x++;}//4108
 
 	if(!atLeftEdge&&!atRightEdge){wiz.x -= offset.x;}
-	if((wiz.x<524&&wiz.x>500)){level.x -= offset.x;}
+	if((wiz.x<524&&wiz.x>500)){level.x -= offset.x; enemy.x-=offset.x}
 
 	//moves repeating background
 	rbg.x = level.x*.5;
@@ -366,6 +460,9 @@ gameStates[`level1`] = function()
 
 	//renders the midground
 	bg.drawStaticImage([-8,-32]);
+
+	//enemy render
+	enemy.render(`drawRect`, [256]);
 	
 	//alternate methd for rendering the repeating background
 	//rbg.render(`drawStaticImage`, [0,0])
@@ -392,11 +489,17 @@ gameStates[`level1`] = function()
 		bullets[i].move();
 		bullets[i].play(function(){return}).drawSprite();
 		//bullets[i].angle+=10
-		while(g1.collide(bullets[i].bottom) && bullets[i].vy>=0)
+
+		if(bullets[i].overlap(enemy)){//Enemy Hit By Projectile!!!!
+			enemy.x=5600;
+			bullets[i].y=-128
+		}
+
+		while(g1.collide(bullets[i].bottom) && bullets[i].vy>=0)//Projectile hits wall
 		{
 			
 			bullets[i].vy=0;
-			bullets[i].y--;
+			bullets[i].y=-128;
 			
 		}
 	}

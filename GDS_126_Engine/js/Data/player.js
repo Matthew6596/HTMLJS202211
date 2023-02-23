@@ -341,6 +341,19 @@ var playerData ={
 				{width:256, height:768, startX:11*256, startY:3*768},
 			]
 		},
+		//Death animation
+		dead:
+		{
+			fps:1,
+			cycle:false,
+			frames:
+			[
+				{width:256, height:768, startX:8*256, startY:3*768},
+				{width:256, height:768, startX:9*256, startY:3*768},
+				{width:256, height:768, startX:10*256, startY:3*768},
+				{width:256, height:768, startX:11*256, startY:3*768},
+			]
+		},
 		//Animation for the projectile
 		projectile: //128x128 - 6 Frames
 		{
