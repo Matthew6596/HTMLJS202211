@@ -10,7 +10,7 @@ var wiz = new GameObject({y:canvas.height/2-64,width:64, height:192, spriteData:
 wiz.force=1;
 
 //The ground
-var ground = new GameObject({width:canvas.width*10, x:canvas.width*10/2,height:64,y:canvas.height-32, color:"green"});
+var ground = new GameObject({width:canvas.width*10, x:(canvas.width*10/2)-32,height:32,y:canvas.height-16, color:"green"});
 ground.img.src=`images/ground.png`;
 
 //A platform
@@ -22,13 +22,13 @@ ground.world = level;
 plat.world = level;
 
 //Cave foreground Tile Grid
-var cave = new Grid(caveData, {world:level, x:3072, tileHeight:32, tileWidth:32}); //Change Cave location here
+var cave = new Grid(caveData, {world:level, x:4016, tileHeight:32, tileWidth:32}); //Change Cave location here
 //Cave background Tile Grid
-var caveBack = new Grid(caveBackData, {world:level, x:3072, tileHeight:32, tileWidth:32}); //and here
+var caveBack = new Grid(caveBackData, {world:level, x:4016, tileHeight:32, tileWidth:32}); //and here
 //cave hitbox grid
-var caveHit = new Grid(caveHitData, {world:level, x:3072, tileHeight:32, tileWidth:32}); //and here!
+var caveHit = new Grid(caveHitData, {world:level, x:4016, tileHeight:32, tileWidth:32}); //and here!
 
-var leftBorder = new GameObject({x:0, height:canvas.height, world:level});
+var leftBorder = new GameObject({x:-56, height:canvas.height, world:level});
 
 //This is a group used for collisions
 var g1 = new Group();
@@ -56,8 +56,8 @@ var levelItems=new Group();
 levelItems.add([caveBack.grid, ground, plat, cave.grid]);
 
 //Very back background
-var sky = new GameObject({width:canvas.width, height:canvas.height, color:"cyan"});
-sky.img.src = `images/sky.png`;
+var sky = new GameObject({width:canvas.width*4, height:canvas.height, color:"cyan", x:100});
+sky.img.src = `tiles/SkyBackground.png`;
 
 /*
  	//Not used, unless you want a 4th level of paralax
@@ -67,11 +67,11 @@ sky.img.src = `images/sky.png`;
 
 //repeating background
 var rbg = new GameObject({x:level.x, y:level.y, width:1024, height:512});
-rbg.img.src=`images/hills.png`;
+rbg.img.src=`tiles/RepeatBackground.png`;
 
 //middleground
 var bg = new GameObject({x:level.x,y:level.y, width:canvas.width*4, height:canvas.height});
-bg.img.src=`images/bgfull.png`;
+bg.img.src=`tiles/middleground1.png`;
 
 /*------------------vvBULLET STUFFvv----------------------*/
 
@@ -130,7 +130,7 @@ gameStates[`level1`] = function()
 		wasAttack = true;
 	}
 
-	if(!keys[`W`] && !keys[`S`] && !keys[`D`] && !keys[`A`] && !keys[` `] && canShoot && wiz.canJump && attCool<0 && wiz.currentState!=`charging`)
+	if(((!keys[`W`] && !keys[`S`] && !keys[`D`] && !keys[`A`] && !keys[` `])||(keys[`A`]&&keys[`D`])) && canShoot && wiz.canJump && attCool<0 && wiz.currentState!=`charging`)
 	{
 		if((wiz.currentState==`fall`|| wiz.currentState==`land`||wiz.currentState==`jumpPeak`)&&landTimer>0&&wiz.vy==0){
 			wiz.changeState(`land`);
@@ -154,7 +154,7 @@ gameStates[`level1`] = function()
 		wiz.top={x:0,y:-wiz.hitBoxHeight/2};
 	}
 
-	if(keys[`D`] && !chargin && attCool<0)
+	if(keys[`D`] && !chargin && attCool<0&&!keys[`A`])
 	{
 		wiz.dir=1;
 		if(!keys[`S`]) 
@@ -169,7 +169,7 @@ gameStates[`level1`] = function()
 		}
 		
 	}
-	if(keys[`A`]&& !chargin && attCool<0)
+	if(keys[`A`]&& !chargin && attCool<0&&!keys[`D`])
 	{
 		wiz.dir=-1;
 		if(!keys[`S`]) 
@@ -317,19 +317,18 @@ gameStates[`level1`] = function()
 	
 
 	//Makes the level move
-	console.log("levelx: "+level.x);
-	console.log("wizx: "+wiz.x);
 	var atLeftEdge = false;
 	var atRightEdge = false;
 
 
 	atLeftEdge = level.x>0;
-	atRightEdge = level<-4096;
+	atRightEdge = level.x<-4096;
 
-
+	if(level.x>=2){level.x--; wiz.x--;}//12
+	if(level.x<=-4098){level.x++; wiz.x++;}//4108
 
 	if(!atLeftEdge&&!atRightEdge){wiz.x -= offset.x;}
-	if((!atLeftEdge&&!keys[`D`]&&wiz.x<=512)||(!atRightEdge&&!keys[`A`]&&wiz.x>=512)){level.x -= offset.x;}
+	if((wiz.x<524&&wiz.x>500)){level.x -= offset.x;}
 
 	//moves repeating background
 	rbg.x = level.x*.5;
@@ -337,12 +336,13 @@ gameStates[`level1`] = function()
 	//moves the middleground
 	bg.x = level.x*.75;
 
+	sky.x = level.x*0.1;
 	//moves the clouds
 	//clouds.x = level.x*.25;
 	
 	if(rbg.x < -rbg.width || rbg.x > rbg.width)
 	{
-		rbg.x=0; 
+		rbg.x+=rbg.width;
 	}
 
 	//Sets up pattern for the ground
@@ -357,7 +357,7 @@ gameStates[`level1`] = function()
 	sky.color = skyPattern;
 
 	//renders the sky
-	sky.render();
+	sky.drawStaticImage([-1680]);
 	
 	//Renders the repeating background
 	rbg.drawStaticImage([0,0]);
@@ -365,7 +365,7 @@ gameStates[`level1`] = function()
 	rbg.drawStaticImage([rbg.width,0]);
 
 	//renders the midground
-	bg.drawStaticImage([0,0]);
+	bg.drawStaticImage([-8,-32]);
 	
 	//alternate methd for rendering the repeating background
 	//rbg.render(`drawStaticImage`, [0,0])
