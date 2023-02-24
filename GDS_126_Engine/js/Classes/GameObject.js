@@ -23,6 +23,8 @@ function GameObject(obj)
 		this.dir = 1;
 		var ready=false;
 
+		this.health = 98;
+
 		Object.defineProperty(this, `hitBoxWidth`, {
 			get : function () {return this._hitBoxWidth},
 			set : function (_value) {this._hitBoxWidth = _value}

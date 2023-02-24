@@ -24,7 +24,7 @@ var stage = new GameObject({width:canvas.width, height:canvas.height});
 var wiz = new GameObject({y:canvas.height/2-64,width:64, height:192, spriteData:playerData}).makeSprite(playerData);
 wiz.force=1;
 var alive = true;
-var enemy = new GameObject({y:canvas.height/2-64, x:1024, width:64, height:128, color:"orange"});
+var enemy = new GameObject({y:canvas.height/2-64, x:1024, width:64, height:192, color:"orange"});
 enemy.force=0.5;
 
 //The ground
@@ -33,7 +33,8 @@ ground.img.src=`images/ground.png`;
 
 //A platform
 var plat = new GameObject({width:256, height:64,y:canvas.height-200, color:"green"});
-var wall = new GameObject({width:64, height:256,y:canvas.height-160, x:1024, color:"grey"});
+var wall = new GameObject({width:64, height:320,y:canvas.height-192, x:2680, color:"grey"});
+wall.img.src=`tiles/tileIMGs/brickwall.png`;
 
 //A level object when it is moved other objects move with it.
 var level = new GameObject({x:0,y:0});
@@ -444,6 +445,7 @@ gameStates[`level1`] = function()
 	//Applies pattern to ground and platform
 	ground.color = groundPattern;
 	plat.color = groundPattern;
+	wall.color = context.createPattern(wall.img, `repeat`);
 
 	//Sets up pattern for the sky
 	var skyPattern = context.createPattern(sky.img, `repeat`);
@@ -491,7 +493,7 @@ gameStates[`level1`] = function()
 		//bullets[i].angle+=10
 
 		if(bullets[i].overlap(enemy)){//Enemy Hit By Projectile!!!!
-			enemy.x=5600;
+			enemy.health-=bullets[i].width*1.5;
 			bullets[i].y=-128
 		}
 
@@ -503,7 +505,8 @@ gameStates[`level1`] = function()
 			
 		}
 	}
-
+	if(enemy.health<=0){enemy.x=5600;}
+	console.log(enemy.health);
 	
 	
 	//Renders front of cave
