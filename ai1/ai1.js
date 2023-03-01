@@ -15,7 +15,8 @@ var roundTime = 2000;
 var roundCount = 0;
 var paused = false;
 
-var a_mathFunctions = ["add","sub","mult","div","mod","pow"]; //List of possible math functions/operations without
+var a_mathFunctions = ["add","sub","mult","div","root","pow"]; //List of possible math functions/operations without 
+var a_invMathFuncs = ["sub","add","div","mult","pow","root"]; //List of possible math functions/operations without 
 
 function keyDown(e){//w:87 a:65 s:83 d:68 space:32}
     if(e.which==65||e.which==37){matt.left = true;}
@@ -320,11 +321,11 @@ function manageAIs(){
 
         //AI dist
         AIs[ma].dist = getDist(AIs[ma].x,AIs[ma].y,goal.x,goal.y);
-        /*if(AIs[ma].dist<=AIs[ma].prevDist){
-            AIs[ma].score+=0.2;
+        if(AIs[ma].dist<=AIs[ma].prevDist){
+            AIs[ma].brain.aiGetsCookie=true;
         }else{
-            AIs[ma].score-=0.4;
-        }*/
+            AIs[ma].brain.aiGetsCookie=false;
+        }
         AIs[ma].score += 10/(AIs[ma].dist+1);
         AIs[ma].prevDist = AIs[ma].dist;
     }
@@ -388,47 +389,81 @@ function main(){
 function ai(numInputs,numOutputs){
     this.inp = []; //Inputs in !ARRAY! form
     this.numInp = numInputs;//set
+    this.timey;
 
     this.func = []; //P(); functions (should be 2D array of strings)
+    this.invFunc = []; //this.func opposite functions
     this.numFunc = numOutputs; //set
     this.funcLength = []; //Number of Math Functions in P();
 
     this.paramOrder = []; //Order of param entered into function, length=numFunc
     this.param = []; //NEED at LEAST 2 for each (2D array)
 
+    this.defaultConf = 50;
+    this.confidence = []; //Num 0-100, 2D array size of this.func (mutatable)
+    this.sendIt = false; //Overrides confidence to 100%
+    this.uhoh = false; //Overrides sendIt and reduces confidence, activates invFunc a little
+    //Confidence will be randNum roll that determines whether ai actually executes mathematical function
+
+    this.depressed = false; //If set to true, ai will attempt to commit suice :(
+
+    //Additional mutatable attributes
+    this.sendTime; //
+    this.uhohTolerance; //Error tolerance before this.uhoh=true
+
+    //out
     this.out = []; //Set of outputs
     this.numOut = numOutputs; //set
 
+    this.aiGetsCookie = false; //cookie = good  -  modifies confidence
+    this.goalReached = false; //happy
 
     //Things for mutation / variation
-    this.mutateChance = 0;
+    this.autoMutates = true;
+    this.mutateChance = 20;
     this.funcLengthRange = [1,3];
     this.prevFunc;
+    this.prevInvFunc;
     this.prevFuncLength;
     this.prevParamOrder;
 
     //
 
     this.thinky = function(){
+        //this.setup2DArrays();
+        this.aiEatsCookie();
         for(var thinkyI=0; thinkyI<this.numFunc; thinkyI++){
+            this.confidence[thinkyI] = [];
+            for(var sa1=0; sa1<this.funcLength[thinkyI]; sa1++){
+                this.confidence[thinkyI][sa1] = this.defaultConf;
+            }
             this.readFunc(thinkyI);
         }
     }
 
     this.readFunc = function(num){
 
-        this.out[num] = mathFunctions(this.param[num][0],this.param[num][1],this.func[num][0]);
-        for(var ri=1; ri<this.funcLength[num]; ri++){
-            this.out[num] = mathFunctions(this.out[num],this.param[num][ri+1],this.func[num][ri]);
+        this.out[num] = this.param[num][0]
+        for(var ri=0; ri<this.funcLength[num]; ri++){
+            if(percent(this.confidence[num][ri])){
+                this.out[num] = mathFunctions(this.out[num],this.param[num][ri+1],this.func[num][ri]);
+            }
         }
 
     }
 
     this.chooseParameters = function(){
+        this.autoMutate();
         for(var cp1=0; cp1<this.numFunc; cp1++){
             for(var cp2=0; cp2<this.funcLength[cp1]+1; cp2++){
                 this.param[cp1][cp2] = this.inp[(this.paramOrder[cp1][cp2])];
             }
+        }
+    }
+
+    this.setup2DArrays = function(){
+        for(var sa=0; sa<this.func.length; sa++){
+            
         }
     }
 
@@ -441,6 +476,7 @@ function ai(numInputs,numOutputs){
     this.mutate = function(){
 
         this.prevFunc = this.func;
+        this.prevInvFunc = this.invFunc;
         this.prevFuncLength = this.funcLength;
         this.prevParamOrder = this.paramOrder;
 
@@ -453,11 +489,16 @@ function ai(numInputs,numOutputs){
             }
 
             if(this.prevFunc[i]===undefined){this.func[i] = [];}
+            if(this.invFunc[i]===undefined){this.invFunc[i] = [];}
+            
             for(var z=0; z<this.funcLength[i]; z++){
+                var funcChange = randInt(0,a_mathFunctions.length-1);
                 if(percent(this.mutateChance)||this.prevFunc[i][z]===undefined){ //Mutate func
-                    this.func[i][z] = a_mathFunctions[randInt(0,a_mathFunctions.length-1)];
+                    this.func[i][z] = a_mathFunctions[funcChange];
+                    this.invFunc[i][z] = a_invMathFuncs[funcChange];
                 }else{
                     this.func[i][z] = this.prevFunc[i][z];
+                    this.invFunc[i][z] = this.prevInvFunc[i][z];
                 }
             }
 
@@ -473,7 +514,23 @@ function ai(numInputs,numOutputs){
                 }
             }
         }
+        console.log(this.func);
+        console.log(this.invFunc);
+    }
 
+    this.aiEatsCookie = function(){
+        if(this.aiGetsCookie){
+            if(this.defaultConf<100){this.defaultConf++;}
+        }else{
+            if(this.defaultConf>0){this.defaultConf--;}
+        }
+    }
+
+    this.autoMutate = function(){
+        if(this.defaultConf==0&&this.autoMutates){
+            this.mutate();
+            this.defaultConf=50;
+        }
     }
 }
 
@@ -510,6 +567,7 @@ bob.paramOrder[2][0] = 1;
 bob.paramOrder[2][1] = 3;
 bob.paramOrder[3][0] = 3;
 bob.paramOrder[3][1] = 1;
+bob.defaultConf = 100;
 //bob.thinky();
 //bob.consoleOut(); //Testing Bob's Brain
 
@@ -532,8 +590,10 @@ function mathFunctions(p1,p2,type){
         case "div":
             if(p2==0){return 0;}
             else{return p1/p2;}
-        case "mod":
-            return p1%p2;
+        case "root":
+            if(p1<0&&p2!=0){return -Math.pow(p1,1/p2);}
+            if((p1==0&&p2!=0)||p2==0){return 0;}
+            else{return Math.pow(p1,1/p2);}
         case "pow":
             if(p1<0&&Math.abs(p2<1)){return -Math.pow(-p1,p2);}
             if(p1==0&&p2<0){return 0;}
