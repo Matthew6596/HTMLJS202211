@@ -520,7 +520,7 @@ function ai(numInputs,numOutputs){
 
     this.aiEatsCookie = function(){
         if(this.aiGetsCookie){
-            if(this.defaultConf<100){this.defaultConf++;}
+            if(this.defaultConf<100){this.defaultConf+=2;}
         }else{
             if(this.defaultConf>0){this.defaultConf--;}
         }
@@ -568,6 +568,7 @@ bob.paramOrder[2][1] = 3;
 bob.paramOrder[3][0] = 3;
 bob.paramOrder[3][1] = 1;
 bob.defaultConf = 100;
+bob.autoMutates = false;
 //bob.thinky();
 //bob.consoleOut(); //Testing Bob's Brain
 
