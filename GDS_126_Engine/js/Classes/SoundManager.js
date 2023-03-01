@@ -15,6 +15,7 @@ class SoundManager
             this[_sound].loop = _loop
             this[_sound].volume = _vol
             this[_sound].play();
+            console.log(this[_sound]);
         }
         catch
         {
@@ -27,6 +28,21 @@ class SoundManager
         {
             if(this[_sound].currentTime>=_endVal){
                 this[_sound].currentTime=_startVal;
+            }
+        }
+        catch
+        {
+           throw new Error(`Sound is not loaded`)
+        }
+    }
+    fade(_sound,_vol,_rate){
+        try
+        {
+            if(this[_sound].volume>=_vol&&_rate<0){
+                this[_sound].volume+=_rate;
+            }
+            if(this[_sound].volume<=_vol&&_rate>0){
+                this[_sound].volume+=_rate;
             }
         }
         catch

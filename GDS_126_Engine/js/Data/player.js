@@ -251,7 +251,7 @@ var playerData ={
 		jumpPeak:
 		{
 			fps:5,
-			cycle:false,
+			cycle:true,
 			frames:
 			[
 				{width:256, height:768, startX:2*256, startY:3*768},
@@ -357,11 +357,13 @@ var playerData ={
 		//Animation for the projectile
 		projectile: //128x128 - 6 Frames
 		{
-			fps:3,
+			fps:5,
 			cycle:true,
 			frames:
 			[
-				{width:128, height:128, startX:0*256, startY:0},
+				{width:128, height:128, startX:2*256, startY:768},
+				{width:128, height:128, startX:640, startY:768},
+				{width:128, height:128, startX:3*256, startY:768},
 			]
 		}
 	}

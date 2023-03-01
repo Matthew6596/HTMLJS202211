@@ -1,15 +1,21 @@
 /*
 List of things to do:
 
--Sound effects
--Projectile Animation
--Enemy img/sprites
+=====Sound=====
+-Sound effects^
+	-Walk
+
+=====Art=====
 -Player death animation
--Wall
+-Game over image
+-Improve cave/building*
+-Environmental Hazards*
+-Walkland Animation*
+
+=====Code=====
 -Platforms/level layout
 -multiple enemies*
--Improve cave/building
--Game over screen overlay / Restart Option
+-Improve cave/building*
 -Game win state*
 -Environmental Hazards*
 
@@ -21,25 +27,31 @@ var friction = {x:.85,y:.97};
 var stage = new GameObject({width:canvas.width, height:canvas.height});
 
 //Avatar
-var wiz = new GameObject({y:canvas.height/2-64,width:64, height:192, spriteData:playerData}).makeSprite(playerData);
+var wiz = new GameObject({y:canvas.height/2-48,width:64, height:192, spriteData:playerData}).makeSprite(playerData);
 wiz.force=1;
 var alive = true;
-var enemy = new GameObject({y:canvas.height/2-64, x:1024, width:64, height:192, color:"orange"});
+var enemy = new GameObject({y:canvas.height-96, x:1024, width:64, height:128, color:"orange"});
 enemy.force=0.5;
+enemy.img.src=`characterDrafts/sprites/enemy.png`;
 
 //The ground
 var ground = new GameObject({width:canvas.width*10, x:(canvas.width*10/2)-32,height:32,y:canvas.height-16, color:"green"});
-ground.img.src=`images/ground.png`;
+ground.img.src=`tiles/tileIMGs/ground.png`;
 
 //A platform
-var plat = new GameObject({width:256, height:64,y:canvas.height-200, color:"green"});
+var plat = new GameObject({width:256, height:32,y:canvas.height-200, color:"green"});
+var plat2 = new GameObject({width:128, height:32,y:canvas.height-200, color:"green", x:2440});
+var plat3 = new GameObject({width:128, height:32,y:canvas.height-200, color:"green", x:2912});
 var wall = new GameObject({width:64, height:320,y:canvas.height-192, x:2680, color:"grey"});
 wall.img.src=`tiles/tileIMGs/brickwall.png`;
+plat.img.src=`tiles/tileIMGs/platform.png`
 
 //A level object when it is moved other objects move with it.
 var level = new GameObject({x:0,y:0});
 ground.world = level;
 plat.world = level;
+plat2.world = level;
+plat3.world = level;
 wall.world = level;
 
 //Cave foreground Tile Grid
@@ -63,7 +75,7 @@ g1.add([ground,leftBorder, caveHit.grid, wall]);
 
 //Used to draw the rectangles
 var rects = new Group();
-rects.add([ground,plat,wall]);
+rects.add([ground,plat,wall,plat2,plat3]);
 
 //used to render the sprites
 var sprites = new Group();
@@ -74,7 +86,7 @@ front.add([cave.grid]);
 
 //list of items to be rendered in the level
 var levelItems=new Group();
-levelItems.add([caveBack.grid, ground, plat, wall, cave.grid]);
+levelItems.add([caveBack.grid, ground, plat, wall, cave.grid, plat2, plat3]);
 
 //Very back background
 var sky = new GameObject({width:canvas.width*4, height:canvas.height, color:"cyan", x:100});
@@ -128,8 +140,8 @@ function enemyAI()
 		enemyMoveCount=-randNum2;
 	}
 	else if(enemyMoveCount<0){
-		if(rand3){enemy.vx += -enemy.force; enemy.dir=-1;}
-		else{enemy.vx += enemy.force; enemy.dir=1;}
+		if(rand3){enemy.vx += -enemy.force; enemy.dir=1;}
+		else{enemy.vx += enemy.force; enemy.dir=-1;}
 	}
 	enemyMoveCount++;
 }
@@ -146,22 +158,50 @@ var chargeTime = 0;
 var chargin;
 var initIdle = true;
 var wasAttack = false;
+var volFadeCheck = false;
+var volFadeCheck2 = false;
+var volFadeCheck3 = false;
+var soundPlaying = [false,false,false];
 
 gameStates[`level1`] = function()
 {
-
 	sounds.manualLoop(`lvlMusic`,56,112);
-	if(!alive){wiz.changeState(`dead`)}
+	if(wiz.currentState==`startUp`||wiz.currentState==`charging`){
+		
+		if(!soundPlaying[0]){sounds.play(`s_charge`,0,false,0.5);}
+		sounds.manualLoop(`s_charge`,0,11);
+		volFadeCheck3=true;
+		soundPlaying[0] = true;
+	}else if(volFadeCheck3){
+		soundPlaying[0] = false;
+		sounds.fade(`s_charge`,0.1,-0.1);
+	}
+	if(!alive){
+		volFadeCheck = true;
+		sounds.fade(`lvlMusic`,0.12,-0.1);
+		wiz.changeState(`dead`);
+	}
 	else{
+		sounds.fade(`gameOverMusic`,0.05,-0.02);
+		if(volFadeCheck){
+			sounds.fade(`lvlMusic`,0.5,0.01);
+		}
+		/*if(volFadeCheck2){
+			sounds.fade(`gameOverMusic`,0.14,-0.01);
+		}*/
+		
 		if(initIdle){
 			wiz.canJump=true;
 			wiz.changeState(`idle`);
 			initIdle=false;
 		}
 		if(wiz.currentState==`land`||wiz.currentState==`walkLand`){landTimer--;}
-		else{landTimer=6;}
+		else{landTimer=3;}
 
 		if(chargin&&!keys[` `]&&chargeTime>=20){
+			var blastVol = 0.00009*Math.pow(bullets[currentBullet].width,2);
+			console.log(blastVol);
+			sounds.play(`s_blast`,0,false,blastVol);
 			wiz.changeState(`attack`);
 			chargin = false;
 			wiz.vy=0;
@@ -171,6 +211,7 @@ gameStates[`level1`] = function()
 			bullets[currentBullet].setHitBox({width:size,height:size}); //direction/speed
 
 			currentBullet++;
+
 		}
 		if(wiz.currentState==`attack`){
 			attCool--;
@@ -181,6 +222,8 @@ gameStates[`level1`] = function()
 		{
 			if((wiz.currentState==`fall`|| wiz.currentState==`land`||wiz.currentState==`jumpPeak`)&&landTimer>0&&wiz.vy==0){
 				wiz.changeState(`land`);
+				if(!soundPlaying[2]){sounds.play(`s_jump`,0,false,0.05);}
+				soundPlaying[2] = true;
 			}else{
 				if(wiz.dir==-1){
 					wiz.changeState(`idle`);
@@ -195,9 +238,12 @@ gameStates[`level1`] = function()
 		{
 			wiz.top={x:0,y:0};
 			wiz.changeState(`crouch`);
+			if(!soundPlaying[1]){sounds.play(`s_crouch`,0,false,0.4);}
+			soundPlaying[1] = true;
 		}
 		else
 		{
+			soundPlaying[1] = false;
 			wiz.top={x:0,y:-wiz.hitBoxHeight/2};
 		}
 
@@ -206,10 +252,14 @@ gameStates[`level1`] = function()
 			wiz.dir=1;
 			if(!keys[`S`]) 
 			{
-				if((wiz.currentState==`fall`|| wiz.currentState==`walkLand`||wiz.currentState==`jumpPeak`)&&wiz.canJump&&landTimer>0&&wiz.vy==0){
-					wiz.changeState(`walkLand`);
-				}else{
-					wiz.changeState(`walk`);
+				if(wiz.canJump){
+					if((wiz.currentState==`fall`|| wiz.currentState==`walkLand`||wiz.currentState==`jumpPeak`)&&landTimer>0&&wiz.vy==0){
+						wiz.changeState(`walkLand`);
+						if(!soundPlaying[2]){sounds.play(`s_jump`,0,false,0.05);}
+						soundPlaying[2] = true;
+					}else{
+						wiz.changeState(`walk`);
+					}
 				}
 				wiz.vx += wiz.force;
 				
@@ -221,10 +271,14 @@ gameStates[`level1`] = function()
 			wiz.dir=-1;
 			if(!keys[`S`]) 
 			{
-				if((wiz.currentState==`fall`|| wiz.currentState==`walkLand`||wiz.currentState==`jumpPeak`)&&wiz.canJump&&landTimer>0&&wiz.vy==0){
-					wiz.changeState(`walkLand`);
-				}else{
-					wiz.changeState(`walk`);
+				if(wiz.canJump){
+					if((wiz.currentState==`fall`|| wiz.currentState==`walkLand`||wiz.currentState==`jumpPeak`)&&landTimer>0&&wiz.vy==0){
+						wiz.changeState(`walkLand`);
+						if(!soundPlaying[2]){sounds.play(`s_jump`,0,false,0.05);}
+						soundPlaying[2] = true;
+					}else{
+						wiz.changeState(`walk`);
+					}
 				}
 				wiz.vx += -wiz.force;
 			}
@@ -236,16 +290,21 @@ gameStates[`level1`] = function()
 			wiz.vy = wiz.jumpHeight;
 			//sounds.play(`splode`,1)
 		}
-		if(((wiz.vy>0&&wiz.canJump) || wiz.vy>5)&& !chargin && attCool<0 && !wasAttack){
+		if(((wiz.vy>0&&wiz.canJump) || wiz.vy>8)&& !chargin && attCool<0 && !wasAttack){
 			wiz.changeState(`fall`);
 		}
 		if(!wiz.canJump&& !chargin && attCool<0){
-			if(Math.abs(wiz.vy)<5){
+			if(Math.abs(wiz.vy)<8){
 				wiz.changeState(`jumpPeak`);
 			}
 			else if(wiz.vy<0){
 				wiz.changeState(`jump`);
+				if(!soundPlaying[2]){sounds.play(`s_jump`,0,false,0.05);}
+				soundPlaying[2] = true;
 			}
+		}
+		if(wiz.currentState!=`jump`&&wiz.currentState!=`land`&&wiz.currentState!=`walkLand`){
+			soundPlaying[2] = false;
 		}
 		shotTimer--;
 		if(shotTimer <=0)
@@ -275,7 +334,7 @@ gameStates[`level1`] = function()
 				bullets[currentBullet].vy = 0;
 				bullets[currentBullet].world = level; //need
 				bullets[currentBullet].x = wiz.x-level.x + (wiz.dir * 32) ; //player xpos
-				bullets[currentBullet].y = wiz.y - 20; //player ypos
+				bullets[currentBullet].y = wiz.y - 12; //player ypos
 				bullets[currentBullet].dir = wiz.dir; //direction
 				
 				//sounds.play(`splode`,1)
@@ -290,7 +349,7 @@ gameStates[`level1`] = function()
 			if(chargin){
 				//ADD PROJECTILE CHARGE
 				bullets[currentBullet].vy = 0;
-				bullets[currentBullet].y = wiz.y - 20; //player ypos
+				bullets[currentBullet].y = wiz.y - 12; //player ypos
 				if(size<80){
 					bullets[currentBullet].width ++;
 					bullets[currentBullet].height ++;
@@ -306,25 +365,31 @@ gameStates[`level1`] = function()
 		{
 			shotTimer=0;
 		}
+		if(wiz.currentState!=`attack`){
+			wasAttack = false;
+		}
 	}
+	//console.log(wiz.currentState);
 	
 	//-----Player movement-----///
+	wiz.vy+= gravity;
+	wiz.vy *= friction.y;
+	if(chargin){gravity=0.02;}
+	else if(attCool>=0){gravity=0.4;}
+	else{gravity=1;}
+	wiz.y += Math.round(wiz.vy);
 	if(alive){
-		wiz.vy+= gravity;
 		wiz.vx *= friction.x;
-		wiz.vy *= friction.y;
 		wiz.x += Math.round(wiz.vx);
-		if(chargin){gravity=0.02;}
-		else if(attCool>=0){gravity=0.4;}
-		else{gravity=1;}
-		wiz.y += Math.round(wiz.vy);
 	}else{
 		gameOver();
 	}
 
 	let offset = {x:Math.round(wiz.vx), y:Math.round(wiz.vy)}
 	
-	while (plat.overlap(wiz.bottom) && wiz.vy>=0)
+	wiz.canJump = false;
+
+	while ((plat.overlap(wiz.bottom)||plat2.overlap(wiz.bottom)||plat3.overlap(wiz.bottom)) && wiz.vy>=0)
 	{
 		wiz.vy=0;
 		wiz.canJump = true;
@@ -370,15 +435,15 @@ gameStates[`level1`] = function()
 
 	//---Enemy Movement && Collision---//
 
-	if(enemy.x<5600){
-
+	if(enemy.x<5600)
+	{
 		enemy.vy += gravity;
 		enemy.vx *= friction.x;
+		if(enemy.health<95){enemy.vx *= 0.8;}
 		enemy.vy *= friction.y;
 		enemy.x += Math.round(enemy.vx);
 		enemy.y += Math.round(enemy.vy);
 		enemyAI();
-
 	}
 	else{enemy.x=5600}
 
@@ -407,7 +472,12 @@ gameStates[`level1`] = function()
 	}
 
 	//Enemy Player Collision
-	if(enemy.overlap(wiz)){wiz.y=canvas.height+400; alive=false;}
+	if(enemy.overlap(wiz)){
+		if(alive){sounds.play(`gameOverMusic`,0,false,0.5); sounds.play(`s_crouch`,0,false,1);}
+		alive=false;
+		wiz.vx = 0;
+		gameStates.changeState(`gameOver`);
+	}
 	
 	
 
@@ -442,9 +512,12 @@ gameStates[`level1`] = function()
 
 	//Sets up pattern for the ground
 	var groundPattern = context.createPattern(ground.img, `repeat`);
+	var platPattern = context.createPattern(plat.img, `repeat`);
 	//Applies pattern to ground and platform
 	ground.color = groundPattern;
-	plat.color = groundPattern;
+	plat.color = platPattern;
+	plat2.color = platPattern;
+	plat3.color = platPattern;
 	wall.color = context.createPattern(wall.img, `repeat`);
 
 	//Sets up pattern for the sky
@@ -464,7 +537,7 @@ gameStates[`level1`] = function()
 	bg.drawStaticImage([-8,-32]);
 
 	//enemy render
-	enemy.render(`drawRect`, [256]);
+	enemy.drawStaticImage();
 	
 	//alternate methd for rendering the repeating background
 	//rbg.render(`drawStaticImage`, [0,0])
@@ -493,6 +566,7 @@ gameStates[`level1`] = function()
 		//bullets[i].angle+=10
 
 		if(bullets[i].overlap(enemy)){//Enemy Hit By Projectile!!!!
+			sounds.play(`s_eHit`,0,false,0.05);
 			enemy.health-=bullets[i].width*1.5;
 			bullets[i].y=-128
 		}
@@ -506,7 +580,7 @@ gameStates[`level1`] = function()
 		}
 	}
 	if(enemy.health<=0){enemy.x=5600;}
-	console.log(enemy.health);
+	//console.log(wiz.x);
 	
 	
 	//Renders front of cave
