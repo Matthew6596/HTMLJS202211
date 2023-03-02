@@ -150,8 +150,13 @@ function resetLvl(){
 	wiz.force=1;
 	alive = true;
 	enemy = new GameObject({y:canvas.height-96, x:1024, width:64, height:128, color:"orange"});
+	enemy2 = new GameObject({y:canvas.height-96, x:1024, width:64, height:128, color:"orange"});
 	enemy.force=0.5;
+	enemy2.force=0.5;
 	enemy.img.src=`characterDrafts/sprites/enemy.png`;
+	enemy2.img.src=`characterDrafts/sprites/enemy.png`;
+
+	enemies = [enemy,enemy2];
 
 	//The ground
 	ground = new GameObject({width:canvas.width*10, x:(canvas.width*10/2)-32,height:32,y:canvas.height-16, color:"green"});

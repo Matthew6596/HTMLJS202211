@@ -11,12 +11,12 @@ document.addEventListener("keyup",keyUp);
 
 var globalTimer = 0;
 var worstMutatePercent = 30;
-var roundTime = 100000;
+var roundTime = 60000;
 var roundCount = 0;
 var paused = false;
 
 var a_mathFunctions = ["add","sub","mult","div","root","pow"]; //List of possible math functions/operations without 
-var a_invMathFuncs = ["sub","add","div","mult","pow","root"]; //List of possible math functions/operations without 
+var a_invMathFuncs = ["sub","add","div","mult","pow","root"];
 
 function keyDown(e){//w:87 a:65 s:83 d:68 space:32}
     if(e.which==65||e.which==37){matt.left = true;}
@@ -35,7 +35,7 @@ function keyDown(e){//w:87 a:65 s:83 d:68 space:32}
     }
     if(e.which==70){
         if(roundTime==500){
-            roundTime=100000;
+            roundTime=60000;
             for(var rr=0; rr<AIs.length; rr++){
                 AIs[rr].spd = 2.5;
             }
@@ -134,7 +134,7 @@ function Player(col){
         if(this.down){
             this.y += this.spd;
         }
-        bounds(this);
+        //bounds(this);
     }
 }
 
@@ -174,9 +174,9 @@ function hitGoal(){
 }
 
 function resetRound(){
-    for(var rr=0; rr<AIs.length; rr++){
+    /*for(var rr=0; rr<AIs.length; rr++){
         AIs[rr].dist = getDist(AIs[rr].x,AIs[rr].y,goal.x,goal.y);
-    }
+    }*/
     roundCount++;
     globalTimer = 0;
     goal.x = randNum(goal.radius,canvas.width-goal.radius);
@@ -184,13 +184,13 @@ function resetRound(){
     sortAI();
     /*if(roundCount%50==0){indvMutate();}
     if(roundCount%500==0){console.log(roundCount);}*/
-    for(var rr=0; rr<AIs.length; rr++){
+    /*for(var rr=0; rr<AIs.length; rr++){
         //AIs[rr].x = canvas.width/2;
         //AIs[rr].y = canvas.height/2;
         AIs[rr].won = false;
         AIs[rr].winTime = 0;
         AIs[rr].dist = canvas.width*canvas.height;
-    }
+    }*/
     //Bob.x = canvas.width/2;
     //Bob.y = canvas.height/2;
     if(!paused){setTimeout(resetRound,roundTime);}
@@ -241,11 +241,20 @@ function sortAI(){
 
     console.log("__________________________________");
     console.log("End of Round "+roundCount);
+    var averageScore = 0;
+    for(var m=0; m<AIs.length; m++){
+        AIs[m] = temp2[m];
+        console.log((m+1)+". "+AIs[m].color+" - "+Math.round(AIs[m].score));
+        averageScore += AIs[m].score;
+        AIs[m].score = 0;
+    }
+    averageScore /= AIs.length;
+    console.log("----------------------------------\nAverage Score: "+averageScore);
     /*for(var sa=0; sa<AIs.length; sa++){
         
     }*/
     //if(roundCount%5==0){mutateAI(temp2);}
-    mutateAI(temp2);
+    //mutateAI(temp2);
 }
 
 function mutateAI(arr){
@@ -305,7 +314,7 @@ function manageAIs(){
 
         AIs[ma].move();
 
-        //AI hit goal
+        //I fogor
         /*if(collide(AIs[ma],goal)){
             if(!AIs[ma].won){
                 AIs[ma].won=true; AIs[ma].winTime=globalTimer;
@@ -319,19 +328,37 @@ function manageAIs(){
             }
         }*/
 
-        //AI dist
-        AIs[ma].dist = getDist(AIs[ma].x,AIs[ma].y,goal.x,goal.y);
-        if(AIs[ma].dist<AIs[ma].prevDist){
-            AIs[ma].brain.aiGetsCookie=true;
-        }else if(!collide(AIs[ma],goal)){
-            AIs[ma].brain.aiGetsCookie=false;
-        }
-        if(collide(AIs[ma],goal)){AIs[ma].brain.goalReached=true;}
-        else{AIs[ma].brain.goalReached=false;}
-        AIs[ma].score += 10/(AIs[ma].dist+1);
-        AIs[ma].prevDist = AIs[ma].dist;
+        /*----------AI Cookie Manager----------*/
+        aiManageCookies(ma); //"Feedback" for AI
     }
     //console.log(AIs[0].brian.defaultConf);
+}
+
+function aiManageCookies(ma){
+    AIs[ma].dist = getDist(AIs[ma].x,AIs[ma].y,goal.x,goal.y);
+        if(AIs[ma].dist<AIs[ma].prevDist){
+            AIs[ma].brain.aiGetsCookie=true;
+            AIs[ma].noCookiesForAI = false;
+        }
+        else if(!collide(AIs[ma],goal)){
+            AIs[ma].brain.aiGetsCookie=false;
+            if(AIs[ma].dist>AIs[ma].prevDist+2.6||(AIs[ma].dist>AIs[ma].prevDist&&AIs[ma].dist>300)){
+                AIs[ma].noCookiesForAI = true;
+                AIs[ma].brain.manageAICookies(-10);
+            }
+            //if(AIs[ma].dist>AIs[ma].prevDist&&AIs[ma].dist>300){AIs[ma].noCookiesForAI = true;}
+        }
+        if(collide(AIs[ma],goal)){
+            if(!AIs[ma].brain.goalReached){
+                AIs[ma].brain.goalReached=true;
+                AIs[ma].brain.manageAICookies(10);
+            }
+            
+        }
+        else{AIs[ma].brain.goalReached=false;}
+
+        AIs[ma].score += 10/(AIs[ma].dist+1);
+        AIs[ma].prevDist = AIs[ma].dist;
 }
 
 function initilizeAIs(){
@@ -434,9 +461,10 @@ function ai(numInputs,numOutputs,namey){
     this.msgCheck = true;
 
     //Additional mutatable attributes
-    this.sendTime = randNum(1000,2000); //
+    this.sendTime = randNum(1000,2000); //Time before AI sends it
     this.uhohTolerance = randNum(10,100); //Error tolerance before this.uhoh=true
     this.uhohCounter = 0; //Error tolerance counter
+    this.noCookiesForAI = false;
 
     //out
     this.out = []; //Set of outputs
@@ -499,6 +527,8 @@ function ai(numInputs,numOutputs,namey){
         for(var ri=0; ri<this.funcLength[num]; ri++){
             if(percent(this.confidence[num][ri])){
                 this.out[num] = mathFunctions(this.out[num],this.param[num][ri+1],this.func[num][ri]);
+            }else if(this.noCookiesForAI){
+                this.out[num] = mathFunctions(this.out[num],this.param[num][ri+1],this.invFunc[num][ri]);
             }
         }
 
@@ -678,4 +708,4 @@ function percent(chance){
 }
 
 Bob.brain = bob;
-//setTimeout(resetRound,roundTime);
+setTimeout(resetRound,roundTime);

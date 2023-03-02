@@ -27,8 +27,13 @@ var wiz = new GameObject({y:canvas.height/2-48,width:64, height:192, spriteData:
 wiz.force=1;
 var alive = true;
 var enemy = new GameObject({y:canvas.height-96, x:1024, width:64, height:128, color:"orange"});
+var enemy2 = new GameObject({y:canvas.height-96, x:3096, width:64, height:128, color:"orange"});
 enemy.force=0.5;
+enemy2.force=0.5;
 enemy.img.src=`characterDrafts/sprites/enemy.png`;
+enemy2.img.src=`characterDrafts/sprites/enemy.png`;
+
+var enemies = [enemy,enemy2];
 
 //The ground
 var ground = new GameObject({width:canvas.width*10, x:(canvas.width*10/2)-32,height:32,y:canvas.height-16, color:"green"});
@@ -40,7 +45,7 @@ var plat2 = new GameObject({width:128, height:32,y:canvas.height-200, color:"gre
 var plat3 = new GameObject({width:128, height:32,y:canvas.height-200, color:"green", x:2912});
 var wall = new GameObject({width:64, height:320,y:canvas.height-192, x:2680, color:"grey"});
 wall.img.src=`tiles/tileIMGs/brickwall.png`;
-plat.img.src=`tiles/tileIMGs/platform.png`
+plat.img.src=`tiles/tileIMGs/platform.png`;
 
 //A level object when it is moved other objects move with it.
 var level = new GameObject({x:0,y:0});
@@ -123,23 +128,23 @@ for(let i=0; i<100; i++)
 
 /*------------------^^BULLET STUFF^^----------------------*/
 
-var enemyMoveCount = 120;
+var enemyMoveCount = [120,120];
 var rand3 = Math.round(rand(0,1))==0;
 
-function enemyAI()
+function enemyAI(eNum)
 {
 	var randNum1 = rand(20,100);
 	var randNum2 = rand(20,140);
 	
-	if(enemyMoveCount>=randNum1){
+	if(enemyMoveCount[eNum]>=randNum1){
 		rand3 = Math.round(rand(0,1))==0;
-		enemyMoveCount=-randNum2;
+		enemyMoveCount[eNum]=-randNum2;
 	}
-	else if(enemyMoveCount<0){
-		if(rand3){enemy.vx += -enemy.force; enemy.dir=1;}
-		else{enemy.vx += enemy.force; enemy.dir=-1;}
+	else if(enemyMoveCount[eNum]<0){
+		if(rand3){enemies[eNum].vx += -enemies[eNum].force; enemies[eNum].dir=1;}
+		else{enemies[eNum].vx += enemies[eNum].force; enemies[eNum].dir=-1;}
 	}
-	enemyMoveCount++;
+	enemyMoveCount[eNum]++;
 }
 
 function gameOver(){
@@ -442,50 +447,53 @@ gameStates[`level1`] = function()
 
 
 	//---Enemy Movement && Collision---//
+	function eMoveCollide(eInd){
+		if(enemies[eInd].x<5600)
+		{
+			enemies[eInd].vy += gravity;
+			enemies[eInd].vx *= friction.x;
+			if(enemies[eInd].health<95){enemies[eInd].vx *= 0.8;}
+			enemies[eInd].vy *= friction.y;
+			enemies[eInd].x += Math.round(enemies[eInd].vx);
+			enemies[eInd].y += Math.round(enemies[eInd].vy);
+			enemyAI(eInd);
+		}
+		else{enemies[eInd].x=5600}
 
-	if(enemy.x<5600)
-	{
-		enemy.vy += gravity;
-		enemy.vx *= friction.x;
-		if(enemy.health<95){enemy.vx *= 0.8;}
-		enemy.vy *= friction.y;
-		enemy.x += Math.round(enemy.vx);
-		enemy.y += Math.round(enemy.vy);
-		enemyAI();
-	}
-	else{enemy.x=5600}
+		while(g1.collide(enemies[eInd].bottom) && enemies[eInd].vy>=0)
+		{
+			enemies[eInd].canJump = true;
+			enemies[eInd].vy=0;
+			enemies[eInd].y--;
+		}
+		while(g1.collide(enemies[eInd].top) && enemies[eInd].vy<=0 )
+		{
+			enemies[eInd].vy=0;
+			enemies[eInd].y++;
+		}
+		while(g1.collide(enemies[eInd].left) && enemies[eInd].vx<=0 )
+		{
+				
+			enemies[eInd].vx=0;
+			enemies[eInd].x++;
+		}
+		while(g1.collide(enemies[eInd].right) && enemies[eInd].vx>=0 )
+		{
+				
+			enemies[eInd].vx=0;
+			enemies[eInd].x--;
+		}
 
-	while(g1.collide(enemy.bottom) && enemy.vy>=0)
-	{
-		enemy.canJump = true;
-			enemy.vy=0;
-			enemy.y--;
+		//Enemy Player Collision
+		if(enemies[eInd].overlap(wiz)){
+			if(alive){sounds.play(`gameOverMusic`,0,false,0.5); sounds.play(`s_crouch`,0,false,1);}
+			alive=false;
+			wiz.vx = 0;
+			gameStates.changeState(`gameOver`);
+		}
 	}
-	while(g1.collide(enemy.top) && enemy.vy<=0 )
-	{
-			enemy.vy=0;
-			enemy.y++;
-	}
-	while(g1.collide(enemy.left) && enemy.vx<=0 )
-	{
-			
-			enemy.vx=0;
-			enemy.x++;
-	}
-	while(g1.collide(enemy.right) && enemy.vx>=0 )
-	{
-			
-			enemy.vx=0;
-			enemy.x--;
-	}
-
-	//Enemy Player Collision
-	if(enemy.overlap(wiz)){
-		if(alive){sounds.play(`gameOverMusic`,0,false,0.5); sounds.play(`s_crouch`,0,false,1);}
-		alive=false;
-		wiz.vx = 0;
-		gameStates.changeState(`gameOver`);
-	}
+	eMoveCollide(0);
+	eMoveCollide(1);
 	
 	
 
@@ -497,11 +505,11 @@ gameStates[`level1`] = function()
 	atLeftEdge = level.x>0;
 	atRightEdge = level.x<-4096;
 
-	while(level.x>=2){level.x--; wiz.x--; enemy.x--;}//12
-	while(level.x<=-4098){level.x++; wiz.x++; enemy.x++;}//4108
+	while(level.x>=2){level.x--; wiz.x--; enemy.x--; enemy2.x--;}//12
+	while(level.x<=-4098){level.x++; wiz.x++; enemy.x++; enemy2.x++}//4108
 
 	if(!atLeftEdge&&!atRightEdge){wiz.x -= offset.x;}
-	if((wiz.x<524&&wiz.x>500)){level.x -= offset.x; enemy.x-=offset.x}
+	if((wiz.x<524&&wiz.x>500)){level.x -= offset.x; enemy.x-=offset.x; enemy2.x-=offset.x;}
 
 	//moves repeating background
 	rbg.x = level.x*.5;
@@ -546,6 +554,7 @@ gameStates[`level1`] = function()
 
 	//enemy render
 	enemy.drawStaticImage();
+	enemy2.drawStaticImage();
 	
 	//alternate methd for rendering the repeating background
 	//rbg.render(`drawStaticImage`, [0,0])
@@ -578,6 +587,11 @@ gameStates[`level1`] = function()
 			enemy.health-=bullets[i].width*1.5;
 			bullets[i].y=-128
 		}
+		if(bullets[i].overlap(enemy2)){//Enemy Hit By Projectile!!!!
+			sounds.play(`s_eHit`,0,false,0.05);
+			enemy2.health-=bullets[i].width*1.5;
+			bullets[i].y=-128
+		}
 
 		while(g1.collide(bullets[i].bottom) && bullets[i].vy>=0)//Projectile hits wall
 		{
@@ -588,6 +602,7 @@ gameStates[`level1`] = function()
 		}
 	}
 	if(enemy.health<=0){enemy.x=5600;}
+	if(enemy2.health<=0){enemy2.x=5600;}
 	//console.log(wiz.x);
 	
 	
