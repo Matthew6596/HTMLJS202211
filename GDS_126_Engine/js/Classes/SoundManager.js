@@ -15,7 +15,6 @@ class SoundManager
             this[_sound].loop = _loop
             this[_sound].volume = _vol
             this[_sound].play();
-            console.log(this[_sound]);
         }
         catch
         {

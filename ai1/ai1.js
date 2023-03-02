@@ -11,7 +11,7 @@ document.addEventListener("keyup",keyUp);
 
 var globalTimer = 0;
 var worstMutatePercent = 30;
-var roundTime = 2000;
+var roundTime = 100000;
 var roundCount = 0;
 var paused = false;
 
@@ -35,7 +35,7 @@ function keyDown(e){//w:87 a:65 s:83 d:68 space:32}
     }
     if(e.which==70){
         if(roundTime==500){
-            roundTime=2000;
+            roundTime=100000;
             for(var rr=0; rr<AIs.length; rr++){
                 AIs[rr].spd = 2.5;
             }
@@ -191,8 +191,8 @@ function resetRound(){
         AIs[rr].winTime = 0;
         AIs[rr].dist = canvas.width*canvas.height;
     }
-    Bob.x = canvas.width/2;
-    Bob.y = canvas.height/2;
+    //Bob.x = canvas.width/2;
+    //Bob.y = canvas.height/2;
     if(!paused){setTimeout(resetRound,roundTime);}
 }
 
@@ -321,14 +321,17 @@ function manageAIs(){
 
         //AI dist
         AIs[ma].dist = getDist(AIs[ma].x,AIs[ma].y,goal.x,goal.y);
-        if(AIs[ma].dist<=AIs[ma].prevDist){
+        if(AIs[ma].dist<AIs[ma].prevDist){
             AIs[ma].brain.aiGetsCookie=true;
-        }else{
+        }else if(!collide(AIs[ma],goal)){
             AIs[ma].brain.aiGetsCookie=false;
         }
+        if(collide(AIs[ma],goal)){AIs[ma].brain.goalReached=true;}
+        else{AIs[ma].brain.goalReached=false;}
         AIs[ma].score += 10/(AIs[ma].dist+1);
         AIs[ma].prevDist = AIs[ma].dist;
     }
+    //console.log(AIs[0].brian.defaultConf);
 }
 
 function initilizeAIs(){
@@ -336,6 +339,26 @@ function initilizeAIs(){
         AIs[ma].brain = new ai(4,4);
         AIs[ma].brain.mutate();
     }
+    AIs[0].brain.name = "red";
+    AIs[1].brain.name = "orange";
+    AIs[2].brain.name = "green";
+    AIs[3].brain.name = "cyan";
+    AIs[4].brain.name = "blue";
+    AIs[5].brain.name = "purple";
+    AIs[6].brain.name = "pink";
+    AIs[7].brain.name = "black";
+    AIs[8].brain.name = "grey";
+    AIs[9].brain.name = "saddlebrown";
+    AIs[10].brain.name = "magenta";
+    AIs[11].brain.name = "crimson";
+    AIs[12].brain.name = "gold";
+    AIs[13].brain.name = "lightgrey";
+    AIs[14].brain.name = "aqua";
+    AIs[15].brain.name = "navy";
+    AIs[16].brain.name = "beige";
+    AIs[17].brain.name = "darkseagreen";
+    AIs[18].brain.name = "deeppink";
+    AIs[19].brain.name = "tan";
 }
 
 function manageBob(){
@@ -386,10 +409,11 @@ function main(){
 
 /*---<<<---<<<---<<<---AI-OBJECT--->>>--->>>--->>>---*///========================================================
 
-function ai(numInputs,numOutputs){
+function ai(numInputs,numOutputs,namey){
     this.inp = []; //Inputs in !ARRAY! form
     this.numInp = numInputs;//set
-    this.timey;
+    this.timey = 0;
+    this.name = namey;
 
     this.func = []; //P(); functions (should be 2D array of strings)
     this.invFunc = []; //this.func opposite functions
@@ -399,6 +423,7 @@ function ai(numInputs,numOutputs){
     this.paramOrder = []; //Order of param entered into function, length=numFunc
     this.param = []; //NEED at LEAST 2 for each (2D array)
 
+    this.complexConfidence = false;
     this.defaultConf = 50;
     this.confidence = []; //Num 0-100, 2D array size of this.func (mutatable)
     this.sendIt = false; //Overrides confidence to 100%
@@ -406,10 +431,12 @@ function ai(numInputs,numOutputs){
     //Confidence will be randNum roll that determines whether ai actually executes mathematical function
 
     this.depressed = false; //If set to true, ai will attempt to commit suice :(
+    this.msgCheck = true;
 
     //Additional mutatable attributes
-    this.sendTime; //
-    this.uhohTolerance; //Error tolerance before this.uhoh=true
+    this.sendTime = randNum(1000,2000); //
+    this.uhohTolerance = randNum(10,100); //Error tolerance before this.uhoh=true
+    this.uhohCounter = 0; //Error tolerance counter
 
     //out
     this.out = []; //Set of outputs
@@ -430,12 +457,37 @@ function ai(numInputs,numOutputs){
     //
 
     this.thinky = function(){
+        this.timey++;
+        if(this.goalReached){this.aiGetsCookie=true;}
+        if(this.timey>=this.sendTime&&this.timey<this.sendTime+100){
+            //console.log(this.name+" is sending it");
+            this.sendIt = true;
+            this.defaultConf = 100;
+        }
+        if(this.timey>=this.sendTime*4){
+            this.sendIt=false;
+            this.defaultConf-=30;
+            this.timey=0;
+            this.sendTime = randNum(1000,2000);
+            this.uhohCounter = 0;
+        }
+        if(this.uhohCounter>=this.uhohTolerance){
+            //console.log(this.name+" made an oopsie");
+            this.uhoh = true;
+            this.sendIt = false;
+        }
+        if(this.depressed&&this.msgCheck){console.log(this.name+" is depressed."); this.msgCheck = false;}
+        if(this.depressed&&this.defaultConf>=60){console.log(this.name+" got better."); this.depressed=false; this.msgCheck=true;}
         //this.setup2DArrays();
         this.aiEatsCookie();
         for(var thinkyI=0; thinkyI<this.numFunc; thinkyI++){
-            this.confidence[thinkyI] = [];
-            for(var sa1=0; sa1<this.funcLength[thinkyI]; sa1++){
-                this.confidence[thinkyI][sa1] = this.defaultConf;
+            if(this.complexConfidence){
+                //idk bruh
+            }else{
+                this.confidence[thinkyI] = [];
+                for(var sa1=0; sa1<this.funcLength[thinkyI]; sa1++){
+                    this.confidence[thinkyI][sa1] = this.defaultConf;
+                }
             }
             this.readFunc(thinkyI);
         }
@@ -514,29 +566,36 @@ function ai(numInputs,numOutputs){
                 }
             }
         }
-        console.log(this.func);
-        console.log(this.invFunc);
     }
 
     this.aiEatsCookie = function(){
         if(this.aiGetsCookie){
-            if(this.defaultConf<100){this.defaultConf+=2;}
+            this.defaultConf++;
+            if(this.sendIt){this.defaultConf++;}
         }else{
-            if(this.defaultConf>0){this.defaultConf--;}
+            this.defaultConf--;
+            if(this.sendIt){this.uhohCounter++;}
+            if(this.uhoh){this.defaultConf--;}
         }
+        
+        if(this.defaultConf<0){this.depressed = true;}
     }
 
     this.autoMutate = function(){
-        if(this.defaultConf==0&&this.autoMutates){
+        if(this.defaultConf<10&&this.autoMutates){
             this.mutate();
             this.defaultConf=50;
         }
+    }
+
+    this.manageAICookies = function(numCookies){
+        this.defaultConf += numCookies;
     }
 }
 
 
 
-var bob = new ai(4,4); //Creating Bob
+var bob = new ai(4,4,"Bob"); //Creating Bob
 
 /*bob.inp[0] = 3; //Giving Bob's Inputs
 bob.inp[1] = -2;
@@ -555,7 +614,7 @@ bob.funcLength[0] = 1;
 bob.funcLength[1] = 1;
 bob.funcLength[2] = 1;
 bob.funcLength[3] = 1;
-for(var b=0; b<bob.numFunc+1; b++){
+for(var b=0; b<bob.numFunc+1; b++){ //bob is the golden example to the other ai
     bob.paramOrder[b] = [];
     bob.param[b] = [];
 }
@@ -569,6 +628,7 @@ bob.paramOrder[3][0] = 3;
 bob.paramOrder[3][1] = 1;
 bob.defaultConf = 100;
 bob.autoMutates = false;
+bob.aiGetsCookie = true;
 //bob.thinky();
 //bob.consoleOut(); //Testing Bob's Brain
 
@@ -618,4 +678,4 @@ function percent(chance){
 }
 
 Bob.brain = bob;
-setTimeout(resetRound,roundTime);
+//setTimeout(resetRound,roundTime);

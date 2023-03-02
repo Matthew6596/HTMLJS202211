@@ -1,10 +1,6 @@
 /*
 List of things to do:
 
-=====Sound=====
--Sound effects^
-	-Walk
-
 =====Art=====
 -Player death animation
 -Game over image
@@ -161,7 +157,8 @@ var wasAttack = false;
 var volFadeCheck = false;
 var volFadeCheck2 = false;
 var volFadeCheck3 = false;
-var soundPlaying = [false,false,false];
+var volFadeCheck4 = false;
+var soundPlaying = [false,false,false,false];
 
 gameStates[`level1`] = function()
 {
@@ -175,6 +172,13 @@ gameStates[`level1`] = function()
 	}else if(volFadeCheck3){
 		soundPlaying[0] = false;
 		sounds.fade(`s_charge`,0.1,-0.1);
+	}
+	if(wiz.currentState==`walk`){
+		//sounds.fade(`s_walk`,0.1,0.1);
+		sounds.manualLoop(`s_walk`,0,0.2415);
+	}else if(volFadeCheck4){
+		soundPlaying[3] = false;
+		//sounds.fade(`s_walk`,0.1,-0.1);
 	}
 	if(!alive){
 		volFadeCheck = true;
@@ -200,7 +204,6 @@ gameStates[`level1`] = function()
 
 		if(chargin&&!keys[` `]&&chargeTime>=20){
 			var blastVol = 0.00009*Math.pow(bullets[currentBullet].width,2);
-			console.log(blastVol);
 			sounds.play(`s_blast`,0,false,blastVol);
 			wiz.changeState(`attack`);
 			chargin = false;
@@ -222,7 +225,7 @@ gameStates[`level1`] = function()
 		{
 			if((wiz.currentState==`fall`|| wiz.currentState==`land`||wiz.currentState==`jumpPeak`)&&landTimer>0&&wiz.vy==0){
 				wiz.changeState(`land`);
-				if(!soundPlaying[2]){sounds.play(`s_jump`,0,false,0.05);}
+				if(!soundPlaying[2]){sounds.play(`s_jump`,0,false,0.03);}
 				soundPlaying[2] = true;
 			}else{
 				if(wiz.dir==-1){
@@ -255,10 +258,12 @@ gameStates[`level1`] = function()
 				if(wiz.canJump){
 					if((wiz.currentState==`fall`|| wiz.currentState==`walkLand`||wiz.currentState==`jumpPeak`)&&landTimer>0&&wiz.vy==0){
 						wiz.changeState(`walkLand`);
-						if(!soundPlaying[2]){sounds.play(`s_jump`,0,false,0.05);}
-						soundPlaying[2] = true;
+						//if(!soundPlaying[2]){sounds.play(`s_jump`,0,false,0.03);}
+						//soundPlaying[2] = true;
 					}else{
 						wiz.changeState(`walk`);
+						if(!soundPlaying[3]){sounds.play(`s_walk`,0,false,0.04); volFadeCheck4=true;}
+						soundPlaying[3] = true;
 					}
 				}
 				wiz.vx += wiz.force;
@@ -274,13 +279,16 @@ gameStates[`level1`] = function()
 				if(wiz.canJump){
 					if((wiz.currentState==`fall`|| wiz.currentState==`walkLand`||wiz.currentState==`jumpPeak`)&&landTimer>0&&wiz.vy==0){
 						wiz.changeState(`walkLand`);
-						if(!soundPlaying[2]){sounds.play(`s_jump`,0,false,0.05);}
-						soundPlaying[2] = true;
+						//if(!soundPlaying[2]){sounds.play(`s_jump`,0,false,0.03);}
+						//soundPlaying[2] = true;
 					}else{
 						wiz.changeState(`walk`);
+						if(!soundPlaying[3]){sounds.play(`s_walk`,0,false,0.04); volFadeCheck4=true;}
+						soundPlaying[3] = true;
 					}
 				}
 				wiz.vx += -wiz.force;
+				
 			}
 			
 		}
@@ -299,7 +307,7 @@ gameStates[`level1`] = function()
 			}
 			else if(wiz.vy<0){
 				wiz.changeState(`jump`);
-				if(!soundPlaying[2]){sounds.play(`s_jump`,0,false,0.05);}
+				if(!soundPlaying[2]){sounds.play(`s_jump`,0,false,0.06);}
 				soundPlaying[2] = true;
 			}
 		}
