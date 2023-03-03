@@ -3,6 +3,9 @@
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
+var canvas2 = document.getElementById("canvas2");
+var ctx2 = canvas2.getContext("2d");
+
 var interval = 1000/140; //1000/140
 var timer = setInterval(main, interval);
 
@@ -113,11 +116,26 @@ function Player(col){
     this.score = 0;
     this.bestScore = -1000000;
 
+    this.textX = this.x;
+    this.textY = this.y;
+
     this.draw = function(){
         ctx.save();
         ctx.translate(this.x,this.y);
         ctx.fillStyle = this.color;
         ctx.fillRect(-this.radius,-this.radius,this.width,this.width);
+        ctx.restore();
+    }
+
+    this.drawName = function(){
+        if(Math.abs(this.textX-this.x)>5){this.textX = this.x;}
+        if(Math.abs(this.textY-this.y)>5){this.textY = this.y;}
+
+        ctx.save();
+        ctx.textAlign = "center";
+        ctx.fillStyle = "black";
+        ctx.font = "18px Arial";
+        ctx.fillText(this.brain.name, this.textX, this.textY);
         ctx.restore();
     }
 
@@ -184,13 +202,14 @@ function resetRound(){
     sortAI();
     /*if(roundCount%50==0){indvMutate();}
     if(roundCount%500==0){console.log(roundCount);}*/
-    /*for(var rr=0; rr<AIs.length; rr++){
+    for(var rr=0; rr<AIs.length; rr++){
         //AIs[rr].x = canvas.width/2;
         //AIs[rr].y = canvas.height/2;
-        AIs[rr].won = false;
-        AIs[rr].winTime = 0;
-        AIs[rr].dist = canvas.width*canvas.height;
-    }*/
+        //AIs[rr].won = false;
+        //AIs[rr].winTime = 0;
+        //AIs[rr].dist = canvas.width*canvas.height;
+        if(AIs[rr].brain.defaultConf>100){AIs[rr].brain.defaultConf=100;}
+    }
     //Bob.x = canvas.width/2;
     //Bob.y = canvas.height/2;
     if(!paused){setTimeout(resetRound,roundTime);}
@@ -342,16 +361,16 @@ function aiManageCookies(ma){
         }
         else if(!collide(AIs[ma],goal)){
             AIs[ma].brain.aiGetsCookie=false;
-            if(AIs[ma].dist>AIs[ma].prevDist+2.6||(AIs[ma].dist>AIs[ma].prevDist&&AIs[ma].dist>300)){
+            if(AIs[ma].dist>AIs[ma].prevDist+2.6||(AIs[ma].dist>AIs[ma].prevDist)){//&&dist>50
                 AIs[ma].noCookiesForAI = true;
-                AIs[ma].brain.manageAICookies(-10);
+                AIs[ma].brain.manageAICookies(-20);
             }
             //if(AIs[ma].dist>AIs[ma].prevDist&&AIs[ma].dist>300){AIs[ma].noCookiesForAI = true;}
         }
         if(collide(AIs[ma],goal)){
             if(!AIs[ma].brain.goalReached){
                 AIs[ma].brain.goalReached=true;
-                AIs[ma].brain.manageAICookies(10);
+                AIs[ma].brain.manageAICookies(30);
             }
             
         }
@@ -390,6 +409,7 @@ function initilizeAIs(){
 
 function manageBob(){
         Bob.draw();
+        Bob.drawName();
         //input info
         Bob.brain.inp[0] = Bob.x;
         Bob.brain.inp[1] = Bob.y;
@@ -620,6 +640,12 @@ function ai(numInputs,numOutputs,namey){
 
     this.manageAICookies = function(numCookies){
         this.defaultConf += numCookies;
+    }
+
+    this.visualizeBrain = function(col){
+        //idk, use ctx2 and canvas2 for drawing
+        //Click on player to change to visualize different brain
+        //Html btn to default to AI[0]
     }
 }
 

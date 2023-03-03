@@ -88,8 +88,8 @@ gameStates[`menu`] =function(){
 
 
 
-var gameOverMessage = new GameObject({width:400,height:200,y:50});
-gameOverMessage.img.src="images/mrt.jpg";
+var gameOverMessage = new GameObject({width:400,height:180,y:100});
+gameOverMessage.img.src="tiles/gameOverScrn.png";
 
 var restartButton = new GameObject({width:200});
 
@@ -150,7 +150,7 @@ function resetLvl(){
 	wiz.force=1;
 	alive = true;
 	enemy = new GameObject({y:canvas.height-96, x:1024, width:64, height:128, color:"orange"});
-	enemy2 = new GameObject({y:canvas.height-96, x:1024, width:64, height:128, color:"orange"});
+	enemy2 = new GameObject({y:canvas.height-96, x:3096, width:64, height:128, color:"orange"});
 	enemy.force=0.5;
 	enemy2.force=0.5;
 	enemy.img.src=`characterDrafts/sprites/enemy.png`;
@@ -251,7 +251,7 @@ function resetLvl(){
 
 	/*------------------^^BULLET STUFF^^----------------------*/
 
-	enemyMoveCount = 120;
+	enemyMoveCount = [120,120];
 	rand3 = Math.round(rand(0,1))==0;
 
 	/*------------------------vv-Player Gamestates-vv------------------------*/

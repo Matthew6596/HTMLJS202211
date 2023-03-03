@@ -3,7 +3,6 @@ List of things to do:
 
 =====Art=====
 -Player death animation
--Game over image
 -Improve cave/building*
 -Environmental Hazards*
 -Walkland Animation*
@@ -551,10 +550,6 @@ gameStates[`level1`] = function()
 
 	//renders the midground
 	bg.drawStaticImage([-8,-32]);
-
-	//enemy render
-	enemy.drawStaticImage();
-	enemy2.drawStaticImage();
 	
 	//alternate methd for rendering the repeating background
 	//rbg.render(`drawStaticImage`, [0,0])
@@ -573,6 +568,10 @@ gameStates[`level1`] = function()
 
 	//renders player
 	wiz.play(function(){return}).drawSprite();
+
+	//enemy render
+	enemy.drawStaticImage();
+	enemy2.drawStaticImage();
 	
 	//Moves, checks collision and renders projectiles.
 	for(let i=0; i<bullets.length; i++)

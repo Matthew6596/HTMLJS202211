@@ -7,17 +7,25 @@
     <title>AI Testing</title>
     <style>
         html,body{
-            display:flex;
-            justify-content: center;
             color:rgb(193, 193, 193);
         }
         canvas{
             border: 1px solid black;
         }
+        #container1,#container2{
+            display:flex;
+            justify-content: center;
+            padding: 1px;
+        }
     </style>
 </head>
 <body>
-    <canvas width="800", height="600" id="canvas"></canvas>
+    <div id="container1">
+        <canvas width="800", height="600" id="canvas"></canvas>
+    </div>
+    <div id="container2">
+        <canvas width="370", height="135" id="canvas2"></canvas>
+    </div>
     <script src="ai1.js"></script>
     
 </body>
