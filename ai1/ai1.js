@@ -642,10 +642,32 @@ function ai(numInputs,numOutputs,namey){
         this.defaultConf += numCookies;
     }
 
-    this.visualizeBrain = function(col){
+    this.visualizeBrain = function(bx,by,col){
         //idk, use ctx2 and canvas2 for drawing
         //Click on player to change to visualize different brain
         //Html btn to default to AI[0]
+        
+        /*for(var vb=0; vb< ; vb++){
+
+        }*/
+
+    }
+
+    this.drawNode = function(nx,ny,isCircle, col){
+        ctx2.save();
+        ctx2.translate(nx,ny);
+        ctx2.fillStyle = col;
+        ctx2.strokeStyle = "1px solid black";
+        if(isCircle){
+            //draw circle with 10 radius
+        }else{
+            ctx2.fillRect(-10,-10,10,10);
+        }
+        ctx2.restore();
+    }
+    this.drawConnection = function(x1,y1,x2,y2){
+        //drawline from (x1,y1) to (x2,y2)
+        //stroke size relative to confidence || or just text for that
     }
 }
 
