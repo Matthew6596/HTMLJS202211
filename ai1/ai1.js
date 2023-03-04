@@ -65,7 +65,7 @@ var AIs = [
     new Player("red"),
     new Player("orange"),
     new Player("green"),
-    new Player("cyan"),
+    new Player("darkcyan"),
     new Player("blue"),
     new Player("purple"),
     new Player("pink"),
@@ -306,8 +306,12 @@ function mutateAI(arr){
     
 }
 
+var visualizedAI;
+
 function manageAIs(){
+    visualizedAI = Bob;
     for(var ma=0; ma<AIs.length; ma++){
+
         AIs[ma].draw();
         //input info
         AIs[ma].brain.inp[0] = AIs[ma].x;
@@ -350,6 +354,8 @@ function manageAIs(){
         /*----------AI Cookie Manager----------*/
         aiManageCookies(ma); //"Feedback" for AI
     }
+    visualizedAI.brain.visualizeBrain(10,30,visualizedAI.color);
+    AIs.sort(function(a, b){return b.score - a.score});
     //console.log(AIs[0].brian.defaultConf);
 }
 
@@ -374,9 +380,15 @@ function aiManageCookies(ma){
             }
             
         }
-        else{AIs[ma].brain.goalReached=false;}
+        else{
+            AIs[ma].brain.goalReached=false;
+            if(visualizedAI==Bob){
+                visualizedAI = AIs[ma];
+            }
+        }
 
-        AIs[ma].score += 10/(AIs[ma].dist+1);
+        if(!AIs[ma].brain.goalReached){AIs[ma].score += 1/(AIs[ma].dist+1);}
+        else{AIs[ma].score++;}
         AIs[ma].prevDist = AIs[ma].dist;
 }
 
@@ -388,7 +400,7 @@ function initilizeAIs(){
     AIs[0].brain.name = "red";
     AIs[1].brain.name = "orange";
     AIs[2].brain.name = "green";
-    AIs[3].brain.name = "cyan";
+    AIs[3].brain.name = "darkcyan";
     AIs[4].brain.name = "blue";
     AIs[5].brain.name = "purple";
     AIs[6].brain.name = "pink";
@@ -439,6 +451,7 @@ function manageBob(){
 
 function main(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx2.clearRect(0,0,canvas2.width,canvas2.height);
     //
     globalTimer++;
     goal.draw();
@@ -451,6 +464,7 @@ function main(){
 
     hitGoal();
     //
+    //bob.visualizeBrain(10,30,"grey");
 }
 
 
@@ -496,7 +510,7 @@ function ai(numInputs,numOutputs,namey){
     //Things for mutation / variation
     this.autoMutates = true;
     this.mutateChance = 20;
-    this.funcLengthRange = [1,3];
+    this.funcLengthRange = [1,4];
     this.prevFunc;
     this.prevInvFunc;
     this.prevFuncLength;
@@ -529,6 +543,7 @@ function ai(numInputs,numOutputs,namey){
         //this.setup2DArrays();
         this.aiEatsCookie();
         for(var thinkyI=0; thinkyI<this.numFunc; thinkyI++){
+            this.funcLength[thinkyI] = this.func[thinkyI].length;
             if(this.complexConfidence){
                 //idk bruh
             }else{
@@ -583,19 +598,21 @@ function ai(numInputs,numOutputs,namey){
         this.prevParamOrder = this.paramOrder;
 
         for(var i=0; i<this.numFunc; i++){
-
+            var changeSize = false;
             if(percent(this.mutateChance)||this.prevFuncLength[i]===undefined){ //Mutate funcLength
                 this.funcLength[i] = randInt(this.funcLengthRange[0],this.funcLengthRange[1]); //Supposedly Correct
+                //console.log(this.funcLength[i]);
+                changeSize = true;
             }else{
                 this.funcLength[i] = this.prevFuncLength[i];
             }
 
-            if(this.prevFunc[i]===undefined){this.func[i] = [];}
-            if(this.invFunc[i]===undefined){this.invFunc[i] = [];}
+            if(this.prevFunc[i]===undefined||changeSize){this.func[i] = [];}
+            if(this.invFunc[i]===undefined||changeSize){this.invFunc[i] = [];}
             
             for(var z=0; z<this.funcLength[i]; z++){
                 var funcChange = randInt(0,a_mathFunctions.length-1);
-                if(percent(this.mutateChance)||this.prevFunc[i][z]===undefined){ //Mutate func
+                if(percent(this.mutateChance)||this.func[i][z]===undefined){ //Mutate func
                     this.func[i][z] = a_mathFunctions[funcChange];
                     this.invFunc[i][z] = a_invMathFuncs[funcChange];
                 }else{
@@ -646,10 +663,33 @@ function ai(numInputs,numOutputs,namey){
         //idk, use ctx2 and canvas2 for drawing
         //Click on player to change to visualize different brain
         //Html btn to default to AI[0]
-        
-        /*for(var vb=0; vb< ; vb++){
+        var xOff = 20;
+        var yOff = 20;
 
-        }*/
+        for(var vb=0; vb<this.numInp; vb++){ //Inputs
+            this.drawNode(bx,by+(yOff*vb),false,"lightgreen");
+        }
+        for(var vb=0; vb<this.numOut; vb++){ //Outputs
+            var outCol;
+            if(this.out[vb]>0 || this.out[vb]==true){outCol = "lime";}
+            else{outCol = "red";}
+            this.drawNode(canvas2.width-(bx*2),by+(yOff*vb),false,outCol);
+
+            var lastNX;
+            for (var vb1=0; vb1<this.funcLength[vb]; vb1++){
+                var nx = bx+(xOff*(vb1+2));
+                var ny = by+(yOff*vb);
+                //nx += xOff/this.funcLength[vb]; //Tries to center
+                nx += xOff*(vb1)
+                this.drawNode(nx,ny,false,col);
+                lastNX = nx;
+                if(vb1+1<this.funcLength[vb]){
+                    this.drawConnection(nx+10,by+(yOff*vb)+5,nx+40,col);
+                }
+            }
+            this.drawConnection(lastNX+10,by+(yOff*vb)+5,(canvas2.width-bx-10),outCol);
+            
+        }
 
     }
 
@@ -659,15 +699,17 @@ function ai(numInputs,numOutputs,namey){
         ctx2.fillStyle = col;
         ctx2.strokeStyle = "1px solid black";
         if(isCircle){
-            //draw circle with 10 radius
+            //draw circle with 5 radius
         }else{
-            ctx2.fillRect(-10,-10,10,10);
+            ctx2.fillRect(0,0,10,10); //box width 10 --> radius 5
         }
         ctx2.restore();
     }
-    this.drawConnection = function(x1,y1,x2,y2){
+    this.drawConnection = function(x1,y1,x2,col){
         //drawline from (x1,y1) to (x2,y2)
         //stroke size relative to confidence || or just text for that
+        ctx2.fillStyle = col;
+        ctx2.fillRect(x1,y1-1,x2-x1,2);
     }
 }
 
