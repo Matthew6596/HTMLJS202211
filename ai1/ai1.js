@@ -17,6 +17,9 @@ var worstMutatePercent = 30;
 var roundTime = 60000;
 var roundCount = 0;
 var paused = false;
+var i_canvY = 0;
+var s_canvY = "0px";
+var s_canv2Y = "0px";
 
 var a_mathFunctions = ["add","sub","mult","div","root","pow"]; //List of possible math functions/operations without 
 var a_invMathFuncs = ["sub","add","div","mult","pow","root"];
@@ -463,6 +466,20 @@ function main(){
     matt.draw();
 
     hitGoal();
+
+    /*if(matt.down){       <----MOVES CANVAS---->
+        i_canvY++;
+    }
+    if(matt.up){
+        i_canvY--;
+    }
+    s_canvY = i_canvY+"px";
+    s_canv2Y = i_canvY+canvas.height+3+"px";
+    canvas.style.top = s_canvY;
+    canvas.style.position = "absolute";
+    canvas2.style.top = s_canv2Y;
+    canvas2.style.position = "absolute";*/
+
     //
     //bob.visualizeBrain(10,30,"grey");
 }

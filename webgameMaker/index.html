@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webgame Maker | MonuMeowntal Games</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="../images/logo2icon.png">
+</head>
+<body>
+    <div id="container">
+        <div id="toolbar">
+            <input type="button" value="Run" id="runBtn" onclick="swapEditable(); running=!running; if(running){eval(code);}">
+        </div>
+
+    <div id="mainSection">
+        <canvas id="objsCanv" height="600" width="200"></canvas>
+        <canvas id="canvas" width="800" height="600"></canvas>
+        <div id="properties">
+            Name: <input id="nameInp">
+            (x,y): <input type="number" id="xInp"><input type="number" id="yInp">
+            Width,Height: <input type="number" id="wInp"><input type="number" id="hInp">
+            Fill-Color: <input type="color" id="fillInp">
+            Outline-Color: <input type="color" id="strokeInp">
+            Outline-Width: <input type="number" id="lwInp">
+            Keep-Inside-Canvas: <input type="checkbox" id="boundInp">
+        </div>
+    </div>
+
+    <div id="codeSection">
+        <div id="lineNums">1</div>
+        <div id="codeInpBox">//Type your code here!</div>
+    </div>
+
+    </div>
+
+    <script src="libraries.js"></script>
+    <script src="page.js"></script>
+</body>
+</html>

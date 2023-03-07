@@ -1,0 +1,71 @@
+html,body{
+    display:flex;
+    justify-content: center;
+    background-color:rgb(200, 200, 200);
+}
+#toolbar{
+    display:flex;
+    justify-content: center;
+    margin-bottom: 2px;
+}
+#runBtn{
+    background-color: lightgreen;
+    width:50px;
+}
+#mainSection,canvas{
+    display:flex;
+    justify-content: center;
+    border:1px solid black;
+    height:600px;
+}
+#objsCanv{
+    background-color: rgb(241, 241, 241);
+    width: 200px;
+}
+#canvas{
+    background-color: white;
+    width: 800px;
+}
+#properties{
+    background-color: rgb(241, 241, 241);
+    width:200px;
+    height:600px;
+    border:1px solid black;
+    word-spacing:200px;
+    padding-left:2px;
+}
+#xInp,#yInp,#wInp,#hInp{
+    width:50px;
+}
+#lwInp{
+    width:40px;
+}
+#codeSection{
+    display:flex;
+    justify-content: center;
+    margin-top:2px
+}
+#lineNums{
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    padding-top:3px;
+    padding-right:1px;
+    width:50px;
+    word-spacing:200px;
+    border:1px solid black;
+    border-right:none;
+    background-color: rgb(225, 225, 225);
+    text-align: right;
+}
+#codeInpBox{
+    padding-top: 2px;
+    padding-left: 2px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    border: 1px solid black;
+    width: 1000px;
+    height: auto;
+    resize: none;
+    background-color: rgb(36, 36, 36);
+    color:rgb(125, 241, 125);
+}
