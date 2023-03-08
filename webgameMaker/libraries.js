@@ -182,7 +182,7 @@ document.addEventListener("keyup",documentKeyUp);
 document.addEventListener("click",onUserClick);
 
 var a_KeysPressed = [];
-var onClick = function(){console.log("User has clicked.\nSet onClick = function(){//Your Code} to replace this message.");}
+var onClick = function(){console.log("User has clicked.\nSet onClick = function [name](){//Your Code} to replace this message.");}
 
 function documentKeyDown(e){
     var eventKey = e.key.toLowerCase();

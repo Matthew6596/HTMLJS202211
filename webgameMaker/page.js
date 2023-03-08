@@ -5,6 +5,7 @@ var propertiesBox = document.getElementById("properties");
 var codeBox = document.getElementById("codeInpBox");
 var lineNums = document.getElementById("lineNums");
 var runBtn = document.getElementById("runBtn");
+var exportBtn = document.getElementById("exportBtn");
 
 var nameInp = document.getElementById("nameInp"); //Property Inputs
 var xInp = document.getElementById("xInp");
@@ -44,9 +45,12 @@ var prevLineCount = 1;
 var multilineCheck = false;
 
 var running = false;
-var code = "";
-var mainCode = "";
-var functions = "";
+var code = ""; //All Box Code
+var mainCode = ""; //code inside main{}
+var functions = ""; //functions
+var libraryCode = "" //Copy&Paste Library file
+var staticCode = ""; //Initial Code for Export (such as var canvas/ctx)
+var variableCode = ""; //Code for set but unwritten elements (such as a_Objects)
 
 var a_libraryObjs = [new Rectangle(objsBox.width/2-25,10,"rectangle1",ctx2)];
 var a_libraryPos = [[objsBox.width/2-25,10]];
@@ -59,6 +63,7 @@ var selectedObject = undefined;
 var selectedObjectInd = -1;
 
 var a_propertyInpIDs = ["nameInp","xInp","yInp","wInp","hInp","fillInp","strokeInp","lwInp","boundInp"];
+var a_propertyInps = [nameInp,xInp,yInp,wInp,hInp,fillInp,strokeInp,lineWInp,boundInp];
 
 function pageMain(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -87,6 +92,8 @@ function swapEditable(){
         mainCode = getMain();
         functions = getFunctions();
         setObjs();
+        toggleProperties(true);
+        exportBtn.disabled = true;
     }else{
         codeBox.contentEditable = true;
         runBtn.value = "Run";
@@ -94,9 +101,11 @@ function swapEditable(){
         a_arrays = [];
         a_variables = [];
         resetObjs();
+        toggleProperties(false);
+        exportBtn.disabled = false;
     }
     a_KeysPressed = [];
-    onClick = function(){console.log("User has clicked.\nSet onClick = function(){//Your Code} to replace this message.");}
+    onClick = function(){console.log("User has clicked.\nSet onClick = function [name](){//Your Code} to replace this message.");}
 }
 
 function getMain(){
@@ -362,6 +371,7 @@ function readObjProperties(){
         lineWInp.value = selectedObject.sLineWidth;
         boundInp.checked = selectedObject.bounded;
         //console.log(selectedObject.left+", "+selectedObject.right+", "+selectedObject.top+", "+selectedObject.bottom);
+        toggleProperties(false);
     }else{
         nameInp.value = null;
         xInp.value = null;
@@ -372,6 +382,7 @@ function readObjProperties(){
         strokeInp.value = "#000000";
         lineWInp.value = null;
         boundInp.checked = false;
+        toggleProperties(true);
     }
 }
 
@@ -388,4 +399,15 @@ function writeObjProperties(){
         selectedObject.bounded = boundInp.checked;
         resetObj(selectedObjectInd);
     }
+}
+
+function toggleProperties(disable){
+    for(var tp=0; tp<a_propertyInps.length; tp++){
+        a_propertyInps[tp].disabled = disable;
+    }
+}
+
+function selectExportCode() {
+    //window.getSelection().selectAllChildren(document.getElementById("exportCode"));
+    navigator.clipboard.writeText(document.getElementById("exportCode").innerText); //security/privacy concern
 }
