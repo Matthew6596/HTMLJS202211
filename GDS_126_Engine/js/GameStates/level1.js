@@ -114,7 +114,7 @@ var shotTimer = 0;
 var shotDelay = 21;
 var currentBullet = 0;
 
-for(let i=0; i<100; i++)
+for(let i=0; i<5; i++)
 {
 	bullets[i] = new GameObject({width:2, height:2});
 	//bullets[i].img.src="images/mrt.jpg"

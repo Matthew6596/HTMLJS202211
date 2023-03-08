@@ -1,5 +1,42 @@
 /*-------PREMADE THINGS FOR USE IN WEBGAME MAKER-------*/
 
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+
+document.addEventListener("mousemove",function(e){updateMousePos(e);});
+
+function updateMousePos(e){
+    var rect = canvas.getBoundingClientRect();
+    mousex = Math.round(e.clientX - rect.left);
+    mousey = Math.round(e.clientY - rect.top);
+}
+
+var interval = 1000/140; //1000/140
+var timer = setInterval(pageMain, interval);
+
+function drawObjs(arr,context){
+    var ind = -1;
+    if(arr.includes(pickedObj)){ind = pickedObjInd;}
+    for(var dlo=0; dlo<arr.length; dlo++){
+        if(dlo==ind){
+            arr[dlo].draw(context);
+        }else{
+            arr[dlo].draw(arr[dlo].ctx);
+        }
+    }
+}
+
+/*Additional Code to be added by String:
+
+function pageMain(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    //cut and place mainCode here
+    drawObjs(a_Objects,ctx);
+}
+
+//cut mainCode, and place remaining code here
+
+*/
 
 /*------------------------------------VARIABLES----------------------------------*/
 var a_variables = [];

@@ -238,7 +238,7 @@ function resetLvl(){
 	shotDelay = 21;
 	currentBullet = 0;
 
-	for(let i=0; i<100; i++)
+	for(let i=0; i<5; i++)
 	{
 		bullets[i] = new GameObject({width:2, height:2});
 		//bullets[i].img.src="images/mrt.jpg"

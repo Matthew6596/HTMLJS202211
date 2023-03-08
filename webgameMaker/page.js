@@ -1,6 +1,5 @@
 //JS Script for Page Functionality
-var canvas = document.getElementById("canvas"); //Main stuff I guess
-var objsBox = document.getElementById("objsCanv");
+var objsBox = document.getElementById("objsCanv"); //Main stuff I guess
 var propertiesBox = document.getElementById("properties");
 var codeBox = document.getElementById("codeInpBox");
 var lineNums = document.getElementById("lineNums");
@@ -17,10 +16,9 @@ var strokeInp = document.getElementById("strokeInp");
 var lineWInp = document.getElementById("lwInp");
 var boundInp = document.getElementById("boundInp");
 
-var ctx = canvas.getContext("2d"); //Contexts
 var ctx2 = objsBox.getContext("2d");
 
-document.addEventListener("mousemove",function(e){updateMousePos(e); movePickedObj();}); //MousePos
+document.addEventListener("mousemove",function(e){updateMousePos2(e); movePickedObj();}); //MousePos
 
 document.addEventListener("input",codeBoxAdjust); //Listeners for adjusting codeBox size
 document.addEventListener("paste",multiLineRemovalCheck);
@@ -36,9 +34,6 @@ document.addEventListener("click",getSelectedObj); //Listener for selecting obje
 
 codeBox.contentEditable = true;
 
-var interval = 1000/140; //1000/140
-var timer = setInterval(pageMain, interval);
-
 var prevCodeBoxHeight = 81;
 var lineCount;
 var prevLineCount = 1;
@@ -49,8 +44,9 @@ var code = ""; //All Box Code
 var mainCode = ""; //code inside main{}
 var functions = ""; //functions
 var libraryCode = "" //Copy&Paste Library file
-var staticCode = ""; //Initial Code for Export (such as var canvas/ctx)
+//var staticCode = ""; //Added to library^
 var variableCode = ""; //Code for set but unwritten elements (such as a_Objects)
+var jsCode = ""; //string to be exported
 
 var a_libraryObjs = [new Rectangle(objsBox.width/2-25,10,"rectangle1",ctx2)];
 var a_libraryPos = [[objsBox.width/2-25,10]];
@@ -183,10 +179,7 @@ function codeBoxAdjust(){
     }
 }
 
-function updateMousePos(e){
-    var rect = canvas.getBoundingClientRect();
-    mousex = Math.round(e.clientX - rect.left);
-    mousey = Math.round(e.clientY - rect.top);
+function updateMousePos2(e){
     var rect2 = objsBox.getBoundingClientRect();
     mous2x = Math.round(e.clientX - rect2.left);
     mous2y = Math.round(e.clientY - rect2.top);
@@ -204,18 +197,6 @@ function getPickObjContext(arr,bias){
             return ctx;
         }else{
             return ctx2;
-        }
-    }
-}
-
-function drawObjs(arr,context){
-    var ind = -1;
-    if(arr.includes(pickedObj)){ind = pickedObjInd;}
-    for(var dlo=0; dlo<arr.length; dlo++){
-        if(dlo==ind){
-            arr[dlo].draw(context);
-        }else{
-            arr[dlo].draw(arr[dlo].ctx);
         }
     }
 }
@@ -408,6 +389,13 @@ function toggleProperties(disable){
 }
 
 function selectExportCode() {
+    //setJsCode();
+
     //window.getSelection().selectAllChildren(document.getElementById("exportCode"));
-    navigator.clipboard.writeText(document.getElementById("exportCode").innerText); //security/privacy concern
+    navigator.clipboard.writeText(document.getElementById("exportCode").innerText); //writes to clipboard
+}
+
+function setJsCode(){
+    jsCode = libraryCode+variableCode;
+    document.getElementById("exportCode").innerText = jsCode;
 }
