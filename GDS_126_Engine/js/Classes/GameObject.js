@@ -38,7 +38,7 @@ function GameObject(obj)
 		//this.hitBoxWidth=400
 		//console.log(`words ${this.hitBoxWidth}`)		
 
-		this.setHitBox =  function(obj) //YOOOOOOOOOOOOOOOOOOOOOOOOOO SWAG
+		this.setHitBox =  function(obj)
 		{
 			this.hitboxWidth = obj.width;
 			this.hitBoxHeight = obj.height;

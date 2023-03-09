@@ -16,6 +16,10 @@ var fillInp = document.getElementById("fillInp");
 var strokeInp = document.getElementById("strokeInp");
 var lineWInp = document.getElementById("lwInp");
 var boundInp = document.getElementById("boundInp");
+var CLInp = document.getElementById("CLInp");
+var CRInp = document.getElementById("CRInp");
+var CTInp = document.getElementById("CTInp");
+var CBInp = document.getElementById("CBInp");
 
 var ctx2 = objsBox.getContext("2d");
 var timer = setInterval(pageMain, interval);
@@ -60,8 +64,8 @@ var myOff;
 var selectedObject = undefined;
 var selectedObjectInd = -1;
 
-var a_propertyInpIDs = ["nameInp","xInp","yInp","wInp","hInp","fillInp","strokeInp","lwInp","boundInp"];
-var a_propertyInps = [nameInp,xInp,yInp,wInp,hInp,fillInp,strokeInp,lineWInp,boundInp];
+var a_propertyInpIDs = ["nameInp","xInp","yInp","wInp","hInp","fillInp","strokeInp","lwInp","boundInp","CLInp","CRInp","CTInp","CBInp"];
+var a_propertyInps = [nameInp,xInp,yInp,wInp,hInp,fillInp,strokeInp,lineWInp,boundInp,CLInp,CRInp,CTInp,CBInp];
 
 function pageMain(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -337,18 +341,23 @@ function readObjProperties(){
         strokeInp.value = selectedObject.sStroke;
         lineWInp.value = selectedObject.sLineWidth;
         boundInp.checked = selectedObject.bounded;
+        CLInp.value = selectedObject.collL;
+        CRInp.value = selectedObject.collR;
+        CTInp.value = selectedObject.collT;
+        CBInp.value = selectedObject.collB;
         //console.log(selectedObject.left+", "+selectedObject.right+", "+selectedObject.top+", "+selectedObject.bottom);
         toggleProperties(false);
     }else{
-        nameInp.value = null;
-        xInp.value = null;
-        yInp.value = null;
-        wInp.value = null;
-        hInp.value = null;
+        for(var rop=0; rop<5; rop++){
+            a_propertyInps[rop].value = null;
+        }
         fillInp.value = "#000000";
         strokeInp.value = "#000000";
         lineWInp.value = null;
         boundInp.checked = false;
+        for(var rop=9; rop<13; rop++){
+            a_propertyInps[rop].value = null;
+        }
         toggleProperties(true);
     }
 }
@@ -364,6 +373,10 @@ function writeObjProperties(){
         selectedObject.sStroke = strokeInp.value;
         selectedObject.sLineWidth = lineWInp.value;
         selectedObject.bounded = boundInp.checked;
+        selectedObject.collL = CLInp.value;
+        selectedObject.collR = CRInp.value;
+        selectedObject.collT = CTInp.value;
+        selectedObject.collB = CBInp.value;
         resetObj(selectedObjectInd);
     }
 }
@@ -403,23 +416,22 @@ function setJsCode(){
 }
 
 function setVariableCode(){
-    variableCode = "";
     for(var svc=0; svc<a_Objects.length; svc++){
-        variableCode += "makeObj('"+a_Objects[svc].name+"', '"+a_Objects[svc].type+"'); "
-        variableCode += "a_Objects["+svc+"].sX = "+a_Objects[svc].sX;
-        variableCode += "; a_Objects["+svc+"].sY = "+a_Objects[svc].sY;
-        variableCode += "; a_Objects["+svc+"].sSize = "+a_Objects[svc].sSize;
-        variableCode += "; a_Objects["+svc+"].sWidth = "+a_Objects[svc].sWidth;
-        variableCode += "; a_Objects["+svc+"].sHeight = "+a_Objects[svc].sHeight;
-        variableCode += "; a_Objects["+svc+"].sFill = '"+a_Objects[svc].sFill;
-        variableCode += "'; a_Objects["+svc+"].sStroke = '"+a_Objects[svc].sStroke;
-        variableCode += "'; a_Objects["+svc+"].sLineWidth = "+a_Objects[svc].sLineWidth;
-        variableCode += "; a_Objects["+svc+"].collL = "+a_Objects[svc].collL;
-        variableCode += "; a_Objects["+svc+"].collR = "+a_Objects[svc].collR;
-        variableCode += "; a_Objects["+svc+"].collT = "+a_Objects[svc].collT;
-        variableCode += "; a_Objects["+svc+"].collB = "+a_Objects[svc].collB;
-        variableCode += "; a_Objects["+svc+"].bounded = "+a_Objects[svc].bounded;
-        variableCode += "; a_Objects["+svc+"].reset(); ";
+        variableCode = "makeObj('"+a_Objects[svc].name+"', '"+a_Objects[svc].type+`');
+        a_Objects[`+svc+"].sX = "+a_Objects[svc].sX+`;
+        a_Objects[`+svc+"].sY = "+a_Objects[svc].sY+`;
+        a_Objects[`+svc+"].sSize = "+a_Objects[svc].sSize+`;
+        a_Objects[`+svc+"].sWidth = "+a_Objects[svc].sWidth+`;
+        a_Objects[`+svc+"].sHeight = "+a_Objects[svc].sHeight+`;
+        a_Objects[`+svc+"].sFill = '"+a_Objects[svc].sFill+`';
+        a_Objects[`+svc+"].sStroke = '"+a_Objects[svc].sStroke+`';
+        a_Objects[`+svc+"].sLineWidth = "+a_Objects[svc].sLineWidth+`;
+        a_Objects[`+svc+"].collL = "+a_Objects[svc].collL+`;
+        a_Objects[`+svc+"].collR = "+a_Objects[svc].collR+`;
+        a_Objects[`+svc+"].collT = "+a_Objects[svc].collT+`;
+        a_Objects[`+svc+"].collB = "+a_Objects[svc].collB+`;
+        a_Objects[`+svc+"].bounded = "+a_Objects[svc].bounded+`;
+        a_Objects[`+svc+"].reset(); ";
     }
 }
 

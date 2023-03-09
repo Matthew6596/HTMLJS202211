@@ -34,8 +34,8 @@ html,body{
     word-spacing:200px;
     padding-left:2px;
 }
-#xInp,#yInp,#wInp,#hInp{
-    width:50px;
+.numInp{
+    width:60px;
 }
 #lwInp{
     width:40px;

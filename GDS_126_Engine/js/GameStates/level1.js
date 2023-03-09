@@ -45,6 +45,8 @@ var plat3 = new GameObject({width:128, height:32,y:canvas.height-200, color:"gre
 var wall = new GameObject({width:64, height:320,y:canvas.height-192, x:2680, color:"grey"});
 wall.img.src=`tiles/tileIMGs/brickwall.png`;
 plat.img.src=`tiles/tileIMGs/platform.png`;
+plat2.img.src=`tiles/tileIMGs/platform.png`;
+plat3.img.src=`tiles/tileIMGs/platform.png`;
 
 //A level object when it is moved other objects move with it.
 var level = new GameObject({x:0,y:0});
@@ -75,7 +77,7 @@ g1.add([ground,leftBorder, caveHit.grid, wall]);
 
 //Used to draw the rectangles
 var rects = new Group();
-rects.add([ground,plat,wall,plat2,plat3]);
+rects.add([ground,wall]);
 
 //used to render the sprites
 var sprites = new Group();
@@ -527,12 +529,13 @@ gameStates[`level1`] = function()
 
 	//Sets up pattern for the ground
 	var groundPattern = context.createPattern(ground.img, `repeat`);
-	var platPattern = context.createPattern(plat.img, `repeat`);
+	//var platPattern = context.createPattern(plat.img, `repeat`);
+
 	//Applies pattern to ground and platform
 	ground.color = groundPattern;
-	plat.color = platPattern;
+	/*plat.color = platPattern;
 	plat2.color = platPattern;
-	plat3.color = platPattern;
+	plat3.color = platPattern;*/
 	wall.color = context.createPattern(wall.img, `repeat`);
 
 	//Sets up pattern for the sky
@@ -556,6 +559,10 @@ gameStates[`level1`] = function()
 
 	//renders the objects in the rect group
 	rects.render(`drawRect`, [0,0,100,100]);
+
+	plat.drawStaticImage([-plat.width/2,-plat.height/2-10]);
+	plat2.drawStaticImage([-plat2.width/2,-plat2.height/2-10]);
+	plat3.drawStaticImage([-plat3.width/2,-plat3.height/2-10]);
 	
 	/*----Used for debugging----*/
 	/*context.beginPath()
