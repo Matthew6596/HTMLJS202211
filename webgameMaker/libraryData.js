@@ -1,4 +1,6 @@
-/*-------PREMADE THINGS FOR USE IN WEBGAME MAKER-------*/
+function getLibraryCode(){
+
+return `/*-------PREMADE THINGS FOR USE IN WEBGAME MAKER-------*/
 
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
@@ -15,7 +17,6 @@ var interval = 1000/140; //1000/140
 
 function drawObjs(arr,context){
     var ind = -1;
-    if(arr.includes(pickedObj)){ind = pickedObjInd;}
     for(var dlo=0; dlo<arr.length; dlo++){
         if(dlo==ind){
             arr[dlo].draw(context);
@@ -24,20 +25,6 @@ function drawObjs(arr,context){
         }
     }
 }
-
-/*Additional Code to be added by String:
-
-var timer = setInterval(pageMain, interval);
-
-function pageMain(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    //cut and place mainCode here
-    drawObjs(a_Objects,ctx);
-}
-
-//cut mainCode, and place remaining code here
-
-*/
 
 /*------------------------------------VARIABLES----------------------------------*/
 var a_variables = [];
@@ -281,4 +268,6 @@ function onUserClick(){
     if(mouseInside(0,canvas.width,0,canvas.height,"ctx")){
         onClick();
     }
+}`;
+
 }

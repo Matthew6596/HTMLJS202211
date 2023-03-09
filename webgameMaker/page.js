@@ -5,6 +5,7 @@ var codeBox = document.getElementById("codeInpBox");
 var lineNums = document.getElementById("lineNums");
 var runBtn = document.getElementById("runBtn");
 var exportBtn = document.getElementById("exportBtn");
+document.getElementById("downloadBtn").href = makeTextFile("Nothing! Press code refresh btn!");
 
 var nameInp = document.getElementById("nameInp"); //Property Inputs
 var xInp = document.getElementById("xInp");
@@ -17,6 +18,7 @@ var lineWInp = document.getElementById("lwInp");
 var boundInp = document.getElementById("boundInp");
 
 var ctx2 = objsBox.getContext("2d");
+var timer = setInterval(pageMain, interval);
 
 document.addEventListener("mousemove",function(e){updateMousePos2(e); movePickedObj();}); //MousePos
 
@@ -43,8 +45,8 @@ var running = false;
 var code = ""; //All Box Code
 var mainCode = ""; //code inside main{}
 var functions = ""; //functions
-var libraryCode = "" //Copy&Paste Library file
-//var staticCode = ""; //Added to library^
+var libraryCode = ""; //Copy&Paste Library file
+var staticCode = ""; //stuff like main and stuff
 var variableCode = ""; //Code for set but unwritten elements (such as a_Objects)
 var jsCode = ""; //string to be exported
 
@@ -263,7 +265,7 @@ function objDrop(){
 
 function makeNewObj(ind){
     switch (ind){
-        case 0: return new Rectangle(mousex-10,mousey-10,"object"+a_Objects.length,ctx);
+        case 0: return new Rectangle(mousex-10,mousey-10,"object"+a_Objects.length);
     }
 }
 
@@ -274,15 +276,7 @@ function stringCtxToReal(c){
 
 function resetObjs(){
     for(var ro=0; ro<a_Objects.length; ro++){
-        a_Objects[ro].x = a_Objects[ro].sX;
-        a_Objects[ro].y = a_Objects[ro].sY;
-        a_Objects[ro].size = a_Objects[ro].sSize;
-        a_Objects[ro].width = a_Objects[ro].sWidth;
-        a_Objects[ro].height = a_Objects[ro].sHeight;
-        a_Objects[ro].fill = a_Objects[ro].sFill;
-        a_Objects[ro].stroke = a_Objects[ro].sStroke;
-        a_Objects[ro].lineWidth = a_Objects[ro].sLineWidth;
-        a_Objects[ro].bound = a_Objects[ro].bounded;
+        a_Objects[ro].reset();
     }
 }
 
@@ -315,15 +309,7 @@ function setObj(ro){
 }
 
 function resetObj(ro){
-    a_Objects[ro].x = a_Objects[ro].sX;
-    a_Objects[ro].y= a_Objects[ro].sY;
-    a_Objects[ro].size = a_Objects[ro].sSize;
-    a_Objects[ro].width = a_Objects[ro].sWidth;
-    a_Objects[ro].height = a_Objects[ro].sHeight;
-    a_Objects[ro].fill = a_Objects[ro].sFill;
-    a_Objects[ro].stroke = a_Objects[ro].sStroke;
-    a_Objects[ro].lineWidth = a_Objects[ro].sLineWidth;
-    a_Objects[ro].bound = a_Objects[ro].bounded;
+    a_Objects[ro].reset();
 }
 
 function getSelectedObj(){
@@ -389,13 +375,67 @@ function toggleProperties(disable){
 }
 
 function selectExportCode() {
-    //setJsCode();
+    setVariableCode();
+    setJsCode();
 
     //window.getSelection().selectAllChildren(document.getElementById("exportCode"));
     navigator.clipboard.writeText(document.getElementById("exportCode").innerText); //writes to clipboard
+
+    document.getElementById("downloadBtn").href = makeTextFile(jsCode);
 }
 
 function setJsCode(){
-    jsCode = libraryCode+variableCode;
+    libraryCode = getLibraryCode();
+
+    staticCode = `
+    var timer = setInterval(pageMain, interval);
+
+    function pageMain(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        `+mainCode+`
+        drawObjs(a_Objects,ctx);
+    }
+    `+code;
+
+    jsCode = libraryCode+variableCode+staticCode;
+
     document.getElementById("exportCode").innerText = jsCode;
+}
+
+function setVariableCode(){
+    variableCode = "";
+    for(var svc=0; svc<a_Objects.length; svc++){
+        variableCode += "makeObj('"+a_Objects[svc].name+"', '"+a_Objects[svc].type+"'); "
+        variableCode += "a_Objects["+svc+"].sX = "+a_Objects[svc].sX;
+        variableCode += "; a_Objects["+svc+"].sY = "+a_Objects[svc].sY;
+        variableCode += "; a_Objects["+svc+"].sSize = "+a_Objects[svc].sSize;
+        variableCode += "; a_Objects["+svc+"].sWidth = "+a_Objects[svc].sWidth;
+        variableCode += "; a_Objects["+svc+"].sHeight = "+a_Objects[svc].sHeight;
+        variableCode += "; a_Objects["+svc+"].sFill = '"+a_Objects[svc].sFill;
+        variableCode += "'; a_Objects["+svc+"].sStroke = '"+a_Objects[svc].sStroke;
+        variableCode += "'; a_Objects["+svc+"].sLineWidth = "+a_Objects[svc].sLineWidth;
+        variableCode += "; a_Objects["+svc+"].collL = "+a_Objects[svc].collL;
+        variableCode += "; a_Objects["+svc+"].collR = "+a_Objects[svc].collR;
+        variableCode += "; a_Objects["+svc+"].collT = "+a_Objects[svc].collT;
+        variableCode += "; a_Objects["+svc+"].collB = "+a_Objects[svc].collB;
+        variableCode += "; a_Objects["+svc+"].bounded = "+a_Objects[svc].bounded;
+        variableCode += "; a_Objects["+svc+"].reset(); ";
+    }
+}
+
+
+var textFile = null; //Woah! I copy pasted this code!
+function makeTextFile(text) {
+    var data = new Blob([text], {type: 'text/javascript'});
+
+    // If we are replacing a previously generated file we need to
+    // manually revoke the object URL to avoid memory leaks.
+    if (textFile !== null) {
+      window.URL.revokeObjectURL(textFile);
+    }
+
+    textFile = window.URL.createObjectURL(data);
+
+    // returns a URL you can use as a href
+    return textFile;
 }
