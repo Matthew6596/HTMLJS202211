@@ -5,12 +5,22 @@ var interval = 60;
 var timer = setInterval(main,interval)
 
 document.addEventListener("keydown",keyDown);
+document.addEventListener("input",gridSizeChange)
 
 function keyDown(e){
     if(e.key=="w"&&!down){up=true; left=false; down=false; right=false;}
     if(e.key=="a"&&!right){left=true; up=false; right=false; down=false;}
     if(e.key=="s"&&!up){down=true; left=false; right=false; up=false;}
     if(e.key=="d"&&!left){right=true; left=false; up=false; down=false;}
+    if(e.key==" "){
+        left = false;
+        right = false;
+        up = false;
+        down = false;
+        player = new Snake();
+        apple = new Apple();
+        
+    }
 }
 
 var left = false;
@@ -18,8 +28,10 @@ var right = false;
 var up = false;
 var down = false;
 
-const gridSize = 20;
-const gridWidth = canvas.width/gridSize;
+var gridSize = 20;
+var gridWidth = canvas.width/gridSize;
+
+var impossible = false;
 
 var player = new Snake();
 var apple = new Apple();
@@ -60,6 +72,11 @@ function Snake(){
         }
         if(head[0]>gridWidth-1||head[0]<0||head[1]>gridWidth-1||head[1]<0){this.alive=false; winCheck();}
         if(head[0]==apple.x&&head[1]==apple.y){
+            if(impossible){
+                canvas.height+=gridSize;
+                canvas.width+=gridSize;
+                gridWidth = canvas.width/gridSize;
+            }
             apple = new Apple();
             this.length++;
             this.segments.push(lastSeg);
@@ -93,7 +110,6 @@ function main(){
     player.move();
     player.draw();
     apple.draw();
-
 }
 
 function randInt(lo, hi){return Math.round(Math.random()*(hi-lo)+lo)}
@@ -102,13 +118,27 @@ function winCheck(){
     var failed = false;
     for(var w=0; w<gridWidth; w++){
         for(var h=0; h<gridWidth; h++){
+            var segmentIn = false
             for(var ap=0; ap<player.length; ap++){
                 if(player.segments[ap][0]==w&&player.segments[ap][1]==h){
-                    failed = true;
-                    break;
+                    segmentIn=true;
                 }
             }
+            if(!segmentIn){failed = true; break;}
         }
     }
     console.log(failed);
+}
+
+function gridSizeChange(){
+    if(document.activeElement.id=="gridScaleInp"||document.activeElement.id=="gridWidthInp"){
+        gridSize = Number(document.getElementById("gridScaleInp").value);
+        gridWidth = canvas.width/gridSize;
+    }
+}
+
+function toggleImpossible(){
+    impossible = !impossible;
+    if(impossible){document.getElementById("impossibleInp").value="Change to False";}
+    else{document.getElementById("impossibleInp").value="Change to True";}
 }

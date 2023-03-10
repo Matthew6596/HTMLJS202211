@@ -7,10 +7,14 @@
     <title>Snake | MonuMeowntal Games</title>
     <link rel="icon" type="image/x-icon" href="../images/logo2icon.png">
     <style>
-        html,body{
+        html,body,#inputs{
             background-color: rgb(212, 212, 212);
             display: flex;
             justify-content: center;
+        }
+        .input{
+            margin-left: 20px;
+            margin-right: 20px;
         }
         canvas{
             border: 1px solid black;
@@ -19,7 +23,14 @@
     </style>
 </head>
 <body>
-    <canvas id="canvas" style="border: 1px solid black;" width="600" height="600"></canvas>
+    <div id="container">
+        <canvas id="canvas" style="border: 1px solid black;" width="600" height="600"></canvas>
+        <div id="inputs">
+            <div class="input">Grid Size: <input type="number" id="gridScaleInp" value="20"></div>
+            <div class="input">Impossible: <input type="button" id="impossibleInp" value="Change to True" onclick="toggleImpossible();"></div>
+        </div>
+    </div>
+
     <script src="snake.js"></script>
 </body>
 </html>
