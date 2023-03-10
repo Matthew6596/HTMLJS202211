@@ -169,7 +169,9 @@ function resetLvl(){
 	wall = new GameObject({width:64, height:320,y:canvas.height-192, x:2680, color:"grey"});
 	wall.img.src=`tiles/tileIMGs/brickwall.png`;
 	plat.img.src=`tiles/tileIMGs/platform.png`;
-
+	plat2.img.src=`tiles/tileIMGs/platform.png`;
+	plat3.img.src=`tiles/tileIMGs/platform.png`;
+	
 	//A level object when it is moved other objects move with it.
 	level = new GameObject({x:0,y:0});
 	ground.world = level;
@@ -199,7 +201,7 @@ function resetLvl(){
 
 	//Used to draw the rectangles
 	rects = new Group();
-	rects.add([ground,plat,wall,plat2,plat3]);
+	rects.add([ground,wall]);
 
 	//used to render the sprites
 	sprites = new Group();

@@ -7,10 +7,10 @@ var timer = setInterval(main,interval)
 document.addEventListener("keydown",keyDown);
 
 function keyDown(e){
-    if(e.key=="w"){up=true; left=false; down=false; right=false;}
-    if(e.key=="a"){left=true; up=false; right=false; down=false;}
-    if(e.key=="s"){down=true; left=false; right=false; up=false;}
-    if(e.key=="d"){right=true; left=false; up=false; down=false;}
+    if(e.key=="w"&&!down){up=true; left=false; down=false; right=false;}
+    if(e.key=="a"&&!right){left=true; up=false; right=false; down=false;}
+    if(e.key=="s"&&!up){down=true; left=false; right=false; up=false;}
+    if(e.key=="d"&&!left){right=true; left=false; up=false; down=false;}
 }
 
 var left = false;
@@ -34,7 +34,7 @@ function Snake(){
         for(var i=0; i<this.length; i++){
             ctx.save();
             ctx.translate(this.segments[i][0]*gridSize,this.segments[i][1]*gridSize);
-            var col = "rgb(0, "+(255-((i+1)*(90/this.length)))+", 0)"
+            var col = "rgb(0, "+(255-((i+1)*(160/this.length)))+", 0)"
             ctx.fillStyle = col;
             if(i==0){ctx.fillStyle = "rgb(0, 255, 0)";}
             ctx.fillRect(1,1,gridSize-3,gridSize-3);
@@ -68,8 +68,15 @@ function Snake(){
 }
 
 function Apple(){
-    this.x = randInt(0,gridWidth-1);
-    this.y = randInt(0,gridWidth-1);
+    this.x = 5;
+    this.y = 6;
+
+    for(var ap=0; ap<player.length; ap++){
+        while(player.segments[ap][0]==this.x&&player.segments[ap][1]==this.y&&player.alive){
+            this.x = randInt(0,gridWidth-1);
+            this.y = randInt(0,gridWidth-1);
+        }
+    }
 
     this.draw = function(){
         ctx.save();
@@ -95,8 +102,12 @@ function winCheck(){
     var failed = false;
     for(var w=0; w<gridWidth; w++){
         for(var h=0; h<gridWidth; h++){
-            if(!player.segments.includes([w,h])){failed=true;}
-            //does this work?!!?! idk
+            for(var ap=0; ap<player.length; ap++){
+                if(player.segments[ap][0]==w&&player.segments[ap][1]==h){
+                    failed = true;
+                    break;
+                }
+            }
         }
     }
     console.log(failed);

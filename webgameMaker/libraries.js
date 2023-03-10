@@ -25,20 +25,6 @@ function drawObjs(arr,context){
     }
 }
 
-/*Additional Code to be added by String:
-
-var timer = setInterval(pageMain, interval);
-
-function pageMain(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    //cut and place mainCode here
-    drawObjs(a_Objects,ctx);
-}
-
-//cut mainCode, and place remaining code here
-
-*/
-
 /*------------------------------------VARIABLES----------------------------------*/
 var a_variables = [];
 function makeVar(name,val){
@@ -208,10 +194,10 @@ function Rectangle(x,y,name,contx=ctx){
     }
 
     this.updateHitBox = function(){
-        this.left = Number(this.x)+this.collL;
-        this.right = Number(this.x)+this.collR+Number(this.w);
-        this.top = Number(this.y)+this.collT;
-        this.bottom = Number(this.y)+this.collB+Number(this.h);
+        this.left = Number(this.x)+Number(this.collL);
+        this.right = Number(this.x)+Number(this.collR)+Number(this.w);
+        this.top = Number(this.y)+Number(this.collT);
+        this.bottom = Number(this.y)+Number(this.collB)+Number(this.h);
     }
 
     this.reset = function(){
