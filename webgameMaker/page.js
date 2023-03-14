@@ -60,6 +60,7 @@ var pickedObj;
 var pickedObjInd;
 var mxOff;
 var myOff;
+var showHitboxes = true;
 
 var selectedObject = undefined;
 var selectedObjectInd = -1;
@@ -81,6 +82,8 @@ function pageMain(){
     drawObjs(a_libraryObjs,getPickObjContext(a_libraryObjs));
     drawObjs(a_Objects,getPickObjContext(a_Objects,"ctx"));
     
+    if(!running&&showHitboxes){renderHitboxes();}
+
     if(running&&!mainCode.includes("//none")){eval(functions); eval(mainCode);}
 
 }
@@ -107,7 +110,7 @@ function swapEditable(){
         exportBtn.disabled = false;
     }
     a_KeysPressed = [];
-    onClick = function(){console.log("User has clicked.\nSet onClick = function [name](){//Your Code} to replace this message.");}
+    onClick = function(){console.log("userhasclicked");}
 }
 
 function getMain(){
@@ -450,4 +453,22 @@ function makeTextFile(text) {
 
     // returns a URL you can use as a href
     return textFile;
+}
+
+function renderHitboxes(){
+    for(var rhb=0; rhb<a_Objects.length; rhb++){
+        ctx.save();
+        var grd = ctx.createLinearGradient(a_Objects[rhb].left,a_Objects[rhb].top,a_Objects[rhb].right,a_Objects[rhb].bottom);
+        grd.addColorStop(0, "rgba(255,0,0,0.5)");
+        grd.addColorStop(0.25, "rgba(200,0,0,0.5)");
+        grd.addColorStop(0.5, "rgba(255,0,0,0.5)");
+        grd.addColorStop(0.75, "rgba(200,0,0,0.5)");
+        grd.addColorStop(1, "rgba(255,0,0,0.5)");
+        ctx.fillStyle = grd;
+        ctx.strokeStyle = "rgba(255,255,255,1)";
+        ctx.setLineDash([10,1]);
+        ctx.fillRect(a_Objects[rhb].left,a_Objects[rhb].top,(a_Objects[rhb].right-a_Objects[rhb].left),(a_Objects[rhb].bottom-a_Objects[rhb].top));
+        ctx.strokeRect(a_Objects[rhb].left,a_Objects[rhb].top,(a_Objects[rhb].right-a_Objects[rhb].left),(a_Objects[rhb].bottom-a_Objects[rhb].top));
+        ctx.restore();
+    }
 }

@@ -1,108 +1,126 @@
-body{
+
+/*Horizontal Things!*/
+html,body,header,#navArea,.section,#mainBox,.btnSection,.gameSection,footer,header{
     display: flex;
     justify-content: center;
-    background-color: rgb(252, 232, 218);
-}
-#container{
-    width: 1420px;
-    height: 2160px;
-    align-items: center;
-    border: 1px solid black;
-    background-color: rgb(228, 255, 228);
-}
-header{
-    width:910px;
-    height: 256px;
-    margin-top: 20px;
-    margin-left: 255px;
-    padding-top: 20px;
-    background-color: rgb(129, 255, 160);
-}
-nav{
-    margin-top: -80px;
-    margin-right: 10px;
-    float: right;
-}
-h1{
-    font-size:100px;
-    font-family:monospace;
-    margin-top:-20px;
-    margin-left:20px;
-    margin-bottom:-55px;
-}
-.tabbtn{
-    display:flex;
-    justify-content: right;
-    width:100px;
-    border: 1px solid black;
-    background-color: aliceblue;
-    color:black;
-    padding-right:5px;
-    text-decoration: none;
-    text-align: right;
-}
-.btn{
-    padding:10px;
-    width:100px;
-    height:20px;
-    border: 1px solid black;
-    background-color: aliceblue;
-    color:black;
-    text-decoration: none;
-    text-align: center;
-    display:block;
-    margin:auto;
-}
-#contact-info{
-    margin-top: 100px;
-    margin-left: 15px;
-}
-.contact{
-    margin-left:-45px;
-    list-style-type: none;
-}
-#first-read{
-    display:flex;
-    justify-content: center;
-    height:256px;
-    margin-top:20px;
-}
-.game-info{
-    margin-right:20px;
-    text-align: center;
-    border:1px solid black;
-    background-color: bisque;
-    width:500px;
-    
-}
-a:hover{
-    background-color: rgb(157, 182, 228);
-}
-li{
-    margin: 5px;
-}
-h2{
-    margin: 10px;
-}
-#midImgs{
-    display:flex;
-    justify-content: center;
-    height: 170px;
-    margin-top:20px;
-}
-.midImg{
-    width: 300px;
-    height: 150px;
-    margin: 10px;
-}
-footer{
-    background-color: rgb(162, 255, 255);
-    float: none;
 }
 
-#temp{
-    border:2px solid black;
-    background-color: rgb(227, 169, 169);
-    margin:40px;
-    padding:40px;
+@font-face {
+    font-family: cascadia;
+    src: url(fonts/Cascadia.ttf);
+}
+
+
+/*Styling*/
+#mainContainer{
+    border: 1px solid black;
+    background-image: linear-gradient(#868DCE, #D2F7EC);
+    width: 1280px;
+    height: 1440px; /*scaled down 1.5x*/
+}
+
+#headerBox,#mainBox{
+    box-shadow:0px 0px 0px 2px black inset;
+    background-color: #A4C7A2;
+}
+
+header{
+    height: 336px;
+    padding-top: 30px;
+}
+
+#headerBox{
+    width: 768px;
+    height: 306px;
+}
+
+#title{
+    height:79px;
+    text-align: center;
+}
+
+#contacts,nav{
+    width:299px;
+    display: grid;
+    font-family: cascadia;
+    font-size: 16pt;
+}
+
+#contacts{
+    justify-content: left;
+    padding-left:40px;
+    padding-bottom:20px;
+}
+
+nav{
+    justify-content: right;
+    padding-right:40px;
+    padding-top:20px;
+    padding-bottom:5px
+}
+
+.contact{
+    font-size: 12pt;
+}
+
+@keyframes navMove1 {
+    from {width: 187px; margin-left: 0px; background-color: #BFD1BE;}
+    to {width: 213px; margin-left:-26px; background-color: #778C84;}
+}
+@keyframes navMove2 {
+    from {width: 213px; margin-left:-26px; background-color: #778C84;}
+    to {width: 187px; margin-left: 0px; background-color: #BFD1BE;}
+}
+.navBtn{
+    animation: navMove2 0.2s;
+    height: 27px;
+    width: 187px;
+    box-shadow:0px 0px 0px 1px black inset;
+    background-color: #BFD1BE;
+    text-decoration: none;
+    color:black;
+    text-align: right;
+}
+.navBtn:hover{
+    animation: navMove1 0.2s forwards;
+}
+
+/*
+other header elements
+*/
+
+#section1{
+    height:336px;
+}
+
+#mainBox{
+    width: 939px;
+    height: 306px;
+}
+
+/*
+other main elements
+*/
+
+#section2{
+    height:270px;
+}
+
+/*
+other section2 elements
+*/
+
+#section3{
+    height:319px;
+    padding: 5px 0px;
+}
+
+/*
+other section3 elements
+*/
+
+footer{
+    margin-top: 45px;
+    height: 94px;
+    background-color: #597A57;
 }
