@@ -109,7 +109,7 @@ function makeObj(name,type){
     }
     
 }
-function getObj(name){
+function obj(name){
     for(var go=0; go<a_Objects.length; go++){
         if(a_Objects[go].name==name){
             return a_Objects[go];
@@ -171,7 +171,7 @@ function Rectangle(x,y,name,contx=ctx){
             while(this.top<0){this.y++; this.updateHitBox();}
             while(this.bottom>canvas.height){this.y--; this.updateHitBox();}
         }
-        this.tagCollision();
+        if(!this.collTags.includes("none")){this.tagCollision();}
 
         contx.save();
         contx.translate(this.x,this.y);
@@ -221,7 +221,11 @@ function Rectangle(x,y,name,contx=ctx){
     }
 
     this.tagCollision = function(){
-        //for each other.tag==this.collTags {doCollision}
+        for(var tc=0; tc<a_Objects.length; tc++){
+            if(this.collTags.includes(a_Objects[tc].tag)){
+                this.doCollision(a_Objects[tc]);
+            }
+        }
     }
 
     this.doCollision = function(otherObj){
@@ -234,7 +238,32 @@ function Rectangle(x,y,name,contx=ctx){
         if(insideHorizontal&&((this.bottom>otherObj.top&&this.bottom<otherObj.bottom)||(this.top<otherObj.bottom&&this.top>otherObj.top))){
             //find shortest dist out, push out
             dists.sort((a, b) => a - b);
-            //dists[0] is shortest dist, maybe
+            switch(dists[0]){
+                case lDist: this.x-=lDist; break;
+                case rDist: this.x+=rDist; break;
+                case tDist: this.y-=tDist; break;
+                case bDist: this.y+=bDist; break;
+            }
+            this.updateHitBox();
+        }
+    }
+
+    this.overlaps = function(othObj){
+        return ((this.right>othObj.left&&this.right<othObj.right)||(this.left<othObj.right&&this.left>othObj.left)&&
+                (this.bottom>othObj.top&&this.bottom<othObj.bottom)||(this.top<othObj.bottom&&this.top>othObj.top));
+    }
+
+    this.tagTrigger = function(otherTag, func){
+        for(var tc=0; tc<a_Objects.length; tc++){
+            if(otherTag==a_Objects[tc].tag&&this.overlaps(a_Objects[tc])){
+                func;
+            }
+        }
+    }
+
+    this.objTrigger = function(otherObj, func){
+        if(this.overlaps(otherObj)){
+            func;
         }
     }
 }
@@ -289,3 +318,14 @@ function onUserClick(){
         onClick();
     }
 }
+
+/*------------------------------------GAME-STATES/SCREENS----------------------------------*/
+
+var a_Screens = ["start"];
+var a_scrnObjList = []; //2d array of each screens set of Objs Indexs
+var currentScrn = 0;
+
+//a_Screens[currentScreen]
+//changeScrn("name");
+//a_Objects.push(newObj), a_scrnObjList[currentScrn].push(newObj);
+//for(a_scrnObjList[currentScrn].draw)

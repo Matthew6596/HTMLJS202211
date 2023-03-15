@@ -34,8 +34,8 @@ document.addEventListener("cut",multiLineRemovalCheck);
 document.addEventListener("dblclick", multiLineRemovalCheck);
 document.addEventListener("selectionchange", function(){if(document.getSelection().toString().length>1){multiLineRemovalCheck();}});
 
-document.addEventListener("mousedown", objPickUp); //Listeners for drag/drop objects
-document.addEventListener("dragstart", movePickedObj); 
+document.addEventListener("mousedown", function(){objPickUp(); getSelectedObj();}); //Listeners for drag/drop objects
+document.addEventListener("dragstart", movePickedObj);
 document.addEventListener("mouseup", objDrop);
 
 document.addEventListener("click",getSelectedObj); //Listener for selecting objects
@@ -131,7 +131,7 @@ function getMain(){
         mainOut = code.substring(mainInd+6,mainEndInd-1);
         code = code.substring(0,mainInd)+code.substring(mainEndInd+1,code.length);
     }else{
-        return "//none";
+        return "/*none*/";
     }
     return mainOut;
 }
