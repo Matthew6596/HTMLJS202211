@@ -8,6 +8,8 @@ var exportBtn = document.getElementById("exportBtn");
 document.getElementById("downloadBtn").href = makeTextFile("Nothing! Press code refresh btn!");
 
 var nameInp = document.getElementById("nameInp"); //Property Inputs
+var tagInp = document.getElementById("tagInp");
+var colTagInp = document.getElementById("colTagInp");
 var xInp = document.getElementById("xInp");
 var yInp = document.getElementById("yInp");
 var wInp = document.getElementById("wInp");
@@ -65,8 +67,8 @@ var showHitboxes = true;
 var selectedObject = undefined;
 var selectedObjectInd = -1;
 
-var a_propertyInpIDs = ["nameInp","xInp","yInp","wInp","hInp","fillInp","strokeInp","lwInp","boundInp","CLInp","CRInp","CTInp","CBInp"];
-var a_propertyInps = [nameInp,xInp,yInp,wInp,hInp,fillInp,strokeInp,lineWInp,boundInp,CLInp,CRInp,CTInp,CBInp];
+var a_propertyInpIDs = ["nameInp","xInp","yInp","wInp","hInp","fillInp","strokeInp","lwInp","boundInp","CLInp","CRInp","CTInp","CBInp","tagInp","colTagInp"];
+var a_propertyInps = [nameInp,xInp,yInp,wInp,hInp,fillInp,strokeInp,lineWInp,boundInp,CLInp,CRInp,CTInp,CBInp,tagInp,colTagInp];
 
 function pageMain(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -336,6 +338,8 @@ function readObjProperties(){
         setObj(selectedObjectInd);
         //Display this Object to properties panel
         nameInp.value = selectedObject.name;
+        tagInp.value = selectedObject.tag;
+        colTagInp.value = selectedObject.collTags;
         xInp.value = selectedObject.sX;
         yInp.value = selectedObject.sY;
         wInp.value = selectedObject.sWidth;
@@ -348,6 +352,7 @@ function readObjProperties(){
         CRInp.value = selectedObject.collR;
         CTInp.value = selectedObject.collT;
         CBInp.value = selectedObject.collB;
+        
         //console.log(selectedObject.left+", "+selectedObject.right+", "+selectedObject.top+", "+selectedObject.bottom);
         toggleProperties(false);
     }else{
@@ -358,7 +363,7 @@ function readObjProperties(){
         strokeInp.value = "#000000";
         lineWInp.value = null;
         boundInp.checked = false;
-        for(var rop=9; rop<13; rop++){
+        for(var rop=9; rop<15; rop++){
             a_propertyInps[rop].value = null;
         }
         toggleProperties(true);
@@ -368,6 +373,8 @@ function readObjProperties(){
 function writeObjProperties(){
     if(a_Objects.includes(selectedObject)){
         selectedObject.name = nameInp.value;
+        selectedObject.tag = tagInp.value;
+        selectedObject.collTags = arrayIfy(colTagInp.value);
         selectedObject.sX = xInp.value;
         selectedObject.sY = yInp.value;
         selectedObject.sWidth = wInp.value;
@@ -395,7 +402,7 @@ function selectExportCode() {
     setJsCode();
 
     //window.getSelection().selectAllChildren(document.getElementById("exportCode"));
-    navigator.clipboard.writeText(document.getElementById("exportCode").innerText); //writes to clipboard
+    //navigator.clipboard.writeText(document.getElementById("exportCode").innerText); //writes to clipboard
 
     document.getElementById("downloadBtn").href = makeTextFile(jsCode);
 }
@@ -421,6 +428,8 @@ function setJsCode(){
 function setVariableCode(){
     for(var svc=0; svc<a_Objects.length; svc++){
         variableCode = "makeObj('"+a_Objects[svc].name+"', '"+a_Objects[svc].type+`');
+        a_Objects[`+svc+"].tag = "+a_Objects[svc].tag+`;
+        a_Objects[`+svc+"].collTags = "+a_Objects[svc].collTags+`;
         a_Objects[`+svc+"].sX = "+a_Objects[svc].sX+`;
         a_Objects[`+svc+"].sY = "+a_Objects[svc].sY+`;
         a_Objects[`+svc+"].sSize = "+a_Objects[svc].sSize+`;
@@ -471,4 +480,19 @@ function renderHitboxes(){
         ctx.strokeRect(a_Objects[rhb].left,a_Objects[rhb].top,(a_Objects[rhb].right-a_Objects[rhb].left),(a_Objects[rhb].bottom-a_Objects[rhb].top));
         ctx.restore();
     }
+}
+
+function arrayIfy(strInp){
+    var arrOut = [];
+    var prevInd = 0;
+    for(var aiy=0; aiy<strInp.length; aiy++){
+        if(strInp.charAt(aiy)==','){
+            arrOut.push(
+                strInp.substring(prevInd,aiy).trim()
+            );
+            prevInd=aiy+1;
+        }
+    }
+    arrOut.push(strInp.substring(prevInd,strInp.length).trim());
+    return arrOut;
 }

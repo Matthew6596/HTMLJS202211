@@ -1,3 +1,8 @@
+@font-face {
+    font-family: cramaten;
+    src: url(../fonts/Cramaten.ttf);
+}
+
 html,body{
     display:flex;
     justify-content: center;
@@ -75,11 +80,36 @@ html,body{
 #export{
     margin-left:10px;
     width: 280px;
-    float:right;
+}
+#downloadBtn{
+    font-family: 'Courier New', Courier, monospace;
+    font-size:16px;
+    border:1px solid rgb(109, 109, 109);
+    background-color: rgb(175, 212, 235);
+    color: rgb(12, 24, 30);
+    padding: 0px 4px;
+    padding-bottom:1px;
+    text-decoration: none;
+}
+#downloadBtn:hover{
+    background-color: rgb(135, 164, 181);
+}
+#expCodeAndOpt{
+    display:flex;
+    justify-content: center;
+    margin-top: 2px;
 }
 #exportCode{
-    font-family: 'Courier New', Courier, monospace;
+    font-family: cramaten;
     background-color: rgb(225, 225, 225);
     border:1px solid black;
     font-size: 2px;
+    width:125px;
+}
+#exportOptions{
+    font-family: 'Courier New', Courier, monospace;
+    background-color: rgb(225, 225, 225);
+    border:1px solid black;
+    font-size: 14px;
+    width:175px;
 }

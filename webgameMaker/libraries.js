@@ -120,6 +120,8 @@ function getObj(name){
 /*------------------------------------LIBRARY-OBJECTS----------------------------------*/
 function Rectangle(x,y,name,contx=ctx){
     this.name = name;
+    this.tag = "none";
+    this.collTags = ["none"];
 
     //Init Attributes
     this.sX = x;

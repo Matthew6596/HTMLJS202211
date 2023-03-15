@@ -80,6 +80,7 @@ nav{
     text-decoration: none;
     color:black;
     text-align: right;
+    padding-right:5px;
 }
 .navBtn:hover{
     animation: navMove1 0.2s forwards;
