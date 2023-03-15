@@ -171,6 +171,7 @@ function Rectangle(x,y,name,contx=ctx){
             while(this.top<0){this.y++; this.updateHitBox();}
             while(this.bottom>canvas.height){this.y--; this.updateHitBox();}
         }
+        this.tagCollision();
 
         contx.save();
         contx.translate(this.x,this.y);
@@ -217,6 +218,24 @@ function Rectangle(x,y,name,contx=ctx){
 
         this.bound = this.bounded;
         this.updateHitBox();
+    }
+
+    this.tagCollision = function(){
+        //for each other.tag==this.collTags {doCollision}
+    }
+
+    this.doCollision = function(otherObj){
+        var lDist = Math.abs(otherObj.left-this.right); //distance from left side to other obj
+        var rDist = Math.abs(this.left-otherObj.right);
+        var tDist = Math.abs(otherObj.top-this.bottom);
+        var bDist = Math.abs(this.top-otherObj.bottom);
+        var dists = [lDist,rDist,tDist,bDist];
+        var insideHorizontal = ((this.right>otherObj.left&&this.right<otherObj.right)||(this.left<otherObj.right&&this.left>otherObj.left));
+        if(insideHorizontal&&((this.bottom>otherObj.top&&this.bottom<otherObj.bottom)||(this.top<otherObj.bottom&&this.top>otherObj.top))){
+            //find shortest dist out, push out
+            dists.sort((a, b) => a - b);
+            //dists[0] is shortest dist, maybe
+        }
     }
 }
 
