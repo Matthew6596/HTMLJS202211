@@ -327,5 +327,5 @@ var currentScrn = 0;
 
 //a_Screens[currentScreen]
 //changeScrn("name");
-//a_Objects.push(newObj), a_scrnObjList[currentScrn].push(newObj);
+//a_Objects.push(newObj), a_scrnObjList[currentScrn].push(sameObj);
 //for(a_scrnObjList[currentScrn].draw)
