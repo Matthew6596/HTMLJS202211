@@ -3,7 +3,7 @@ var header = document.getElementById("header");
 var ctx = canvas.getContext("2d");
 
 var interval = 1000/140;
-var timer = setInterval(main, interval);
+//var timer = setInterval(main, interval); //Uncomment for pain
 
 var r,g,b;
 
