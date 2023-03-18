@@ -11,9 +11,15 @@
 <body>
     <div id="container">
         <div id="toolbar">
-            <input type="button" value="Run" id="runBtn" onclick="swapEditable(); running=!running; if(running){eval(code);}">
             <input type="button" value="Toggle Hitboxes" id="hitboxBtn" onclick="showHitboxes=!showHitboxes;">
-            <!---->
+            <input type="button" value="Run" id="runBtn" onclick="swapEditable(); running=!running; if(running){eval(code);}">
+            <div id="screenSection">
+                <select id="screens">
+                    <option value="start" selected>start</option>
+                 </select>
+                <input id="scrnNameInp">
+                <input type="button" value="Add" id="scrnAddBtn" onclick="addScreen(document.getElementById('scrnNameInp').value);">
+            </div>
         </div>
 
     <div id="mainSection">

@@ -101,21 +101,56 @@ function percent(chance){
 }
 
 /*------------------------------------OBJECTS----------------------------------*/
-var a_Objects = [];
 
-function makeObj(name,type){
+function makeObj(name,type,scrn=currentScrn){
     switch (type){
-        case "rect": a_Objects.push(new Rectangle(0,0,name)); break; 
+        case "rect": a_scrnObjList[scrn].push(new Rectangle(0,0,name)); break; 
     }
     
 }
-function obj(name){
-    for(var go=0; go<a_Objects.length; go++){
-        if(a_Objects[go].name==name){
-            return a_Objects[go];
+function obj(name,scrn=currentScrn){
+    var arr = a_scrnObjList[scrn];
+    for(var go=0; go<arr.length; go++){
+        if(arr[go].name==name){
+            return arr[go];
         }
     }
 }
+
+/*-----Collision-----*/
+
+//Obj-Obj Collision +
+//Obj-Tag Collision |- return bool
+//Tag-Tag Collision +
+
+function tagTrig(t1,t2){
+    var arr = a_scrnObjList[currentScrn];
+    var returnBool = false;
+    for(var tt=0; tt<arr.length; tt++){
+        if(t1==arr[tt].tag){
+            for(var tt2=0; tt2<arr.length; tt2++){
+                if(t2==arr[tt2].tag&&arr[tt].overlaps(arr[tt2])){returnBool=true;}
+            }
+        }
+        
+    }
+    return returnBool;
+}
+
+function objTrig(o1,o2){
+    return o1.overlaps(o2);
+}
+
+function otTrig(ob,tr){
+    var arr = a_scrnObjList[currentScrn];
+    var returnBool = false;
+    for(var tc=0; tc<arr.length; tc++){
+        if(tr==arr[tc].tag&&ob.overlaps(arr[tc])){returnBool=true;}
+    }
+    return returnBool;
+}
+
+
 
 /*------------------------------------LIBRARY-OBJECTS----------------------------------*/
 function Rectangle(x,y,name,contx=ctx){
@@ -129,7 +164,7 @@ function Rectangle(x,y,name,contx=ctx){
     this.sSize = 1;
     this.sWidth = 50;
     this.sHeight = 50;
-    this.sFill = "#000000";
+    this.sFill = "#222222";
     this.sStroke = "#00B600";
     this.sLineWidth = 4;
 
@@ -221,9 +256,10 @@ function Rectangle(x,y,name,contx=ctx){
     }
 
     this.tagCollision = function(){
-        for(var tc=0; tc<a_Objects.length; tc++){
-            if(this.collTags.includes(a_Objects[tc].tag)){
-                this.doCollision(a_Objects[tc]);
+        var arr = a_scrnObjList[currentScrn];
+        for(var tc=0; tc<arr.length; tc++){
+            if(this.collTags.includes(arr[tc].tag)){
+                this.doCollision(arr[tc]);
             }
         }
     }
@@ -249,23 +285,10 @@ function Rectangle(x,y,name,contx=ctx){
     }
 
     this.overlaps = function(othObj){
-        return ((this.right>othObj.left&&this.right<othObj.right)||(this.left<othObj.right&&this.left>othObj.left)&&
-                (this.bottom>othObj.top&&this.bottom<othObj.bottom)||(this.top<othObj.bottom&&this.top>othObj.top));
+        return (((this.right>othObj.left&&this.right<othObj.right)||(this.left<othObj.right&&this.left>othObj.left))&&
+                ((this.bottom>othObj.top&&this.bottom<othObj.bottom)||(this.top<othObj.bottom&&this.top>othObj.top)));
     }
 
-    this.tagTrigger = function(otherTag, func){
-        for(var tc=0; tc<a_Objects.length; tc++){
-            if(otherTag==a_Objects[tc].tag&&this.overlaps(a_Objects[tc])){
-                func;
-            }
-        }
-    }
-
-    this.objTrigger = function(otherObj, func){
-        if(this.overlaps(otherObj)){
-            func;
-        }
-    }
 }
 
 /*------------------------------------USER-INPUT----------------------------------*/
@@ -275,7 +298,7 @@ document.addEventListener("keyup",documentKeyUp);
 document.addEventListener("click",onUserClick);
 
 var a_KeysPressed = [];
-var onClick = function(){console.log("text");}
+var onClick = function(){console.log("userhasclicked");}
 
 function documentKeyDown(e){
     var eventKey = e.key.toLowerCase();
@@ -322,10 +345,35 @@ function onUserClick(){
 /*------------------------------------GAME-STATES/SCREENS----------------------------------*/
 
 var a_Screens = ["start"];
-var a_scrnObjList = []; //2d array of each screens set of Objs Indexs
+var a_scrnObjList = [[]]; //2d array of each screens set of Objs Indexs
 var currentScrn = 0;
 
 //a_Screens[currentScreen]
 //changeScrn("name");
 //a_Objects.push(newObj), a_scrnObjList[currentScrn].push(sameObj);
 //for(a_scrnObjList[currentScrn].draw)
+
+function addScreen(scrnName){
+    if(!a_Screens.includes(scrnName)){
+        var d_scrn = document.createElement("option");
+        d_scrn.innerHTML = scrnName;
+        d_scrn.value = scrnName;
+        d_screens.appendChild(d_scrn);
+        a_Screens.push(scrnName);
+        document.getElementById('scrnNameInp').value = "";
+
+        a_scrnObjList[a_scrnObjList.length] = [];
+    }
+}
+
+function refreshCurrentScrn(){
+    currentScrn = a_Screens.indexOf(d_screens.value);
+}
+
+function changeScrn(scrnName){
+    currentScrn = a_Screens.indexOf(scrnName);
+}
+
+function getScrn(){
+    return a_Screens[currentScrn];
+}

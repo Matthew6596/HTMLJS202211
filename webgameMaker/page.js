@@ -5,6 +5,7 @@ var codeBox = document.getElementById("codeInpBox");
 var lineNums = document.getElementById("lineNums");
 var runBtn = document.getElementById("runBtn");
 var exportBtn = document.getElementById("exportBtn");
+var d_screens = document.getElementById("screens");
 document.getElementById("downloadBtn").href = makeTextFile("Nothing! Press code refresh btn!");
 
 var nameInp = document.getElementById("nameInp"); //Property Inputs
@@ -40,6 +41,8 @@ document.addEventListener("mouseup", objDrop);
 
 document.addEventListener("click",getSelectedObj); //Listener for selecting objects
 
+document.addEventListener("change",function(){if(document.activeElement.id=="screens"){refreshCurrentScrn();}})
+
 codeBox.contentEditable = true;
 
 var prevCodeBoxHeight = 81;
@@ -63,6 +66,7 @@ var pickedObjInd;
 var mxOff;
 var myOff;
 var showHitboxes = true;
+var prevScrn = 0;
 
 var selectedObject = undefined;
 var selectedObjectInd = -1;
@@ -82,7 +86,7 @@ function pageMain(){
         }
     }
     drawObjs(a_libraryObjs,getPickObjContext(a_libraryObjs));
-    drawObjs(a_Objects,getPickObjContext(a_Objects,"ctx"));
+    drawObjs(a_scrnObjList[currentScrn],getPickObjContext(a_scrnObjList[currentScrn],"ctx"));
     
     if(!running&&showHitboxes){renderHitboxes();}
 
@@ -101,6 +105,8 @@ function swapEditable(){
         setObjs();
         toggleProperties(true);
         exportBtn.disabled = true;
+        prevScrn = currentScrn;
+        currentScrn = 0;
     }else{
         codeBox.contentEditable = true;
         runBtn.value = "Run";
@@ -110,6 +116,7 @@ function swapEditable(){
         resetObjs();
         toggleProperties(false);
         exportBtn.disabled = false;
+        currentScrn = prevScrn;
     }
     a_KeysPressed = [];
     onClick = function(){console.log("userhasclicked");}
@@ -223,9 +230,10 @@ function objPickUp(){
                 break;
             }
         }
-        for(var opu=0; opu<a_Objects.length; opu++){
-            if(mouseInsideObj(a_Objects[opu],"ctx")){
-                pickedObj = a_Objects[opu];
+        var arr = a_scrnObjList[currentScrn];
+        for(var opu=0; opu<arr.length; opu++){
+            if(mouseInsideObj(arr[opu],"ctx")){
+                pickedObj = arr[opu];
                 pickedObjInd = opu;
                 mxOff = mousex - pickedObj.x;
                 myOff = mousey - pickedObj.y;
@@ -246,8 +254,8 @@ function movePickedObj(){
         //my -= myOff;
         pickedObj.moveTo(mx-10,my-10);
     }
-    else if(a_Objects.includes(pickedObj)){
-        if(getPickObjContext(a_Objects)==ctx){
+    else if(a_scrnObjList[currentScrn].includes(pickedObj)){
+        if(getPickObjContext(a_scrnObjList[currentScrn])==ctx){
             mx = mousex; 
             my = mousey;
         }else{mx = mous2x; my = mous2y}
@@ -260,21 +268,22 @@ function movePickedObj(){
 function objDrop(){
     if(a_libraryObjs.includes(pickedObj)){
         if(getPickObjContext(a_libraryObjs)==ctx){
-            a_Objects.push(makeNewObj(pickedObjInd));
+            a_scrnObjList[currentScrn].push(makeNewObj(pickedObjInd));
         }
         pickedObj.moveTo(a_libraryPos[pickedObjInd][0],a_libraryPos[pickedObjInd][1]);
     }
-    else if(a_Objects.includes(pickedObj)){
-        if(getPickObjContext(a_Objects)==ctx2){
-            a_Objects.splice(pickedObjInd,1);
+    else if(a_scrnObjList[currentScrn].includes(pickedObj)){
+        if(getPickObjContext(a_scrnObjList[currentScrn])==ctx2){
+            a_scrnObjList[currentScrn].splice(pickedObjInd,1);
         }
     }
+    getSelectedObj();
     pickedObj = undefined;
 }
 
 function makeNewObj(ind){
     switch (ind){
-        case 0: return new Rectangle(mousex-10,mousey-10,"object"+a_Objects.length);
+        case 0: return new Rectangle(mousex-10,mousey-10,"object"+a_scrnObjList[currentScrn].length);
     }
 }
 
@@ -284,49 +293,56 @@ function stringCtxToReal(c){
 }
 
 function resetObjs(){
-    for(var ro=0; ro<a_Objects.length; ro++){
-        a_Objects[ro].reset();
+    for(var ro=0; ro<a_scrnObjList.length; ro++){
+        for(var ro1=0; ro1<a_scrnObjList[ro].length; ro1++){
+            a_scrnObjList[ro][ro1].reset();
+        }
     }
 }
 
 function setObjs(){
+    var arr = a_scrnObjList;
     for(var ro=0; ro<a_Objects.length; ro++){
-        a_Objects[ro].sX = a_Objects[ro].x;
-        a_Objects[ro].sY = a_Objects[ro].y;
-        a_Objects[ro].sSize = a_Objects[ro].size;
-        a_Objects[ro].sWidth = a_Objects[ro].width;
-        a_Objects[ro].sHeight = a_Objects[ro].height;
-        a_Objects[ro].sFill = a_Objects[ro].fill;
-        a_Objects[ro].sStroke = a_Objects[ro].stroke;
-        a_Objects[ro].sLineWidth = a_Objects[ro].lineWidth;
-        a_Objects[ro].bounded = a_Objects[ro].bound;
-        a_Objects[ro].changeSize();
+        for(var ro1=0; r01<a_scrnObjList[ro].length; ro1++){
+            arr[ro][ro1].sX = arr[ro][ro1].x;
+            arr[ro][ro1].sY = arr[ro][ro1].y;
+            arr[ro][ro1].sSize = arr[ro][ro1].size;
+            arr[ro][ro1].sWidth = arr[ro][ro1].width;
+            arr[ro][ro1].sHeight = arr[ro][ro1].height;
+            arr[ro][ro1].sFill = arr[ro][ro1].fill;
+            arr[ro][ro1].sStroke = arr[ro][ro1].stroke;
+            arr[ro][ro1].sLineWidth = arr[ro][ro1].lineWidth;
+            arr[ro][ro1].bounded = arr[ro][ro1].bound;
+            arr[ro][ro1].changeSize();
+        }
     }
 }
 
-function setObj(ro){
-    a_Objects[ro].sX = a_Objects[ro].x;
-    a_Objects[ro].sY = a_Objects[ro].y;
-    a_Objects[ro].sSize = a_Objects[ro].size;
-    a_Objects[ro].sWidth = a_Objects[ro].width;
-    a_Objects[ro].sHeight = a_Objects[ro].height;
-    a_Objects[ro].sFill = a_Objects[ro].fill;
-    a_Objects[ro].sStroke = a_Objects[ro].stroke;
-    a_Objects[ro].sLineWidth = a_Objects[ro].lineWidth;
-    a_Objects[ro].bounded = a_Objects[ro].bound;
-    a_Objects[ro].changeSize();
+function setObj(ro,scrn=currentScrn){
+    var arr = a_scrnObjList;
+    arr[scrn][ro].sX = arr[scrn][ro].x;
+    arr[scrn][ro].sY = arr[scrn][ro].y;
+    arr[scrn][ro].sSize = arr[scrn][ro].size;
+    arr[scrn][ro].sWidth = arr[scrn][ro].width;
+    arr[scrn][ro].sHeight = arr[scrn][ro].height;
+    arr[scrn][ro].sFill = arr[scrn][ro].fill;
+    arr[scrn][ro].sStroke = arr[scrn][ro].stroke;
+    arr[scrn][ro].sLineWidth = arr[scrn][ro].lineWidth;
+    arr[scrn][ro].bounded = arr[scrn][ro].bound;
+    arr[scrn][ro].changeSize();
 }
 
-function resetObj(ro){
-    a_Objects[ro].reset();
+function resetObj(ro,scrn=currentScrn){
+    a_scrnObjList[scrn][ro].reset();
 }
 
 function getSelectedObj(){
-    selectedObject = a_Objects[pickedObjInd];
+    var arr = a_scrnObjList[currentScrn];
+    selectedObject = arr[pickedObjInd];
     selectedObjectInd = pickedObjInd;
-    for(var rop=0; rop<a_Objects.length; rop++){
-        if(mouseInsideObj(a_Objects[rop],"ctx")){
-            selectedObject = a_Objects[rop];
+    for(var rop=0; rop<arr.length; rop++){
+        if(mouseInsideObj(arr[rop],"ctx")){
+            selectedObject = arr[rop];
             selectedObjectInd = rop;
             break;
         }
@@ -334,7 +350,7 @@ function getSelectedObj(){
 }
 
 function readObjProperties(){
-    if(a_Objects.includes(selectedObject)){
+    if(a_scrnObjList[currentScrn].includes(selectedObject)){
         setObj(selectedObjectInd);
         //Display this Object to properties panel
         nameInp.value = selectedObject.name;
@@ -371,7 +387,7 @@ function readObjProperties(){
 }
 
 function writeObjProperties(){
-    if(a_Objects.includes(selectedObject)){
+    if(a_scrnObjList[currentScrn].includes(selectedObject)){
         selectedObject.name = nameInp.value;
         selectedObject.tag = tagInp.value;
         selectedObject.collTags = arrayIfy(colTagInp.value);
@@ -416,9 +432,9 @@ function setJsCode(){
     function pageMain(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
         `+mainCode+`
-        drawObjs(a_Objects,ctx);
+        drawObjs(a_scrnObjList[currentScrn],ctx);
     }
-    `+code;
+    `+code; //update^^ maybe
 
     jsCode = libraryCode+variableCode+staticCode;
 
@@ -426,24 +442,27 @@ function setJsCode(){
 }
 
 function setVariableCode(){
-    for(var svc=0; svc<a_Objects.length; svc++){
-        variableCode = "makeObj('"+a_Objects[svc].name+"', '"+a_Objects[svc].type+`');
-        a_Objects[`+svc+"].tag = "+a_Objects[svc].tag+`;
-        a_Objects[`+svc+"].collTags = "+a_Objects[svc].collTags+`;
-        a_Objects[`+svc+"].sX = "+a_Objects[svc].sX+`;
-        a_Objects[`+svc+"].sY = "+a_Objects[svc].sY+`;
-        a_Objects[`+svc+"].sSize = "+a_Objects[svc].sSize+`;
-        a_Objects[`+svc+"].sWidth = "+a_Objects[svc].sWidth+`;
-        a_Objects[`+svc+"].sHeight = "+a_Objects[svc].sHeight+`;
-        a_Objects[`+svc+"].sFill = '"+a_Objects[svc].sFill+`';
-        a_Objects[`+svc+"].sStroke = '"+a_Objects[svc].sStroke+`';
-        a_Objects[`+svc+"].sLineWidth = "+a_Objects[svc].sLineWidth+`;
-        a_Objects[`+svc+"].collL = "+a_Objects[svc].collL+`;
-        a_Objects[`+svc+"].collR = "+a_Objects[svc].collR+`;
-        a_Objects[`+svc+"].collT = "+a_Objects[svc].collT+`;
-        a_Objects[`+svc+"].collB = "+a_Objects[svc].collB+`;
-        a_Objects[`+svc+"].bounded = "+a_Objects[svc].bounded+`;
-        a_Objects[`+svc+"].reset(); ";
+    variableCode = " ";
+    for(var svc=0; svc<a_scrnObjList.length; svc++){
+        for(var sv=0; sv<a_scrnObjList[svc].length; sv++){ //Future matt plz change this thx
+            variableCode += "makeObj('"+a_Objects[svc].name+"', '"+a_Objects[svc].type+`');
+            a_Objects[`+svc+"].tag = "+a_Objects[svc].tag+`;
+            a_Objects[`+svc+"].collTags = "+a_Objects[svc].collTags+`;
+            a_Objects[`+svc+"].sX = "+a_Objects[svc].sX+`;
+            a_Objects[`+svc+"].sY = "+a_Objects[svc].sY+`;
+            a_Objects[`+svc+"].sSize = "+a_Objects[svc].sSize+`;
+            a_Objects[`+svc+"].sWidth = "+a_Objects[svc].sWidth+`;
+            a_Objects[`+svc+"].sHeight = "+a_Objects[svc].sHeight+`;
+            a_Objects[`+svc+"].sFill = '"+a_Objects[svc].sFill+`';
+            a_Objects[`+svc+"].sStroke = '"+a_Objects[svc].sStroke+`';
+            a_Objects[`+svc+"].sLineWidth = "+a_Objects[svc].sLineWidth+`;
+            a_Objects[`+svc+"].collL = "+a_Objects[svc].collL+`;
+            a_Objects[`+svc+"].collR = "+a_Objects[svc].collR+`;
+            a_Objects[`+svc+"].collT = "+a_Objects[svc].collT+`;
+            a_Objects[`+svc+"].collB = "+a_Objects[svc].collB+`;
+            a_Objects[`+svc+"].bounded = "+a_Objects[svc].bounded+`;
+            a_Objects[`+svc+"].reset(); ";
+        }
     }
 }
 
@@ -465,9 +484,10 @@ function makeTextFile(text) {
 }
 
 function renderHitboxes(){
-    for(var rhb=0; rhb<a_Objects.length; rhb++){
+    var arr = a_scrnObjList[currentScrn];
+    for(var rhb=0; rhb<arr.length; rhb++){
         ctx.save();
-        var grd = ctx.createLinearGradient(a_Objects[rhb].left,a_Objects[rhb].top,a_Objects[rhb].right,a_Objects[rhb].bottom);
+        var grd = ctx.createLinearGradient(arr[rhb].left,arr[rhb].top,arr[rhb].right,arr[rhb].bottom);
         grd.addColorStop(0, "rgba(255,0,0,0.5)");
         grd.addColorStop(0.25, "rgba(200,0,0,0.5)");
         grd.addColorStop(0.5, "rgba(255,0,0,0.5)");
@@ -476,8 +496,8 @@ function renderHitboxes(){
         ctx.fillStyle = grd;
         ctx.strokeStyle = "rgba(255,255,255,1)";
         ctx.setLineDash([10,1]);
-        ctx.fillRect(a_Objects[rhb].left,a_Objects[rhb].top,(a_Objects[rhb].right-a_Objects[rhb].left),(a_Objects[rhb].bottom-a_Objects[rhb].top));
-        ctx.strokeRect(a_Objects[rhb].left,a_Objects[rhb].top,(a_Objects[rhb].right-a_Objects[rhb].left),(a_Objects[rhb].bottom-a_Objects[rhb].top));
+        ctx.fillRect(arr[rhb].left,arr[rhb].top,(arr[rhb].right-arr[rhb].left),(arr[rhb].bottom-arr[rhb].top));
+        ctx.strokeRect(arr[rhb].left,arr[rhb].top,(arr[rhb].right-arr[rhb].left),(arr[rhb].bottom-arr[rhb].top));
         ctx.restore();
     }
 }
