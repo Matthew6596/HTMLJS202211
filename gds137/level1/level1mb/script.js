@@ -17,7 +17,7 @@ function Ball(name="Unnamed Ball :("){
     this.color = "green";
     this.force = 0;
     this.vx = 4;
-    this.vy = 0;
+    this.vy = 2;
 
     this.draw = function(){
         ctx.fillStyle = this.color;
@@ -29,8 +29,10 @@ function Ball(name="Unnamed Ball :("){
 
     this.move = function(){
         this.x+=this.vx;
+        this.y+=this.vy;
 
-        if(this.x+this.radius>=canvas.width||this.x-this.radius<=0){this.vx*=-1;}
+        if(this.x+this.radius>=canvas.width||this.x-this.radius<=0){this.vx*=-1; this.color="blue";}
+        if(this.y+this.radius>=canvas.height||this.y-this.radius<=0){this.vy*=-1; this.color="green";}
     }
 }
 
