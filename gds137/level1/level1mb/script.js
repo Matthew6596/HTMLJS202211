@@ -13,21 +13,24 @@ function Ball(name="Unnamed Ball :("){
     this.y = canvas.height/2;
     this.width = 80;
     this.height = "i forgot";
+    this.radius = this.width/2
     this.color = "green";
     this.force = 0;
-    this.vx = 1;
+    this.vx = 4;
     this.vy = 0;
 
     this.draw = function(){
         ctx.fillStyle = this.color;
         ctx.beginPath();
-        ctx.arc(this.x,this.y,this.width/2,0,Math.PI/180,true)
+        ctx.arc(this.x,this.y,this.radius,0,Math.PI/180,true)
         ctx.closePath();
         ctx.fill();
     }
 
     this.move = function(){
         this.x+=this.vx;
+
+        if(this.x+this.radius>=canvas.width||this.x-this.radius<=0){this.vx*=-1;}
     }
 }
 
