@@ -1,7 +1,7 @@
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
-var timer = requestAnimationFrame(main);
+var interval = setInterval(main, 1000/60);
 
 //
 
@@ -15,7 +15,7 @@ function Ball(name="Unnamed Ball :("){
     this.height = "i forgot";
     this.color = "green";
     this.force = 0;
-    this.vx = 0;
+    this.vx = 1;
     this.vy = 0;
 
     this.draw = function(){
@@ -27,7 +27,7 @@ function Ball(name="Unnamed Ball :("){
     }
 
     this.move = function(){
-
+        this.x+=this.vx;
     }
 }
 
@@ -38,7 +38,6 @@ function main(){
     //
 
     ball.draw();
+    ball.move();
 
-    //
-    timer = requestAnimationFrame(main);
 }
