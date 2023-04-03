@@ -14,6 +14,11 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
     this.bounded = true;
     this.hit = false;
 
+    this.left = this.x-this.radius;
+    this.right = this.x+this.radius;
+    this.top = this.y-this.height/2;
+    this.bottom = this.y+this.height/2;
+
     this.draw = function(){
         switch(this.shape){
             case "circle":
@@ -41,18 +46,26 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
         this.x+=this.vx;
         this.y+=this.vy;
 
+        this.updateColPoints();
         if(this.bounded){this.bounceIn(0,0,canvas.width,canvas.height);}
     }
 
+    this.updateColPoints = function(){
+        this.left = this.x-this.radius;
+        this.right = this.x+this.radius;
+        this.top = this.y-this.height/2;
+        this.bottom = this.y+this.height/2;
+    }
+
     this.bounceIn = function(x1,y1,x2,y2){
-        if(this.x+this.radius>x2||this.x-this.radius<x1){
-            if(this.x+this.radius>x2){this.x=x2-this.radius;}
+        if(this.right>x2||this.left<x1){
+            if(this.right>x2){this.x=x2-this.radius;}
             else{this.x=x1+this.radius;}
             this.vx*=-this.bouncy;
             this.hit = true;
         }
-        else if(this.y+this.height/2>y2||this.y-this.height/2<y1){
-            if(this.y+this.height/2>y2){this.y=y2-this.height/2;}
+        else if(this.bottom>y2||this.top<y1){
+            if(this.bottom>y2){this.y=y2-this.height/2;}
             else{this.y=y1+this.height/2;}
             this.vy*=-this.bouncy;
             this.hit = true;
@@ -60,7 +73,19 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
         else{this.hit=false;}
     }
     this.bounceOut = function(x1,y1,x2,y2){
-        //bruh
+        if(this.right>x1||this.left<x2){
+            if(this.right>x1){this.x=x1-this.radius;}
+            else{this.x=x2+this.radius;}
+            this.vx*=-this.bouncy;
+            this.hit = true;
+        }
+        else if(this.bottom>y1||this.top<y2){
+            if(this.bottom>y1){this.y=y1-this.height/2;}
+            else{this.y=y2+this.height/2;}
+            this.vy*=-this.bouncy;
+            this.hit = true;
+        }
+        else{this.hit=false;}
     }
 }
 
