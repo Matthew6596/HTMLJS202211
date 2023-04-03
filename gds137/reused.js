@@ -12,7 +12,7 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
     this.shape = shape;
     this.bouncy = 1;
     this.bounded = true;
-    this.hit = false;
+    this.hitEdge = false;
 
     this.left = this.x-this.radius;
     this.right = this.x+this.radius;
@@ -62,30 +62,22 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
             if(this.right>x2){this.x=x2-this.radius;}
             else{this.x=x1+this.radius;}
             this.vx*=-this.bouncy;
-            this.hit = true;
+            this.hitEdge = true;
         }
         else if(this.bottom>y2||this.top<y1){
             if(this.bottom>y2){this.y=y2-this.height/2;}
             else{this.y=y1+this.height/2;}
             this.vy*=-this.bouncy;
-            this.hit = true;
+            this.hitEdge = true;
         }
-        else{this.hit=false;}
+        else{this.hitEdge=false;}
     }
-    this.bounceOut = function(x1,y1,x2,y2){
-        if(this.right>x1||this.left<x2){
-            if(this.right>x1){this.x=x1-this.radius;}
-            else{this.x=x2+this.radius;}
-            this.vx*=-this.bouncy;
-            this.hit = true;
-        }
-        else if(this.bottom>y1||this.top<y2){
-            if(this.bottom>y1){this.y=y1-this.height/2;}
-            else{this.y=y2+this.height/2;}
-            this.vy*=-this.bouncy;
-            this.hit = true;
-        }
-        else{this.hit=false;}
+    this.collides = function(obj,x1=0,y1=0,x2=1,y2=1){
+        if(obj!=-1){x1=obj.left; y1=obj.top; x2=obj.right; y2=obj.bottom;}
+        return (((this.right>=x1&&this.right<=x2)
+        ||(this.left>=x1&&this.left<=x2))&&
+        ((this.bottom>=y1&&this.bottom<=y2)
+        ||(this.top>=y1&&this.top<=y2)));
     }
 }
 
