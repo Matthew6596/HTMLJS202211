@@ -8,15 +8,21 @@ document.addEventListener("keydown",keyDown);
 document.addEventListener("keyup",keyUp);
 
 function keyDown(e){
+    //console.log(e.key);
     if(e.key=="s"){p1.vy=8;}
     if(e.key=="w"){p1.vy=-8;}
+    if(e.key=="ArrowUp"){p2.vy=-8;}
+    if(e.key=="ArrowDown"){p2.vy=8;}
 }
 function keyUp(e){
     if(e.key=="w"||e.key=="s"){p1.vy=0;}
+    if(e.key=="ArrowUp"||e.key=="ArrowDown"){p2.vy=0;}
 }
 
-var p1 = new Obj("joe",0,canvas.height/2,20,100,"rect",0,0);
+var p1 = new Obj("joe",10,canvas.height/2,20,100,"rect",0,0);
 p1.bouncy = 0;
+var p2 = new Obj("not joe",canvas.width-10,canvas.height/2,20,100,"rect",0,0);
+p2.bouncy = 0;
 
 var ball = new Obj("Prof. Ball",canvas.width/2,canvas.height/2,20,20,"circle",5,5);
 ball.bounded = false;
@@ -30,27 +36,34 @@ function main(){
     //
 
     p1.move();
+    p2.move();
     ball.move();
-    ball.bounceIn(-100,0,canvas.width,canvas.height);
-    if(ball.x<-ball.radius){ball.x=canvas.width/2;}
-    paddleCollision();
+    ball.bounceIn(-100,0,canvas.width+100,canvas.height);
+    if(ball.x<-ball.radius||ball.x>canvas.width+ball.radius){ball.x=canvas.width/2;}
+    paddleCollision(p1,1);
+    paddleCollision(p2,-1);
 
     p1.draw();
+    p2.draw();
     ball.draw();
 
 }
 
-function paddleCollision(){
-    if(ball.x<p1.x+p1.radius+ball.radius){
-        if(ball.y>p1.y-p1.height/2-ball.radius&&ball.y<p1.y+p1.height/2+ball.radius){
+function paddleCollision(pd,leftRight){
+    var xOffset = (pd.radius+ball.radius)*leftRight;
+    var xBool;
+    if(leftRight==1){xBool = ball.x<pd.x+xOffset;}
+    else{xBool = ball.x>pd.x+xOffset;}
+    if(xBool){
+        if(ball.y>pd.y-pd.height/2-ball.radius&&ball.y<pd.y+pd.height/2+ball.radius){
 
-            ball.x = p1.x+p1.radius+ball.radius;
+            ball.x = pd.x+xOffset;
             ball.vx *= -1;
 
-            if(ball.y>p1.y+p1.height/6){
+            if(ball.y>pd.y+pd.height/6){
                 ball.vy = 5;
             }
-            else if(ball.y<p1.y-p1.height/6){
+            else if(ball.y<pd.y-pd.height/6){
                 ball.vy = -5;
             }
             
