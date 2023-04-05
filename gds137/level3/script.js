@@ -24,6 +24,8 @@ p1.bouncy = 0;
 var p2 = new Obj("not joe",canvas.width-10,canvas.height/2,20,100,"rect",0,0);
 p2.bouncy = 0;
 
+var p1Wins=0,p2Wins=0;
+
 var ball = new Obj("Prof. Ball",canvas.width/2,canvas.height/2,20,20,"circle",5,5);
 ball.bounded = false;
 ball.color = "blue";
@@ -39,12 +41,19 @@ function main(){
     p2.move();
     ball.move();
     ball.bounceIn(-100,0,canvas.width+100,canvas.height);
-    if(ball.x<-ball.radius||ball.x>canvas.width+ball.radius){ball.x=canvas.width/2;}
+    if(ball.x<-ball.radius||ball.x>canvas.width+ball.radius){
+        if(ball.x<-ball.radius){p2Wins++;}
+        else{p1Wins++;}
+        ball.x=canvas.width/2;
+        ball.y=canvas.height/2;
+    }
     paddleCollision(p1,1);
     paddleCollision(p2,-1);
 
     p1.draw();
     p2.draw();
+    drawText("Player 1 | Player 2", canvas.width/2,20);
+    drawText(p1Wins+" - "+p2Wins, canvas.width/2,40);
     ball.draw();
 
 }
@@ -69,4 +78,12 @@ function paddleCollision(pd,leftRight){
             
         }
     }
+}
+
+function drawText(text,x=0,y=0,fill="black",align="center"){
+    ctx.save();
+    ctx.fillStyle = fill;
+    ctx.textAlign = align;
+    ctx.fillText(text,x,y)
+    ctx.restore();
 }
