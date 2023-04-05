@@ -19,6 +19,8 @@ function keyUp(e){
     if(e.key=="ArrowUp"||e.key=="ArrowDown"){p2.vy=0;}
 }
 
+var mongusImg = document.getElementById("miniMongus");
+
 var p1 = new Obj("joe",10,canvas.height/2,20,100,"rect",0,0);
 p1.bouncy = 0;
 var p2 = new Obj("not joe",canvas.width-10,canvas.height/2,20,100,"rect",0,0);
@@ -26,7 +28,7 @@ p2.bouncy = 0;
 
 var p1Wins=0,p2Wins=0;
 
-var ball = new Obj("Prof. Ball",canvas.width/2,canvas.height/2,20,20,"circle",5,5);
+var ball = new Obj("Prof. Ball",canvas.width/2,canvas.height/2,30,30,"circle",5,5);
 ball.bounded = false;
 ball.color = "blue";
 ball.vx*=-1;
@@ -54,9 +56,12 @@ function main(){
     drawMidLine();
     p1.draw();
     p2.draw();
+    ctx.drawImage(mongusImg, p1.x-10, p1.y-10,20,20);
+    ctx.drawImage(mongusImg, p2.x-10, p2.y-10,20,20);
     drawText("Player 1 | Player 2", canvas.width/2,20);
     drawText(p1Wins+" - "+p2Wins, canvas.width/2,40);
-    ball.draw();
+    //ball.draw();
+    ctx.drawImage(mongusImg, ball.x-15, ball.y-15,30,30);
 
 }
 
