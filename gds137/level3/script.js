@@ -50,6 +50,8 @@ function main(){
     paddleCollision(p1,1);
     paddleCollision(p2,-1);
 
+
+    drawMidLine();
     p1.draw();
     p2.draw();
     drawText("Player 1 | Player 2", canvas.width/2,20);
@@ -85,5 +87,16 @@ function drawText(text,x=0,y=0,fill="black",align="center"){
     ctx.fillStyle = fill;
     ctx.textAlign = align;
     ctx.fillText(text,x,y)
+    ctx.restore();
+}
+
+function drawMidLine(){
+    ctx.save();
+    ctx.strokeStyle = "lightblue";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(canvas.width/2,0);
+    ctx.lineTo(canvas.width/2,canvas.height);
+    ctx.stroke();
     ctx.restore();
 }
