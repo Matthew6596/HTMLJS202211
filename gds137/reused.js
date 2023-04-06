@@ -1,4 +1,4 @@
-function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,height=80,shape="rect",vx=4,vy=2){
+function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,height=80,shape="rect",vx=0,vy=0){
     this.name = name;
     this.x = x;
     this.y = y;
@@ -9,10 +9,16 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
     this.force = 0;
     this.vx = vx;
     this.vy = vy;
+    this.ax = 0;
+    this.ay = 0;
+    this.maxVx = 1;
+    this.maxVy = 1;
     this.shape = shape;
     this.bouncy = 1;
     this.bounded = true;
     this.hitEdge = false;
+    this.dir = 1;
+    this.friction = 0;
 
     this.left = this.x-this.radius;
     this.right = this.x+this.radius;
@@ -43,6 +49,14 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
     }
 
     this.move = function(){
+        this.vx += this.ax*this.dir;
+        this.vy += this.ay*this.dir;
+
+        if(this.vx>this.maxVx){this.vx=this.maxVx;}
+        else if(this.vx<-this.maxVx){this.vx=-this.maxVx;}
+        if(this.vy>this.maxVy){this.vy=this.maxVy;}
+        else if(this.vy<-this.maxVy){this.vy=-this.maxVy;}
+
         this.x+=this.vx;
         this.y+=this.vy;
 
@@ -74,10 +88,10 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
     }
     this.collides = function(obj,x1=0,y1=0,x2=1,y2=1){
         if(obj!=-1){x1=obj.left; y1=obj.top; x2=obj.right; y2=obj.bottom;}
-        return (((this.right>=x1&&this.right<=x2)
-        ||(this.left>=x1&&this.left<=x2))&&
-        ((this.bottom>=y1&&this.bottom<=y2)
-        ||(this.top>=y1&&this.top<=y2)));
+        return (((this.right>=x1)
+        &&(this.left<=x2))&&
+        ((this.bottom>=y1)
+        &&(this.top<=y2)));
     }
 }
 
