@@ -10,23 +10,26 @@ document.addEventListener("keyup",keyUp);
 
 function keyDown(e){
     //console.log(e.key);
-    if(e.key=="d"||e.key=="a"){player.ax=0.8;}
-    if(e.key=="d"){player.dir=1;}
-    if(e.key=="a"){player.dir=-1;}
+    if(e.key=="a"){a=true;}
+    if(e.key=="d"){d=true;}
 }
 function keyUp(e){
-    if(e.key=="d"||e.key=="a"){player.ax=0;}
+    if(e.key=="a"){a=false;}
+    if(e.key=="d"){d=false;}
 }
 //
 
 /*Variable Declarations*/
 
+var a = false;
+var d = false;
+
 var player = new Obj("Bob",canvas.width/2,canvas.height-50,250,40,"rect");
-player.maxVx = 12;
+player.maxVx = 10;
 player.ax = 0;
 player.bouncy = 0.2;
 player.color = "cyan";
-player.friction = 0.1;
+player.friction = 0.4;
 
 var ball = new Obj("ball",canvas.width/2,canvas.height/2,80,80,"circle",5);
 ball.color = "magenta";
@@ -72,44 +75,51 @@ function drawScore(){
 }
 
 function playerStuff(){
-    if(player.vx>0){player.vx-=player.friction;}
-    else if(player.vx<0){player.vx+=player.friction;}
+    if(a||d){
+        player.ax=1;
+        player.dir = 0;
+        if(d){player.dir++;}
+        if(a){player.dir--;}
+    }
+    if(!d&&!a||player.dir==0){
+        player.ax=0;
+        if(player.vx>0){player.vx-=player.friction;}
+        else if(player.vx<0){player.vx+=player.friction;}
+        if(Math.abs(player.vx)<0.6){player.vx=0;}
+    }
 }
 
 function ballCollision(){
     if(ball.collides(player)){
 
         //Left1
-        if (ball.x>player.left && ball.x<player.left+player.width/6){
+        if (ball.x<player.left+player.width/6){
         ball.vx = ball.force*-5;
-        console.log("left1");
         }
 
         //Left2
         else if (ball.x>player.left+player.width/6 && ball.x<player.left+player.width/3){
         ball.vx = -ball.force;
-        console.log("left2");
         }
 
         //Right1
         else if (ball.x>player.right-player.width/3 && ball.x<player.right-player.width/6){
         ball.vx = ball.force;
-        console.log("right1");
         }
 
         //Right2
-        else if (ball.x>player.right-player.width/6 && ball.x<player.right){
+        else if (ball.x>player.right-player.width/6){
         ball.vx = ball.force*5;
-        console.log("right2");
         }
 
         score++;
-        ball.vy=player.top-ball.radius;
+        ball.y=player.top-ball.radius;
         ball.vy=-35;
 
     }
 
-    if(ball.y>=canvas.height-ball.height/2){score=0; ball.vy*=0.67;}
+    if(ball.y>=canvas.height-ball.radius){score=0; ball.vy*=0.67;}
+    if(ball.y<ball.radius){ ball.vy=0;}
 }
 
 function drawLine(){
