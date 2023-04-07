@@ -1,48 +1,99 @@
-var x = 0;
-var y = 0;
-var pMovement = [0,0];
-var pInput = [3,0];
-var grav = [10,0];
-var pAngle = 0;
+var timer = setInterval(main,1000/60);
 
-var inputCom = [0,0];
-var gravCom = [0,0];
+var pInput = [3,0];
+
+var player = new Obj("joe",700,40,20,40,"rect");
+player.maxVx = 4;
+player.maxVy = 10;
+player.movement = [0,0];
+player.maxMag = 20;
+
+var grav = new Obj("field1",canvas.width/2,canvas.height+10,600,600,"circle");
+grav.color = "lightblue";
+grav.force = 0.1;
+grav.angle = player.angle+90;
+grav.movement = [0,grav.angle];
+
+var ground = new Obj("steve",canvas.width/2,canvas.height-40,canvas.width,80,"rect");
+ground.color = "grey";
+
+var canJump = false;
 
 function main(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    //
+
+    if(getMag(player.x-grav.x,player.y-grav.y)<=grav.radius){
+        grav.force=-1;
+        player.angle = getAngle(player.x-grav.x,player.y-grav.y)+90;
+    }else{
+        //player.angle = 0;
+        grav.force = 0;
+    }
+    canJump = false;
+    while(player.collides(ground)){
+        player.y--;
+        player.vy=0;
+        player.updateColPoints();
+        canJump = true;
+        player.movement[0] = 0;
+    }
+
     //Get Input
     getInput();
     getGrav();
     //Get Vector Components
-    inputCom[0] = getPoint(pInput,"x");
-    inputCom[1] = getPoint(pInput,"y");
-    gravCom[0] = getPoint(grav,"x");
-    gravCom[1] = getPoint(grav,"y");
+
     //Add Grav and Input
-    var tempVect = addComs(inputCom,gravCom);
+    var tempVect = addVects(pInput,grav.movement);
+
+    //Reused com vars for next calc
+
     //Add to prev Movement
-    pMovement = addComs(pMovement,tempVect);
-    x = getPoint(pMovement,"x");
-    y = getPoint(pMovement,"y");
-    
-    console.log(x);
-    console.log(y);
+    console.log(player.movement[0]);
+    player.movement = addVects(tempVect,player.movement);
+    /*if(pInput[0]>0){
+        player.movement = tempVect;
+    }else{
+        
+    }*/
+
+    if(player.movement[0]>player.maxMag){player.movement[0]=player.maxMag;}
+
+    player.vx = getPoint(player.movement,"x");
+    player.vy = getPoint(player.movement,"y");
+
+    player.move();
+
+    grav.draw();
+    ground.draw();
+    player.draw();
 }
 
 function getInput(){
-    pInput[0] = 3; //3 = player VX
-    if("right"){pInput[1]=pAngle+0;}
-    if("left"){pInput[1]=pAngle+180;}
-    else{pInput[0]=0;}
+    pInput[0] = 0; //3 = player VX
+    if(d){pInput[1]=player.angle; pInput[0] = 1;}
+    if(a){pInput[1]=player.angle+180; pInput[0] = 1;}
+    if(s){pInput[1]=player.angle+90; pInput[0] = 1;}
+    if(w&&canJump){pInput[1]=player.angle+270; pInput[0] = 40;}
 }
 
 function getGrav(){
-    grav[1] = pAngle+270;
+    grav.movement[0] = grav.force;
+    grav.movement[1] = player.angle+270;
 }
 
-function addComs(c1,c2){
+function addVects(c1,c2){
+    var tempC1 = [0,0]
+    var tempC2 = [0,0]
+    tempC1[0] = getPoint(c1,"x");
+    tempC1[1] = getPoint(c1,"y");
+    tempC2[0] = getPoint(c2,"x");
+    tempC2[1] = getPoint(c2,"y");
+
     var newX, newY, newAng, newMag;
-    newX = c1[0] + c2[0];
-    newY = c1[1] + c2[1];
+    newX = tempC1[0] + tempC2[0];
+    newY = tempC1[1] + tempC2[1];
 
     newMag = getMag(newX,newY);
     newAng = getAngle(newX,newY);

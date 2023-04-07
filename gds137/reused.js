@@ -19,7 +19,10 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
     this.hitEdge = false;
     this.dir = 1; //reuse as angle in radian
     this.angle = 0;
+    this.mag = 0;
+    this.movement = [this.mag,this.angle];
     this.friction = 0;
+    this.maxMag = 0;
 
     this.left = this.x-this.radius;
     this.right = this.x+this.radius;
@@ -42,7 +45,7 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
                 ctx.save();
                 ctx.fillStyle = this.color;
                 ctx.translate(this.x,this.y);
-                ctx.rotate(this.dir);
+                ctx.rotate(this.angle*Math.PI/180);
                 ctx.fillRect(-this.width/2,-this.height/2,this.width,this.height);
                 ctx.restore();
                 break;
@@ -102,3 +105,34 @@ function funnyFunction(){
         console.log("Poptartsus");
     }
 }
+
+
+
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+
+/*Input*/
+document.addEventListener("keydown",keyDown);
+document.addEventListener("keyup",keyUp);
+
+function keyDown(e){
+    //console.log(e.key);
+    if(e.key=="a"){a=true;}
+    if(e.key=="d"){d=true;}
+    if(e.key=="w"){w=true;}
+    if(e.key=="s"){s=true;}
+}
+function keyUp(e){
+    if(e.key=="a"){a=false;}
+    if(e.key=="d"){d=false;}
+    if(e.key=="s"){s=false;}
+    if(e.key=="w"){w=false;}
+}
+//
+
+/*Variable Declarations*/
+
+var a = false;
+var d = false;
+var w = false;
+var s = false;
