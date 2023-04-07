@@ -17,7 +17,8 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
     this.bouncy = 1;
     this.bounded = true;
     this.hitEdge = false;
-    this.dir = 1;
+    this.dir = 1; //reuse as angle in radian
+    this.angle = 0;
     this.friction = 0;
 
     this.left = this.x-this.radius;
@@ -41,6 +42,7 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
                 ctx.save();
                 ctx.fillStyle = this.color;
                 ctx.translate(this.x,this.y);
+                ctx.rotate(this.dir);
                 ctx.fillRect(-this.width/2,-this.height/2,this.width,this.height);
                 ctx.restore();
                 break;
