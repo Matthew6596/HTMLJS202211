@@ -45,7 +45,7 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
                 ctx.save();
                 ctx.fillStyle = this.color;
                 ctx.translate(this.x,this.y);
-                ctx.rotate(this.angle*Math.PI/180);
+                ctx.rotate((this.angle+90)*Math.PI/180);
                 ctx.fillRect(-this.width/2,-this.height/2,this.width,this.height);
                 ctx.restore();
                 break;

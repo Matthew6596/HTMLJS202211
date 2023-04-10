@@ -2,11 +2,11 @@ var timer = setInterval(main,1000/60);
 
 var pInput = [3,0];
 
-var player = new Obj("joe",700,40,20,40,"rect");
-player.maxVx = 4;
-player.maxVy = 10;
-player.movement = [0,0];
+var player = new Obj("joe",600,100,20,40,"rect");
 player.maxMag = 20;
+player.maxVx = getPoint([player.maxMag,player.angle],"x");
+player.maxVy = getPoint([player.maxMag,player.angle],"y");
+player.movement = [0,0];
 player.bounded = false;
 
 var grav = new Obj("field1",canvas.width/2,canvas.height/2,600,600,"circle");
@@ -24,9 +24,53 @@ function main(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     //
 
+    if(getMag(player.x-grav.x,player.y-grav.y)<=grav.radius){//If inside field
+        grav.force = -1;
+
+        player.angle = getAngle((player.x-grav.x),(player.y-grav.y));
+
+        player.vx += getPoint([grav.force,player.angle],"x");
+        player.vy += getPoint([grav.force,player.angle],"y");
+    }else{grav.force=0;}
+
+    if(a){
+        player.vx += getPoint([1,player.angle-90],"x");
+        player.vy += getPoint([1,player.angle-90],"y");
+    }
+    if(d){
+        player.vx += getPoint([1,player.angle+90],"x");
+        player.vy += getPoint([1,player.angle+90],"y");
+    }
+
+    if(getMag(player.x-ground.x,player.y-ground.y)<ground.radius){
+        /*player.x = ground.x+getPoint([ground.radius,player.angle],"x");
+        player.y = ground.y+getPoint([ground.radius,player.angle],"y");*/
+
+        /*player.vx -= getPoint([grav.force,player.angle],"x");
+        player.vy -= getPoint([grav.force,player.angle],"y");*/
+
+        player.x = getPoint([ground.radius,player.angle],"x")+ground.x;
+        player.y = getPoint([ground.radius,player.angle],"y")+ground.y;
+    }
+
+    //check max velocity
+    player.maxVx = getPoint([player.maxMag,player.angle],"x");
+    player.maxVy = getPoint([player.maxMag,player.angle],"y");
+
+    /*if(player.vx>player.maxVx){player.vx=player.maxVx;}
+    else if(player.vx<-player.maxVx){player.vx=-player.maxVx;}
+    if(player.vy>player.maxVy){player.vy=player.maxVy;}
+    else if(player.vy<-player.maxVy){player.vy=-player.maxVy;}*/
+
+    player.x += player.vx;
+    player.y += player.vy;
+
+    /*THE MEGA COMMENT OUT ~ ~ ~
+
     if(getMag(player.x-grav.x,player.y-grav.y)<=grav.radius){
         grav.force=-1;
-        player.angle = getAngle(player.x-grav.x,player.y-grav.y)+90;
+        player.angle = Math.round(getAngle((player.x-grav.x),(player.y-grav.y))+90);
+        //console.log(player.angle-90);
     }else{
         //player.angle = 0;
         grav.force = 0;
@@ -37,7 +81,8 @@ function main(){
 
         player.x = ground.x+getPoint(tempVect2,"x");
         player.y = ground.y+getPoint(tempVect2,"y");
-        //player.vy=0;
+        player.vy=0;
+        player.vx=0;
         //player.updateColPoints();
         canJump = true;
         //player.movement[0] = 0;
@@ -59,23 +104,29 @@ function main(){
         if((!a&&!d)||(a&&d)){inpMag=0;}
         else if(a){inpDir = 180;}
         else if(d){inpDir = 0;}
-        player.movement = [inpMag,player.angle-inpDir];
-        if(player.movement[0]>player.maxMag){player.movement[0]=player.maxMag;}
+        pInput = [inpMag,player.angle-inpDir];
+
     }else{
         
         //Add to prev Movement
-        player.movement = addVects(pInput,player.movement);
-        player.movement = addVects(grav.movement,player.movement);
+        //player.movement = addVects(pInput,player.movement);
+        //player.movement = addVects(grav.movement,player.movement);
 
-        if(player.movement[0]>player.maxMag){player.movement[0]=player.maxMag;}
+        //if(player.movement[0]>player.maxMag){player.movement[0]=player.maxMag;}
 
     }
 
-    player.vx = getPoint(player.movement,"x");
-    player.vy = getPoint(player.movement,"y");
+    player.vx += getPoint(grav.movement,"x");
+    player.vy += getPoint(grav.movement,"y");
+    player.vx += getPoint(pInput,"x");
+    player.vy += getPoint(pInput,"y");
+
+    //player.vx = getPoint(player.movement,"x");
+    //player.vy = getPoint(player.movement,"y");
     
 
     player.move();
+    */ //End Of Mega Comment Out ~ ~ ~
 
     grav.draw();
     ground.draw();
@@ -107,11 +158,13 @@ function getInput(){
     if(a){pInput[1]=player.angle+180; pInput[0] = 1;}
     if(s){pInput[1]=player.angle+90; pInput[0] = 1;}
     if(w&&canJump){pInput[1]=player.angle+270; pInput[0] = 40;}
+    //console.log("m:"+pInput[0]+", a:"+pInput[1]);
 }
 
 function getGrav(){
     grav.movement[0] = grav.force;
     grav.movement[1] = player.angle+270;
+    //console.log("m:"+grav.movement[0]+", a:"+grav.movement[1]);
 }
 
 function addVects(c1,c2){
@@ -133,8 +186,9 @@ function addVects(c1,c2){
 }
 
 function getAngle(a,b){
-    if(b==0){return (a>0) ? 0:180;}
-    return toDegrees((Math.acos(a/Math.sqrt(Math.pow(a,2)+Math.pow(b,2)))*(b/(Math.abs(b)))));
+    /*if(b==0){return (a>0) ? 0:180;}
+    return toDegrees((Math.acos(a/getMag(a,b))*(b/(Math.abs(b)))));*/
+    return toDegrees(Math.atan2(b,a));
 }
 function getMag(a,b){
     return Math.sqrt(Math.pow(a,2)+Math.pow(b,2));
