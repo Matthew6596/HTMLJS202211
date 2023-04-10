@@ -7,14 +7,15 @@ player.maxVx = 4;
 player.maxVy = 10;
 player.movement = [0,0];
 player.maxMag = 20;
+player.bounded = false;
 
-var grav = new Obj("field1",canvas.width/2,canvas.height+10,600,600,"circle");
+var grav = new Obj("field1",canvas.width/2,canvas.height/2,600,600,"circle");
 grav.color = "lightblue";
-grav.force = 0.1;
+grav.force = -1;
 grav.angle = player.angle+90;
 grav.movement = [0,grav.angle];
 
-var ground = new Obj("steve",canvas.width/2,canvas.height-40,canvas.width,80,"rect");
+var ground = new Obj("steve",canvas.width/2,canvas.height/2,200,200,"circle");
 ground.color = "grey";
 
 var canJump = false;
@@ -31,12 +32,16 @@ function main(){
         grav.force = 0;
     }
     canJump = false;
-    while(player.collides(ground)){
-        player.y--;
-        player.vy=0;
-        player.updateColPoints();
+    if(getMag(player.x-ground.x,player.y-ground.y)<=ground.radius){
+        var tempVect2 = [ground.radius,player.angle+270];
+
+        player.x = ground.x+getPoint(tempVect2,"x");
+        player.y = ground.y+getPoint(tempVect2,"y");
+        //player.vy=0;
+        //player.updateColPoints();
         canJump = true;
-        player.movement[0] = 0;
+        //player.movement[0] = 0;
+        //player.movement[1] = player.angle;
     }
 
     //Get Input
@@ -45,29 +50,55 @@ function main(){
     //Get Vector Components
 
     //Add Grav and Input
-    var tempVect = addVects(pInput,grav.movement);
+    //var tempVect = addVects(pInput,grav.movement);
 
-    //Reused com vars for next calc
-
-    //Add to prev Movement
-    console.log(player.movement[0]);
-    player.movement = addVects(tempVect,player.movement);
-    /*if(pInput[0]>0){
-        player.movement = tempVect;
+    //If player grounded
+    if(canJump&&!w){
+        var inpDir = 0;
+        var inpMag = 5;
+        if((!a&&!d)||(a&&d)){inpMag=0;}
+        else if(a){inpDir = 180;}
+        else if(d){inpDir = 0;}
+        player.movement = [inpMag,player.angle-inpDir];
+        if(player.movement[0]>player.maxMag){player.movement[0]=player.maxMag;}
     }else{
         
-    }*/
+        //Add to prev Movement
+        player.movement = addVects(pInput,player.movement);
+        player.movement = addVects(grav.movement,player.movement);
 
-    if(player.movement[0]>player.maxMag){player.movement[0]=player.maxMag;}
+        if(player.movement[0]>player.maxMag){player.movement[0]=player.maxMag;}
+
+    }
 
     player.vx = getPoint(player.movement,"x");
     player.vy = getPoint(player.movement,"y");
+    
 
     player.move();
 
     grav.draw();
     ground.draw();
     player.draw();
+
+    ctx.save();
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 1;
+    ctx.translate(player.x,player.y)
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.lineTo(getPoint(player.movement,"x"),getPoint(player.movement,"y"));
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(player.x,player.y);
+    ctx.lineTo(grav.x,grav.y);
+    ctx.stroke();
+    ctx.restore();
 }
 
 function getInput(){
