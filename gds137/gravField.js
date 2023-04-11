@@ -41,26 +41,55 @@ function main(){
         player.vx += getPoint([1,player.angle+90],"x");
         player.vy += getPoint([1,player.angle+90],"y");
     }
+    /*if(w&&canJump){
+        player.vx += getPoint([10,player.angle],"x");
+        player.vy += getPoint([10,player.angle],"y");
+        canJump=false;
+    }*/
 
     if(getMag(player.x-ground.x,player.y-ground.y)<ground.radius){
         /*player.x = ground.x+getPoint([ground.radius,player.angle],"x");
         player.y = ground.y+getPoint([ground.radius,player.angle],"y");*/
 
-        /*player.vx -= getPoint([grav.force,player.angle],"x");
-        player.vy -= getPoint([grav.force,player.angle],"y");*/
+        player.vx -= getPoint([grav.force,player.angle],"x");
+        player.vy -= getPoint([grav.force,player.angle],"y");
 
         player.x = getPoint([ground.radius,player.angle],"x")+ground.x;
         player.y = getPoint([ground.radius,player.angle],"y")+ground.y;
+
+        canJump=true;
+    }else{
+        canJump=false;
     }
 
     //check max velocity
     player.maxVx = getPoint([player.maxMag,player.angle],"x");
     player.maxVy = getPoint([player.maxMag,player.angle],"y");
+    //console.log(player.maxVx);
 
-    /*if(player.vx>player.maxVx){player.vx=player.maxVx;}
-    else if(player.vx<-player.maxVx){player.vx=-player.maxVx;}
-    if(player.vy>player.maxVy){player.vy=player.maxVy;}
-    else if(player.vy<-player.maxVy){player.vy=-player.maxVy;}*/
+    /*if((player.vx>player.maxVx&&player.maxVx>0)||(player.vx<player.maxVx&&player.maxVx<0)){
+        player.vx = player.maxVx;
+    }
+    if((player.vy>player.maxVy&&player.maxVy>0)||(player.vy<player.maxVy&&player.maxVy<0)){
+        player.vy = player.maxVy;
+    }
+
+    console.log(player.vx);*/
+
+    //STILL A SMALL BUG:
+    //PLAYER HAS TENDENCIES TOWARDS 45 DEGREE ANGLES
+
+    var dec = 0.4
+    if(player.vx>0){
+        player.vx -= dec;
+    }else if(player.vx<0){
+        player.vx += dec;
+    }
+    if(player.vy>0){
+        player.vy -= dec;
+    }else if(player.vy<0){
+        player.vy += dec;
+    }
 
     player.x += player.vx;
     player.y += player.vy;
