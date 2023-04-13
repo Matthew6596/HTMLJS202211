@@ -2,12 +2,18 @@ var timer = setInterval(main,1000/60);
 
 var pInput = [3,0];
 
+var st = 24;
+var eTimer = 0;
+
+var holdingObj = false;
+var heldObj = undefined;
+
+/* --------------- OBJECT DECLARATIONS HERE --------------- */
 var player = new Obj("joe",600,100,20,40,"rect");
-player.maxMag = 20;
-player.maxVx = getPoint([player.maxMag,player.angle],"x");
-player.maxVy = getPoint([player.maxMag,player.angle],"y");
-player.movement = [0,0];
+player.maxMag = 8;
 player.bounded = false;
+player.ax = 0.8
+var canJump = false;
 
 var grav = new Obj("field1",canvas.width/2,canvas.height/2,600,600,"circle");
 grav.color = "lightblue";
@@ -15,204 +21,160 @@ grav.force = -1;
 grav.angle = player.angle+90;
 grav.movement = [0,grav.angle];
 
-var ground = new Obj("steve",canvas.width/2,canvas.height/2,200,200,"circle");
+var ground = new Obj("steve",canvas.width/2,canvas.height/2,240,240,"circle");
 ground.color = "grey";
 
-var canJump = false;
+var ball1 = new Obj("baller",300,100,20,20,"circle");
+ball1.maxMag = 16;
+ball1.bounded = false;
+ball1.color = "purple";
+
+var ball2 = new Obj("lameo",500,100,20,20,"circle");
+ball2.maxMag = 16;
+ball2.bounded = false;
+ball2.color = "blue";
+
+var physicsObjs = [player,ball1,ball2];
+var pickable = [ball1,ball2];
+
+//
 
 function main(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     //
 
-    if(getMag(player.x-grav.x,player.y-grav.y)<=grav.radius){//If inside field
-        grav.force = -1;
+    //Do Gravity
+    for(var i=0; i<physicsObjs.length; i++){
+        if(heldObj!=physicsObjs[i]){
+            objGrav(physicsObjs[i]);
+        }
+    }
 
-        player.angle = getAngle((player.x-grav.x),(player.y-grav.y));
+    //If player can jump
+    if(getMag(player.x-ground.x,player.y-ground.y)<ground.radius+player.width+2){
+        canJump = true;
+    }else{
+        canJump = false;
+    }
 
-        player.vx += getPoint([grav.force,player.angle],"x");
-        player.vy += getPoint([grav.force,player.angle],"y");
-    }else{grav.force=0;}
-
+    // ~~~ INPUTS ~~~
     if(a){
-        player.vx += getPoint([1,player.angle-90],"x");
-        player.vy += getPoint([1,player.angle-90],"y");
+        player.vx += getPoint([player.ax,player.angle+270],"x");
+        player.vy += getPoint([player.ax,player.angle+270],"y");
     }
     if(d){
-        player.vx += getPoint([1,player.angle+90],"x");
-        player.vy += getPoint([1,player.angle+90],"y");
+        player.vx += getPoint([player.ax,player.angle+90],"x");
+        player.vy += getPoint([player.ax,player.angle+90],"y");
     }
-    /*if(w&&canJump){
-        player.vx += getPoint([10,player.angle],"x");
-        player.vy += getPoint([10,player.angle],"y");
+
+    //Jump
+    if(space&&canJump){
+        player.vx += getPoint([100,player.angle],"x");
+        player.vy += getPoint([100,player.angle],"y");
         canJump=false;
-    }*/
+        player.maxMag = 14;
+    }else if(player.maxMag>8){
+        player.maxMag-=0.25;
+    }
 
-    if(getMag(player.x-ground.x,player.y-ground.y)<ground.radius){
-        /*player.x = ground.x+getPoint([ground.radius,player.angle],"x");
-        player.y = ground.y+getPoint([ground.radius,player.angle],"y");*/
+    // ~~~ Pickup/throw/drop Object ~~~
+    if(ek){
+        if(eTimer>0){
+            
+        }else{
+            if(holdingObj){
+                heldObj.vx = player.vx;
+                heldObj.vy = player.vy;
 
-        player.vx -= getPoint([grav.force,player.angle],"x");
-        player.vy -= getPoint([grav.force,player.angle],"y");
+                if(w){
+                    addForce(heldObj,8,0,player.angle);
+                }else if(!s){
+                    addForce(heldObj,8,-90*player.dir);
+                }
 
-        player.x = getPoint([ground.radius,player.angle],"x")+ground.x;
-        player.y = getPoint([ground.radius,player.angle],"y")+ground.y;
-
-        canJump=true;
+                heldObj = undefined;
+                holdingObj = false;
+            }else{
+                pickable.sort(function(a, b){return (getMag(player.x-a.x,player.y-a.y) - getMag(player.x-b.x,player.y-b.y))});
+                if(getMag(player.x-pickable[0].x,player.y-pickable[0].y)<50){
+                    heldObj = pickable[0];
+                    holdingObj = true;
+                }
+            }
+            
+            eTimer = st;
+        }
+        eTimer--;
     }else{
-        canJump=false;
+        eTimer = 0;
     }
 
-    //check max velocity
-    player.maxVx = getPoint([player.maxMag,player.angle],"x");
-    player.maxVy = getPoint([player.maxMag,player.angle],"y");
-    //console.log(player.maxVx);
-
-    /*if((player.vx>player.maxVx&&player.maxVx>0)||(player.vx<player.maxVx&&player.maxVx<0)){
-        player.vx = player.maxVx;
-    }
-    if((player.vy>player.maxVy&&player.maxVy>0)||(player.vy<player.maxVy&&player.maxVy<0)){
-        player.vy = player.maxVy;
-    }
-
-    console.log(player.vx);*/
-
-    //STILL A SMALL BUG:
-    //PLAYER HAS TENDENCIES TOWARDS 45 DEGREE ANGLES
-
-    var dec = 0.4
-    if(player.vx>0){
-        player.vx -= dec;
-    }else if(player.vx<0){
-        player.vx += dec;
-    }
-    if(player.vy>0){
-        player.vy -= dec;
-    }else if(player.vy<0){
-        player.vy += dec;
-    }
-
-    player.x += player.vx;
-    player.y += player.vy;
-
-    /*THE MEGA COMMENT OUT ~ ~ ~
-
-    if(getMag(player.x-grav.x,player.y-grav.y)<=grav.radius){
-        grav.force=-1;
-        player.angle = Math.round(getAngle((player.x-grav.x),(player.y-grav.y))+90);
-        //console.log(player.angle-90);
-    }else{
-        //player.angle = 0;
-        grav.force = 0;
-    }
-    canJump = false;
-    if(getMag(player.x-ground.x,player.y-ground.y)<=ground.radius){
-        var tempVect2 = [ground.radius,player.angle+270];
-
-        player.x = ground.x+getPoint(tempVect2,"x");
-        player.y = ground.y+getPoint(tempVect2,"y");
-        player.vy=0;
-        player.vx=0;
-        //player.updateColPoints();
-        canJump = true;
-        //player.movement[0] = 0;
-        //player.movement[1] = player.angle;
-    }
-
-    //Get Input
-    getInput();
-    getGrav();
-    //Get Vector Components
-
-    //Add Grav and Input
-    //var tempVect = addVects(pInput,grav.movement);
-
-    //If player grounded
-    if(canJump&&!w){
-        var inpDir = 0;
-        var inpMag = 5;
-        if((!a&&!d)||(a&&d)){inpMag=0;}
-        else if(a){inpDir = 180;}
-        else if(d){inpDir = 0;}
-        pInput = [inpMag,player.angle-inpDir];
-
-    }else{
+    //If the player is holding an object
+    if(holdingObj){
+        //getting movement angle
+        var mang = getAngle(player.vx,player.vy);
+        if(mang<0){mang+=360;}
+        if(player.angle<0){player.angle+=360;}
+        var dirAngle = player.angle-mang
+        if(dirAngle<0){dirAngle+=360;}
         
-        //Add to prev Movement
-        //player.movement = addVects(pInput,player.movement);
-        //player.movement = addVects(grav.movement,player.movement);
+        //getting player dir
+        if(dirAngle>180){
+            player.dir = 1;
+            mang = player.angle+90;
+        }else if(dirAngle<180){
+            player.dir = -1;
+            mang = player.angle+270;
+        }
 
-        //if(player.movement[0]>player.maxMag){player.movement[0]=player.maxMag;}
-
+        //holding object on left or right side
+        heldObj.x = player.x + getPoint([player.width,mang],"x");
+        heldObj.y = player.y + getPoint([player.width,mang],"y");
+    }
+    
+    //Physics Objects Movement/Collision
+    for(var j=0; j<physicsObjs.length; j++){
+        if(heldObj!=physicsObjs[j]){
+            objMovement(physicsObjs[j]);
+        }
     }
 
-    player.vx += getPoint(grav.movement,"x");
-    player.vy += getPoint(grav.movement,"y");
-    player.vx += getPoint(pInput,"x");
-    player.vy += getPoint(pInput,"y");
+    //if(getMag(ball1.vx,ball1.vy)>0){addForce(ball1,-0.4,0);}
 
-    //player.vx = getPoint(player.movement,"x");
-    //player.vy = getPoint(player.movement,"y");
-    
+    //Ball collisions
+    for(var jj=0; jj<pickable.length; jj++){
+        if(heldObj!=pickable[jj]){
+            //do collision
+            playerCollision(pickable[jj]);
+        }
+    }
 
-    player.move();
-    */ //End Of Mega Comment Out ~ ~ ~
-
+    //Drawing Objects
     grav.draw();
     ground.draw();
     player.draw();
+    ball1.draw();
+    ball2.draw();
 
-    ctx.save();
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 1;
-    ctx.translate(player.x,player.y)
-    ctx.beginPath();
-    ctx.moveTo(0,0);
-    ctx.lineTo(getPoint(player.movement,"x"),getPoint(player.movement,"y"));
-    ctx.stroke();
-    ctx.restore();
-
-    ctx.save();
+    /*ctx.save();
     ctx.strokeStyle = "red";
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(player.x,player.y);
     ctx.lineTo(grav.x,grav.y);
     ctx.stroke();
+    ctx.restore();*/
+
+    ctx.save();
+    ctx.fillStyle = "black";
+    ctx.font = "16px Arial";
+    ctx.fillText("Space to jump, E to pickup when near a ball",30,30);
+    ctx.fillText("W+E to throw up, S+E to drop",30,50);
     ctx.restore();
+
 }
 
-function getInput(){
-    pInput[0] = 0; //3 = player VX
-    if(d){pInput[1]=player.angle; pInput[0] = 1;}
-    if(a){pInput[1]=player.angle+180; pInput[0] = 1;}
-    if(s){pInput[1]=player.angle+90; pInput[0] = 1;}
-    if(w&&canJump){pInput[1]=player.angle+270; pInput[0] = 40;}
-    //console.log("m:"+pInput[0]+", a:"+pInput[1]);
-}
-
-function getGrav(){
-    grav.movement[0] = grav.force;
-    grav.movement[1] = player.angle+270;
-    //console.log("m:"+grav.movement[0]+", a:"+grav.movement[1]);
-}
-
-function addVects(c1,c2){
-    var tempC1 = [0,0]
-    var tempC2 = [0,0]
-    tempC1[0] = getPoint(c1,"x");
-    tempC1[1] = getPoint(c1,"y");
-    tempC2[0] = getPoint(c2,"x");
-    tempC2[1] = getPoint(c2,"y");
-
-    var newX, newY, newAng, newMag;
-    newX = tempC1[0] + tempC2[0];
-    newY = tempC1[1] + tempC2[1];
-
-    newMag = getMag(newX,newY);
-    newAng = getAngle(newX,newY);
-
-    return [newMag,newAng];
-}
+/* --------------- FUNCTIONS --------------- */
 
 function getAngle(a,b){
     /*if(b==0){return (a>0) ? 0:180;}
@@ -230,3 +192,127 @@ function getPoint(vect,XorY){
 
 function toRadians(deg){return deg*(Math.PI/180);}
 function toDegrees(rad){return rad*(180/Math.PI);}
+
+function objGrav(obj){
+    var gravForce = grav.force;
+    if(getMag(obj.x-grav.x,obj.y-grav.y)<=grav.radius){//If inside field
+
+        obj.angle = getAngle((obj.x-grav.x),(obj.y-grav.y));
+        if(obj.angle<0){obj.angle+=360;}
+
+        obj.vx += getPoint([gravForce,obj.angle],"x");
+        obj.vy += getPoint([gravForce,obj.angle],"y");
+    }
+}
+
+function objMovement(obj){
+    var dec = 0.2;
+    if(obj!=player){dec=0;}
+
+    //Max Magnitude/Velocity
+    var pmag = getMag(obj.vx,obj.vy);
+    var pang = getAngle(obj.vx,obj.vy);
+    if(pang<0){pang+=360;}
+    if(pmag>obj.maxMag){
+        obj.vx = getPoint([obj.maxMag,pang],"x");
+        obj.vy = getPoint([obj.maxMag,pang],"y");
+    }
+    //New Magnitude Deceleration
+    pmag = getMag(obj.vx,obj.vy);
+    pang = getAngle(obj.vx,obj.vy);
+    if(pang<0){pang+=360;}
+    if(pmag>dec){
+        pmag -= dec;
+
+        obj.vx = getPoint([pmag,pang],"x");
+        obj.vy = getPoint([pmag,pang],"y");
+    }else{pmag = 0;}
+
+    //If really slow, just stop (probably better done with mag) << Created Anti-Tendencies
+    /*if(Math.abs(obj.vx)<dec){
+        obj.vx = 0;
+    }
+    if(Math.abs(obj.vy)<dec){
+        obj.vy = 0;
+    }*/
+    
+    obj.x += obj.vx;
+    obj.y += obj.vy;
+
+    groundCollision(obj,ground);
+}
+    
+
+function groundCollision(obj,grd){
+    if(getMag(obj.x-grd.x,obj.y-grd.y)<grd.radius+obj.height/2){
+
+        var oang = getAngle(obj.x-grd.x,obj.y-grd.y);
+        if(oang<0){oang+=360;}
+
+        obj.x = getPoint([grd.radius+obj.height/2,oang],"x")+grd.x;
+        obj.y = getPoint([grd.radius+obj.height/2,oang],"y")+grd.y;
+
+        /*getDir(obj);   Gotta learn physics then fix this
+
+        if(obj!=player&&getMag(obj.vx,obj.vy)>6){
+            addForce(obj,-2,0);
+        }else if(obj!=player){
+            obj.vx = 0;
+            obj.vy = 0;
+        }*/
+    }
+}
+
+function playerCollision(obj){
+
+    var tempPx1 = getPoint([player.height/4,player.angle],"x")+player.x;
+    var tempPy1 = getPoint([player.height/4,player.angle],"y")+player.y;
+    var tempPx2 = getPoint([player.height/4,player.angle+180],"x")+player.x;
+    var tempPy2 = getPoint([player.height/4,player.angle+180],"y")+player.y;
+
+    if(getMag(obj.x-tempPx1,obj.y-tempPy1)<player.radius+obj.height/2
+    ||getMag(obj.x-tempPx2,obj.y-tempPy2)<player.radius+obj.height/2){
+
+        var oang;
+
+        if(getMag(obj.x-tempPx1,obj.y-tempPy1)<player.radius+obj.height/2){
+            oang = getAngle(obj.x-tempPx1,obj.y-tempPy1);
+            obj.x = getPoint([player.radius+obj.height/2+1,oang],"x")+tempPx1;
+            obj.y = getPoint([player.radius+obj.height/2+1,oang],"y")+tempPy1;
+            obj.vx = getPoint([10,oang],"x");
+            obj.vy = getPoint([10,oang],"y");
+        }else{
+            oang = getAngle(obj.x-tempPx2,obj.y-tempPy2);
+            obj.x = getPoint([player.radius+obj.height/2+1,oang],"x")+tempPx2;
+            obj.y = getPoint([player.radius+obj.height/2+1,oang],"y")+tempPy2;
+            obj.vx *= -0.01;
+            obj.vy *= -0.01;
+        }
+        
+        
+    }
+}
+
+function addForce(obj, magDif, angDif, angStart=getAngle(obj.vx,obj.vy)){
+    var fmag = getMag(obj.vx,obj.vy);
+    if(angStart<0){angStart+=360;}
+    obj.vx = getPoint([fmag+magDif,angStart+angDif],"x");
+    obj.vy = getPoint([fmag+magDif,angStart+angDif],"y");
+}
+
+function getDir(obj){
+    var mang = getAngle(obj.vx,obj.vy);
+    if(mang<0){mang+=360;}
+    if(obj.angle<0){obj.angle+=360;}
+    var dirAngle = obj.angle-mang
+    if(dirAngle<0){dirAngle+=360;}
+        
+    //getting dir
+    if(dirAngle>180){
+        obj.dir = 1;
+        mang = obj.angle+90;
+    }else if(dirAngle<180){
+        obj.dir = -1;
+        mang = obj.angle+270;
+    }
+}

@@ -121,12 +121,16 @@ function keyDown(e){
     if(e.key=="d"){d=true;}
     if(e.key=="w"){w=true;}
     if(e.key=="s"){s=true;}
+    if(e.key=="e"){ek=true;}
+    if(e.which==32){space=true;}
 }
 function keyUp(e){
     if(e.key=="a"){a=false;}
     if(e.key=="d"){d=false;}
     if(e.key=="s"){s=false;}
     if(e.key=="w"){w=false;}
+    if(e.key=="e"){ek=false;}
+    if(e.which==32){space=false;}
 }
 //
 
@@ -136,3 +140,5 @@ var a = false;
 var d = false;
 var w = false;
 var s = false;
+var space = false;
+var ek = false;
