@@ -86,7 +86,7 @@ function main(){
                 heldObj.vx = player.vx;
                 heldObj.vy = player.vy;
 
-                if(w){
+                if(w||space){
                     addForce(heldObj,8,0,player.angle);
                 }else if(!s){
                     addForce(heldObj,8,-90*player.dir);
@@ -117,8 +117,9 @@ function main(){
         if(player.angle<0){player.angle+=360;}
         var dirAngle = player.angle-mang
         if(dirAngle<0){dirAngle+=360;}
-        
+
         //getting player dir
+        mang = player.angle+90;
         if(dirAngle>180){
             player.dir = 1;
             mang = player.angle+90;
@@ -148,6 +149,8 @@ function main(){
             playerCollision(pickable[jj]);
         }
     }
+
+    objCollision(ball1,ball2);
 
     //Drawing Objects
     grav.draw();
@@ -260,6 +263,11 @@ function groundCollision(obj,grd){
             obj.vx = 0;
             obj.vy = 0;
         }*/
+
+        /*if(obj!=player){
+            obj.vx = 0;
+            obj.vy = 0;
+        }*/
     }
 }
 
@@ -289,7 +297,22 @@ function playerCollision(obj){
             obj.vy *= -0.01;
         }
         
-        
+    }
+}
+
+function objCollision(obj1,obj2){
+    var oang = getAngle(obj1.x-obj2.x,obj1.y-obj2.y);
+    if(getMag(obj1.x-obj2.x,obj1.y-obj2.y)<obj1.radius+obj2.radius){
+        var tempMag = (obj1.radius+obj2.radius)/4;
+        obj1.x += getPoint([tempMag,oang],"x");
+        obj1.y += getPoint([tempMag,oang],"y");
+        obj2.x += getPoint([tempMag,oang+180],"x");
+        obj2.y += getPoint([tempMag,oang+180],"y");
+
+        obj1.vx *= -0.01;
+        obj1.vy *= -0.01;
+        obj2.vx *= -0.01;
+        obj2.vy *= -0.01;
     }
 }
 
