@@ -10,14 +10,14 @@ var heldObj = undefined;
 
 /* --------------- OBJECT DECLARATIONS HERE --------------- */
 var player = new Obj("joe",600,100,20,40,"rect");
-player.maxMag = 8;
+player.maxMag = 24;
 player.bounded = false;
-player.ax = 0.8
+player.ax = 1.4;
 var canJump = false;
 
 var grav = new Obj("field1",canvas.width/2,canvas.height/2,600,600,"circle");
 grav.color = "lightblue";
-grav.force = -1;
+grav.force = -2;
 grav.angle = player.angle+90;
 grav.movement = [0,grav.angle];
 
@@ -25,12 +25,12 @@ var ground = new Obj("steve",canvas.width/2,canvas.height/2,240,240,"circle");
 ground.color = "grey";
 
 var ball1 = new Obj("baller",300,100,20,20,"circle");
-ball1.maxMag = 16;
+ball1.maxMag = 80;
 ball1.bounded = false;
 ball1.color = "purple";
 
 var ball2 = new Obj("lameo",500,100,20,20,"circle");
-ball2.maxMag = 16;
+ball2.maxMag = 80;
 ball2.bounded = false;
 ball2.color = "blue";
 
@@ -72,8 +72,8 @@ function main(){
         player.vx += getPoint([100,player.angle],"x");
         player.vy += getPoint([100,player.angle],"y");
         canJump=false;
-        player.maxMag = 14;
-    }else if(player.maxMag>8){
+        player.maxMag = 42;
+    }else if(player.maxMag>24){
         player.maxMag-=0.25;
     }
 
@@ -87,9 +87,9 @@ function main(){
                 heldObj.vy = player.vy;
 
                 if(w||space){
-                    addForce(heldObj,8,0,player.angle);
+                    addForce(heldObj,60,0,player.angle);
                 }else if(!s){
-                    addForce(heldObj,8,-90*player.dir);
+                    addForce(heldObj,60,-90*player.dir);
                 }
 
                 heldObj = undefined;
@@ -209,8 +209,8 @@ function objGrav(obj){
 }
 
 function objMovement(obj){
-    var dec = 0.2;
-    if(obj!=player){dec=0;}
+    var dec = 0.8; //friction
+    //if(obj!=player){dec=0;}
 
     //Max Magnitude/Velocity
     var pmag = getMag(obj.vx,obj.vy);
@@ -224,12 +224,12 @@ function objMovement(obj){
     pmag = getMag(obj.vx,obj.vy);
     pang = getAngle(obj.vx,obj.vy);
     if(pang<0){pang+=360;}
-    if(pmag>dec){
-        pmag -= dec;
+    pmag *= dec;
 
-        obj.vx = getPoint([pmag,pang],"x");
-        obj.vy = getPoint([pmag,pang],"y");
-    }else{pmag = 0;}
+    if(pmag<0.5){pmag=0;}
+    
+    obj.vx = getPoint([pmag,pang],"x");
+    obj.vy = getPoint([pmag,pang],"y");
 
     //If really slow, just stop (probably better done with mag) << Created Anti-Tendencies
     /*if(Math.abs(obj.vx)<dec){
