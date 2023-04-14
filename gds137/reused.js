@@ -23,6 +23,7 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
     this.movement = [this.mag,this.angle];
     this.friction = 0;
     this.maxMag = 0;
+    this.health = 100;
 
     this.left = this.x-this.radius;
     this.right = this.x+this.radius;
@@ -142,3 +143,6 @@ var w = false;
 var s = false;
 var space = false;
 var ek = false;
+
+function randNum(low, high){return Math.random()*(high-low)+low;}
+function randInt(lo, hi){return Math.round(randNum(lo, hi))}

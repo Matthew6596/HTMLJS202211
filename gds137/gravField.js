@@ -25,17 +25,24 @@ var ground = new Obj("steve",canvas.width/2,canvas.height/2,240,240,"circle");
 ground.color = "grey";
 
 var ball1 = new Obj("baller",300,100,20,20,"circle");
-ball1.maxMag = 80;
+ball1.maxMag = 60;
 ball1.bounded = false;
 ball1.color = "purple";
 
 var ball2 = new Obj("lameo",500,100,20,20,"circle");
-ball2.maxMag = 80;
+ball2.maxMag = 60;
 ball2.bounded = false;
 ball2.color = "blue";
 
-var physicsObjs = [player,ball1,ball2];
+var box1 = new Obj("Mike",600,400,30,30,"rect");
+box1.maxMag = 10;
+box1.bounded = false;
+box1.color = "saddlebrown";
+
+var physicsObjs = [player,ball1,ball2,box1];
 var pickable = [ball1,ball2];
+var particles = [];
+var boxes = [box1];
 
 //
 
@@ -87,9 +94,9 @@ function main(){
                 heldObj.vy = player.vy;
 
                 if(w||space){
-                    addForce(heldObj,60,0,player.angle);
+                    addForce(heldObj,40,0,player.angle);
                 }else if(!s){
-                    addForce(heldObj,60,-90*player.dir);
+                    addForce(heldObj,40,(-60*player.dir));
                 }
 
                 heldObj = undefined;
@@ -138,19 +145,29 @@ function main(){
         if(heldObj!=physicsObjs[j]){
             objMovement(physicsObjs[j]);
         }
+
+        //Box collision
+        //(for boxes)
+        if(getMag(physicsObjs[j].y-box1.y,physicsObjs[j].x-box1.x)<physicsObjs[j].radius+box1.radius){
+            if(getMag(physicsObjs[j].vx,physicsObjs[j].vy)>20){
+                breakBox(box1);
+            }
+        }
     }
 
     //if(getMag(ball1.vx,ball1.vy)>0){addForce(ball1,-0.4,0);}
 
     //Ball collisions
-    for(var jj=0; jj<pickable.length; jj++){
-        if(heldObj!=pickable[jj]){
+    for(var j=0; j<pickable.length; j++){
+        if(heldObj!=pickable[j]){
             //do collision
-            playerCollision(pickable[jj]);
+            playerCollision(pickable[j]);
         }
     }
-
+    playerCollision(box1);
     objCollision(ball1,ball2);
+    objCollision(ball1,box1);
+    objCollision(ball2,box1);
 
     //Drawing Objects
     grav.draw();
@@ -158,6 +175,19 @@ function main(){
     player.draw();
     ball1.draw();
     ball2.draw();
+    box1.draw();
+
+    //Particles
+    for(var j=0; j<particles.length; j++){
+        var pa = particles[j];
+        if(pa.x<0||pa.x>canvas.width||pa.y>canvas.height||pa.y<0||pa.health<=0){
+            particles.splice(j,1);
+        }else{
+            particles[j].move();
+            particles[j].draw();
+            particles[j].health-=0.6;
+        }
+    }
 
     /*ctx.save();
     ctx.strokeStyle = "red";
@@ -210,7 +240,7 @@ function objGrav(obj){
 
 function objMovement(obj){
     var dec = 0.8; //friction
-    //if(obj!=player){dec=0;}
+    if(obj!=player){dec=0.9;}
 
     //Max Magnitude/Velocity
     var pmag = getMag(obj.vx,obj.vy);
@@ -295,6 +325,10 @@ function playerCollision(obj){
             obj.y = getPoint([player.radius+obj.height/2+1,oang],"y")+tempPy2;
             obj.vx *= -0.01;
             obj.vy *= -0.01;
+            if(boxes.includes(obj)){
+                obj.vx = player.vx*2;
+                obj.vy = player.vy*2;
+            }
         }
         
     }
@@ -338,4 +372,17 @@ function getDir(obj){
         obj.dir = -1;
         mang = obj.angle+270;
     }
+}
+
+function breakBox(box){
+    for(var bb=0; bb<20; bb++){
+        particles.push(new Obj("p",box.x,box.y,5,5,"rect"))
+        particles[bb].color = "saddlebrown";
+        particles[bb].vx = randNum(-10,10);
+        particles[bb].vy = randNum(-10,10);
+        particles[bb].maxVx = 100;
+        particles[bb].maxVy = 100;
+        particles[bb].bounded = false;
+    }
+    box.x = 10000;
 }
