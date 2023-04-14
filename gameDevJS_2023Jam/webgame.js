@@ -32,9 +32,26 @@ var w = false;
 var s = false;
 var space = false;
 
+var color = [0,0,0]
+
 /*Main*/
 function main(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     //
-    
+    canvas.style.backgroundColor = "rgb("+color[0]+","+color[1]+","+color[2]+")";
+    ctx.font = "160px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("amongus",canvas.width/2,canvas.height/2);
+}
+
+
+var lightenRate = 100;
+setTimeout(lightenScreen,lightenRate);
+function lightenScreen(){
+    if(color[0]<245){
+        for(var ls=0; ls<3; ls++){
+            color[ls]++;
+        }
+        setTimeout(lightenScreen,lightenRate);
+    }
 }
