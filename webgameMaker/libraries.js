@@ -11,7 +11,7 @@ function updateMousePos(e){
     mousey = Math.round(e.clientY - rect.top);
 }
 
-var interval = 1000/140; //1000/140
+var interval = 1000/60; //1000/140 (2nd num is framerate)
 
 function drawObjs(arr,context){
     var ind = -1;
