@@ -1,3 +1,4 @@
+/*-Matthew-Satterfield-*/
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
@@ -15,9 +16,7 @@ function updateMousePos(e){
 var mousex = 0;
 var mousey = 0;
 function mouseInside(l,r,t,b){
-    if(context=="ctx"){
-        return ((mousex>l)&&(mousex<r))&&((mousey>t)&&(mousey<b));
-    }
+    return ((mousex>l)&&(mousex<r))&&((mousey>t)&&(mousey<b));
 }
 function mouseInsideObj(obj){
     return mouseInside(obj.left,obj.right,obj.top,obj.bottom);
@@ -83,7 +82,7 @@ function getCollisionBorder(other){
 }
 
 /*-----------------------------------OBJECTS-----------------------------------*/
-function Obj(x=0,y=0,w=100,h=100){
+function Obj(x=0,y=0,w=100,h=100,col="red"){
     this.x = x;
     this.y = y;
     this.vx = 0;
@@ -93,7 +92,7 @@ function Obj(x=0,y=0,w=100,h=100){
     this.dir = 1;
     this.width = w;
     this.height = h;
-    this.color = "red";
+    this.color = col;
     this.controls = false;
 
     this.left = this.x-this.width/2;
@@ -147,11 +146,6 @@ function Obj(x=0,y=0,w=100,h=100){
         }
         if(getAnyKey(["d","arrowright"])){
             this.vx += this.force;
-        }
-        if(getKey("shift")){
-            this.force = 0.9;
-        }else{
-            this.force = 0.6;
         }
     }
 
@@ -216,17 +210,23 @@ function Obj(x=0,y=0,w=100,h=100){
     }
 }
 /*-----------------------------------VARIABLES-----------------------------------*/
-var player = new Obj(100,100,20,20);
-player.force = 0.6;
-player.friction = 0.85;
+var gameTimer = 600;
+
+var player = new Obj(100,100,20,20,"rgb(50,210,50)");
+player.force = 0.2;
+player.friction = 0.95;
 player.controls = true;
-player.color = "rgb(50,210,50)";
 
-var wall1 = new Obj(400,400,40,200);
-wall1.color = "dimgrey";
+var wall1 = new Obj(canvas.width/2,20,canvas.width,40,"dimgrey");
+var wall2 = new Obj(canvas.width/2,canvas.height-20,canvas.width,40,"dimgrey");
+var wall3 = new Obj(20,canvas.height/2,40,canvas.height,"dimgrey");
+var wall4 = new Obj(canvas.width-20,canvas.height/2,40,canvas.height,"dimgrey");
 
-var a_objects = [player,wall1];
-var a_collides = [wall1];
+var a_objects = [player,wall1,wall2,wall3,wall4]; //Main Objects
+var a_collides = [wall1,wall2,wall3,wall4];
+
+var currentLevel = "start"; //Level
+var currentState = "alive"; //Player State
 
 /*-----------------------------------MAIN-----------------------------------*/
 function main(){
@@ -237,11 +237,14 @@ function main(){
     player.move();
 
     //Doing Stuff
-    if(player.collides(getCollisionBorder(wall1))){
-        player.color = "red";
-    }else{
-        player.color = "rgb(50,210,50)";
+    doLevels();
+    var temp_hit = false;
+    for(var i=0; i<a_collides.length; i++){
+        if(player.collides(getCollisionBorder(a_collides[i]))){
+            temp_hit = true;
+        }
     }
+    hitWall(temp_hit);
 
     //Player Collision
     for(var i=0; i<a_collides.length; i++){
@@ -252,4 +255,111 @@ function main(){
     for(var i=0; i<a_objects.length; i++){
         a_objects[i].draw();
     }
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.font = "18px Arial";
+    ctx.fillText(gameTimer,player.x,player.top);
+    ctx.restore();
+
 }
+
+function hitWall(hit){
+    if(hit){
+        player.color = "red";
+        player.friction = 0.89;
+    }else{
+        player.color = "rgb(50,210,50)";
+        player.friction = 0.95;
+    }
+}
+
+//Level Managers ~~~~~~~~~~~~~~~~~~~~
+function changeLevel(level){
+    switch(level){
+        case("start"):
+        start();
+        break;
+        case("level1"):
+        level1();
+        break;
+    }
+    currentLevel = level;
+}
+
+function doLevels(){
+    switch(currentLevel){
+        case("start"):
+        doStart();
+        break;
+        case("level1"):
+        doLevel1();
+        break;
+    }
+}
+
+
+//Level Set-Ups ~~~~~~~~~~~~~~~~~~~~
+function start(){
+    console.log("uhhhhh");
+}
+
+function level1(){
+    gameTimer = 600;
+    currentState = "alive";
+    wall1 = new Obj(canvas.width/2,20,canvas.width,40,"dimgrey");
+    wall2 = new Obj(canvas.width/2,canvas.height-20,canvas.width,40,"dimgrey");
+    wall3 = new Obj(20,canvas.height/2,40,canvas.height,"dimgrey");
+    wall4 = new Obj(canvas.width-20,canvas.height/2,40,canvas.height,"dimgrey");
+    player.x = 100;
+    player.y = 100;
+    player.vx = 0;
+    player.vy = 0;
+    player.controls = true;
+    a_objects = [player,wall1,wall2,wall3,wall4];
+    a_collides = [wall1,wall2,wall3,wall4];
+}
+
+
+//Level Mains ~~~~~~~~~~~~~~~~~~~~
+function doStart(){
+    //Doing Stuff
+    if(getKey(" ")){
+        changeLevel("level1");
+    }
+
+    //Drawing
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.font = "32px Arial";
+    ctx.fillText("Press Space to Start",canvas.width/2,canvas.height/2);
+    ctx.restore();
+}
+
+function doLevel1(){
+    //Moving
+    gameTimer--;
+
+    //Doing Stuff
+    if(gameTimer<=0){
+        currentState = "lost";
+        player.controls = false;
+        gameTimer=0;
+        changeLevel("start");
+    }
+}
+
+changeLevel("start");
+
+
+/*
+
+
+
+a
+
+
+
+
+i was gona draw ascii among us but i think 'a' is close enough
+
+*/
