@@ -340,15 +340,14 @@ function hitWall(hit){
 
 function changeLevel(level){
     if(level-1==levels.length&&currentState!="won"){ //Player Wins!!!
-        theEnd();
         currentLevel = 0;
         currentState = "won";
         gameTimer = 1000;
         menuText = "Congratulations, You've Won!";
         a_objects = [player,wall1,wall2,wall3,wall4];
         a_collides = [wall1,wall2,wall3,wall4];
-        player.x = canvas.width/2
-        player.y = canvas.height/2
+        player.x = canvas.width/2;
+        player.y = canvas.height*3/4;
     }
     if(level!=0&&currentState!="won"){ //Player Continues/Restarts to next level
         levels[level-1]();
@@ -457,6 +456,7 @@ function doLevel(){
 
 function theEnd(){
     gameTimer--;
+    if(gameTimer<0){gameTimer=0;}
 }
 
 changeLevel(0);
