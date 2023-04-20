@@ -415,12 +415,51 @@ function level5(){
 },
 
 function level6(){
-    gameTimer = 300;
-    goal = new Obj(canvas.width-100,canvas.height-100,40,40,"yellow",2);
+    gameTimer = 425;
+    goal = new Obj(canvas.width-80,canvas.height-80,40,40,"yellow",2);
+    player.x = 80;
+    player.y = 80;
+    wall5 = new Obj(canvas.width/2,canvas.height/2,560,400,"dimgrey");
+    a_objects = [goal,player,wall1,wall2,wall3,wall4,wall5];
+    a_collides = [wall1,wall2,wall3,wall4,wall5];
+},
+
+function level7(){
+    gameTimer = 650;
+    goal = new Obj(canvas.width/2+140,70,40,40,"yellow",2);
+    player.x = canvas.width/2-140;
+    player.y = 70;
+    wall5 = new Obj(canvas.width/2,canvas.height/2,560,400,"dimgrey");
+    wall6 = new Obj(canvas.width/2,50,40,100,"dimgrey");
+    a_objects = [goal,player,wall1,wall2,wall3,wall4,wall5,wall6];
+    a_collides = [wall1,wall2,wall3,wall4,wall5,wall6];
+},
+
+function level8(){
+    gameTimer = 350;
+    goal = new Obj(canvas.width-80,canvas.height-80,40,40,"yellow",2);
+    player.x = 80;
+    player.y = 80;
+    wall5 = new Obj(300,300,60,60,"dimgrey");
+    wall6 = new Obj(500,500,60,60,"dimgrey");
+    wall7 = new Obj(360,100,60,60,"dimgrey");
+    wall8 = new Obj(560,400,60,60,"dimgrey");
+    wall9 = new Obj(640,160,60,60,"dimgrey");
+    wall10 = new Obj(200,200,60,60,"dimgrey");
+    wall11 = new Obj(470,280,60,60,"dimgrey");
+    wall12 = new Obj(700,360,60,60,"dimgrey");
+    a_objects = [goal,player,wall1,wall2,wall3,wall4,wall5,wall6,wall7,wall8,wall9,wall10,wall11,wall12];
+    a_collides = [wall1,wall2,wall3,wall4,wall5,wall6,wall7,wall8,wall9,wall10,wall11,wall12];
+},
+
+function level9(){
+    gameTimer = 650;
+    goal = new Obj(100,120,40,40,"yellow",2);
     player.x = 100;
-    player.y = 100;
-    a_objects = [goal,player,wall1,wall2,wall3,wall4];
-    a_collides = [wall1,wall2,wall3,wall4];
+    player.y = canvas.height-120;
+    wall5 = new Obj(canvas.width/2,canvas.height/2,800,200,"dimgrey");
+    a_objects = [goal,player,wall1,wall2,wall3,wall4,wall5];
+    a_collides = [wall1,wall2,wall3,wall4,wall5];
 }
 ];
 
@@ -459,7 +498,7 @@ function theEnd(){
     if(gameTimer<0){gameTimer=0;}
 }
 
-changeLevel(0);
+changeLevel(9);
 
 
 /*
