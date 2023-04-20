@@ -1,17 +1,44 @@
 html,body{
     background-color: rgb(200,200,200);
+    font-family: 'Courier New', Courier, monospace;
 }
 header,#container{
     display: flex;
     justify-content: center;
 }
+#container{
+    max-height: 610px;
+}
 canvas{
     border: 1px solid black;
-    background-color: rgb(232,232,232);
+    background-color: rgb(246,246,246);
+    height:600px;
 }
 aside{
     margin-left: 10px;
-    border: 1px solid black;
     width: 200px;
     text-align: center;
+}
+#textStuff{
+    border: 1px solid black;
+    background-color: rgb(246,246,246);
+    padding:4px;
+}
+#options{
+    margin-top:1px;
+    border: 1px solid black;
+    background-color: rgb(246,246,246);
+    height:92px;
+    line-height: 1px;
+}
+#yel{
+    background-color: yellow;
+    font-weight: bold;
+}
+#gre{
+    background-color: rgb(50,210,50);
+    font-weight: bold;
+}
+#miniFoot{
+    font-size: small;
 }

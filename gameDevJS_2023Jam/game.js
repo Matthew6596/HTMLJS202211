@@ -12,6 +12,13 @@ function updateMousePos(e){
     mousey = Math.round(e.clientY - rect.top);
 }
 
+document.addEventListener("input",checkTimeReducer)
+
+function checkTimeReducer(){
+    timeReducer = document.getElementById("tReduce").value;
+    document.getElementById("rtime").innerHTML=timeReducer;
+}
+
 /*-----------------------------------INPUT-----------------------------------*/
 var mousex = 0;
 var mousey = 0;
@@ -25,9 +32,15 @@ function mouseInsideObj(obj){
 document.addEventListener("keydown",documentKeyDown);
 document.addEventListener("keyup",documentKeyUp);
 document.addEventListener("click",onUserClick);
+document.addEventListener("keypress",onKeyPress);
 
 var a_KeysPressed = [];
-var onClick = function(){console.log("userhasclicked");}
+var onClick = function(){}
+var sPress = false;
+
+function onKeyPress(e){
+    if(e.which==32){sPress=true;}
+}
 
 function documentKeyDown(e){
     var eventKey = e.key.toLowerCase();
@@ -82,7 +95,7 @@ function getCollisionBorder(other){
 }
 
 /*-----------------------------------OBJECTS-----------------------------------*/
-function Obj(x=0,y=0,w=100,h=100,col="red"){
+function Obj(x=0,y=0,w=100,h=100,col="red",bor=0){
     this.x = x;
     this.y = y;
     this.vx = 0;
@@ -94,6 +107,7 @@ function Obj(x=0,y=0,w=100,h=100,col="red"){
     this.height = h;
     this.color = col;
     this.controls = false;
+    this.border = bor;
 
     this.left = this.x-this.width/2;
     this.right = this.x+this.width/2;
@@ -107,7 +121,9 @@ function Obj(x=0,y=0,w=100,h=100,col="red"){
             ctx.save();
             ctx.translate(this.x,this.y);
             ctx.fillStyle = this.color;
+            ctx.lineWidth = this.border;
             ctx.fillRect(-halfW,-halfH,this.width,this.height);
+            if(this.border!=0){ctx.strokeRect(-halfW,-halfH,this.width,this.height);}
             ctx.restore();
         }else if(shape=="circle"){
             ctx.save();
@@ -210,23 +226,41 @@ function Obj(x=0,y=0,w=100,h=100,col="red"){
     }
 }
 /*-----------------------------------VARIABLES-----------------------------------*/
-var gameTimer = 600;
+var gameTimer = 300;
 
 var player = new Obj(100,100,20,20,"rgb(50,210,50)");
 player.force = 0.2;
 player.friction = 0.95;
 player.controls = true;
 
+//Border Walls -NO-TOUCH-
 var wall1 = new Obj(canvas.width/2,20,canvas.width,40,"dimgrey");
 var wall2 = new Obj(canvas.width/2,canvas.height-20,canvas.width,40,"dimgrey");
 var wall3 = new Obj(20,canvas.height/2,40,canvas.height,"dimgrey");
 var wall4 = new Obj(canvas.width-20,canvas.height/2,40,canvas.height,"dimgrey");
+//
+//Obstacle Walls to move around - setWall(wall,x,y,w,h);
+var wall5 = new Obj(-100,-100,10,10,"dimgrey");
+var wall6 = new Obj(-100,-100,10,10,"dimgrey");
+var wall7 = new Obj(-100,-100,10,10,"dimgrey");
+var wall8 = new Obj(-100,-100,10,10,"dimgrey");
+var wall9 = new Obj(-100,-100,10,10,"dimgrey");
+var wall10 = new Obj(-100,-100,10,10,"dimgrey");
+var wall11 = new Obj(-100,-100,10,10,"dimgrey");
+var wall12 = new Obj(-100,-100,10,10,"dimgrey");
 
-var a_objects = [player,wall1,wall2,wall3,wall4]; //Main Objects
+
+var goal = new Obj(canvas.width-100,canvas.height-100,40,40,"yellow",2);
+
+var a_objects = [goal,player,wall1,wall2,wall3,wall4]; //Main Objects
 var a_collides = [wall1,wall2,wall3,wall4];
 
-var currentLevel = "start"; //Level
+var currentLevel = 0; //Level
 var currentState = "alive"; //Player State
+var nextLevel = 1;
+var menuText = "Press Space to Start";
+
+var timeReducer = 0; //Highest Val: 100
 
 /*-----------------------------------MAIN-----------------------------------*/
 function main(){
@@ -236,8 +270,12 @@ function main(){
     //Moving
     player.move();
 
-    //Doing Stuff
-    doLevels();
+    //Do level stuff or Menu stuff?
+    var doStartLater = false;
+    if(currentLevel!=0){doLevel();}
+    else{doStartLater = true;}
+
+    //If the player is hitting any wall
     var temp_hit = false;
     for(var i=0; i<a_collides.length; i++){
         if(player.collides(getCollisionBorder(a_collides[i]))){
@@ -251,15 +289,40 @@ function main(){
         player.collision(a_collides[i]);
     }
 
-    //Drawing
+    //Restart or Start Level
+    if(sPress){
+        changeLevel(nextLevel);
+        sPress = false;
+    }
+
+    //Drawing Objects
     for(var i=0; i<a_objects.length; i++){
         a_objects[i].draw();
     }
+
+    //Drawing UI and stuff ---
     ctx.save();
     ctx.textAlign = "center";
-    ctx.font = "18px Arial";
-    ctx.fillText(gameTimer,player.x,player.top);
+
+    //Game Timer Text
+    ctx.fillStyle = "white";
+    ctx.font = "bold 18px Courier New";
+    ctx.fillText(gameTimer,player.x-1,player.top);
+    ctx.fillStyle = "black";
+    ctx.font = "bold 18px Courier New";
+    ctx.fillText(gameTimer,player.x,player.top-1);
+    
+    //Level Count Text
+    ctx.font = "bold 24px Courier New";
+    ctx.fillText(nextLevel,18,22);
+    ctx.fillStyle = "white";
+    ctx.font = "bold 22px Courier New";
+    ctx.fillText(nextLevel,20,20);
     ctx.restore();
+
+    //Menu Text & Special Win State
+    if(currentState=="won"){theEnd();}
+    if(doStartLater){doStart();}
 
 }
 
@@ -273,82 +336,130 @@ function hitWall(hit){
     }
 }
 
-//Level Managers ~~~~~~~~~~~~~~~~~~~~
+//Level Managers ~~~~~~~~~~~~~~~~~~~~ <<<>>>
+
 function changeLevel(level){
-    switch(level){
-        case("start"):
-        start();
-        break;
-        case("level1"):
-        level1();
-        break;
+    if(level-1==levels.length&&currentState!="won"){ //Player Wins!!!
+        theEnd();
+        currentLevel = 0;
+        currentState = "won";
+        gameTimer = 1000;
+        menuText = "Congratulations, You've Won!";
+        a_objects = [player,wall1,wall2,wall3,wall4];
+        a_collides = [wall1,wall2,wall3,wall4];
+        player.x = canvas.width/2
+        player.y = canvas.height/2
     }
-    currentLevel = level;
-}
-
-function doLevels(){
-    switch(currentLevel){
-        case("start"):
-        doStart();
-        break;
-        case("level1"):
-        doLevel1();
-        break;
+    if(level!=0&&currentState!="won"){ //Player Continues/Restarts to next level
+        levels[level-1]();
+        gameTimer -= timeReducer;
+        player.vx = 0;
+        player.vy = 0;
+        player.controls = true;
+        currentState = "alive";
     }
+    if(currentState!="won"){currentLevel = level;}
 }
-
 
 //Level Set-Ups ~~~~~~~~~~~~~~~~~~~~
-function start(){
-    console.log("uhhhhh");
-}
 
+var levels = [
 function level1(){
-    gameTimer = 600;
-    currentState = "alive";
-    wall1 = new Obj(canvas.width/2,20,canvas.width,40,"dimgrey");
-    wall2 = new Obj(canvas.width/2,canvas.height-20,canvas.width,40,"dimgrey");
-    wall3 = new Obj(20,canvas.height/2,40,canvas.height,"dimgrey");
-    wall4 = new Obj(canvas.width-20,canvas.height/2,40,canvas.height,"dimgrey");
+    gameTimer = 300;
+    goal = new Obj(canvas.width-100,canvas.height-100,40,40,"yellow",2);
     player.x = 100;
     player.y = 100;
-    player.vx = 0;
-    player.vy = 0;
-    player.controls = true;
-    a_objects = [player,wall1,wall2,wall3,wall4];
+    a_objects = [goal,player,wall1,wall2,wall3,wall4];
+    a_collides = [wall1,wall2,wall3,wall4];
+},
+
+function level2(){
+    gameTimer = 350;
+    goal = new Obj(canvas.width-100,100,40,40,"yellow",2);
+    player.x = 100;
+    player.y = 100;
+    wall5 = new Obj(canvas.width/2,200,40,400,"dimgrey");
+    a_objects = [goal,player,wall1,wall2,wall3,wall4,wall5];
+    a_collides = [wall1,wall2,wall3,wall4,wall5];
+},
+
+function level3(){
+    gameTimer = 460;
+    goal = new Obj(100,100,40,40,"yellow",2);
+    player.x = 100;
+    player.y = canvas.height-100;
+    wall5 = new Obj(canvas.width/3,canvas.height/2,600,180,"dimgrey");
+    a_objects = [goal,player,wall1,wall2,wall3,wall4,wall5];
+    a_collides = [wall1,wall2,wall3,wall4,wall5];
+},
+
+function level4(){
+    gameTimer = 440;
+    goal = new Obj(canvas.width-100,canvas.height-100,40,40,"yellow",2);
+    player.x = 100;
+    player.y = 100;
+    wall5 = new Obj(canvas.width/3,canvas.height/4,100,400,"dimgrey");
+    wall6 = new Obj(canvas.width*2/3,canvas.height*3/4,100,400,"dimgrey");
+    a_objects = [goal,player,wall1,wall2,wall3,wall4,wall5,wall6];
+    a_collides = [wall1,wall2,wall3,wall4,wall5,wall6];
+},
+
+function level5(){
+    gameTimer = 525;
+    goal = new Obj(canvas.width-100,canvas.height-100,40,40,"yellow",2);
+    player.x = 100;
+    player.y = 100;
+    wall5 = new Obj(canvas.width/3,canvas.height/4,200,500,"dimgrey");
+    wall6 = new Obj(canvas.width*2/3,canvas.height*3/4,200,500,"dimgrey");
+    a_objects = [goal,player,wall1,wall2,wall3,wall4,wall5,wall6];
+    a_collides = [wall1,wall2,wall3,wall4,wall5,wall6];
+},
+
+function level6(){
+    gameTimer = 300;
+    goal = new Obj(canvas.width-100,canvas.height-100,40,40,"yellow",2);
+    player.x = 100;
+    player.y = 100;
+    a_objects = [goal,player,wall1,wall2,wall3,wall4];
     a_collides = [wall1,wall2,wall3,wall4];
 }
-
+];
 
 //Level Mains ~~~~~~~~~~~~~~~~~~~~
 function doStart(){
-    //Doing Stuff
-    if(getKey(" ")){
-        changeLevel("level1");
-    }
-
     //Drawing
     ctx.save();
     ctx.textAlign = "center";
-    ctx.font = "32px Arial";
-    ctx.fillText("Press Space to Start",canvas.width/2,canvas.height/2);
+    ctx.font = "bold 32px Courier New";
+    ctx.fillText(menuText,canvas.width/2,canvas.height/2);
     ctx.restore();
 }
 
-function doLevel1(){
+function doLevel(){
     //Moving
     gameTimer--;
 
     //Doing Stuff
     if(gameTimer<=0){
         currentState = "lost";
+        menuText = "Press Space to Restart";
         player.controls = false;
         gameTimer=0;
-        changeLevel("start");
+        changeLevel(0);
+    }
+
+    if(player.collides(goal)){
+        nextLevel++;
+        menuText = "Press Space to Continue";
+        changeLevel(0);
     }
 }
 
-changeLevel("start");
+function theEnd(){
+    gameTimer--;
+}
+
+changeLevel(0);
 
 
 /*
