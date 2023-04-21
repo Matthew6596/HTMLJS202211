@@ -265,6 +265,7 @@ var goal = new Obj(canvas.width-100,canvas.height-100,40,40,"yellow",2);
 
 var a_objects = [goal,player,wall1,wall2,wall3,wall4]; //Main Objects
 var a_collides = [wall1,wall2,wall3,wall4];
+var a_particles = [];
 
 var currentLevel = 0; //Level
 var currentState = "alive"; //Player State
@@ -273,6 +274,8 @@ var menuText = "Press Space to Start";
 
 var timeReducer = 0; //Highest Val: 100
 
+var confettiReady = true;
+
 /*-----------------------------------MAIN-----------------------------------*/
 function main(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -280,6 +283,12 @@ function main(){
 
     //Moving
     player.move();
+
+    //Move Particles
+    for(var i=0; i<a_particles.length; i++){
+        a_particles[i].x += a_particles[i].vx;
+        a_particles[i].y += a_particles[i].vy;
+    }
 
     //Do level stuff or Menu stuff?
     var doStartLater = false;
@@ -343,6 +352,13 @@ function main(){
     if(currentState=="won"){theEnd();}
     if(doStartLater){doStart();}
 
+    //Draw Particles
+    for(var i=0; i<a_particles.length; i++){
+        var randShape = "rect";
+        if(percent(50)){randShape="circle";}
+        a_particles[i].draw(randShape);
+    }
+
 }
 
 function hitWall(hit){
@@ -376,7 +392,9 @@ function changeLevel(level){
         player.vy = 0;
         player.controls = true;
         currentState = "alive";
+        confettiReady = true;
     }
+    if(level==0){confettiReady = false;}
     if(currentState!="won"){currentLevel = level;}
 }
 
@@ -481,6 +499,36 @@ function level9(){
     setTps(canvas.width-100,canvas.height-120,canvas.width-100,120);
     a_objects = [goal,player,wall1,wall2,wall3,wall4,wall5];
     a_collides = [wall1,wall2,wall3,wall4,wall5];
+},
+
+function level10(){
+    gameTimer = 350;
+    goal = new Obj(canvas.width-100,120,40,40,"yellow",2);
+    player.x = 100;
+    player.y = 120;
+    wall5 = new Obj(canvas.width/2,canvas.height/2,800,200,"dimgrey");
+    wall6 = new Obj(240,90,40,100);
+    wall7 = new Obj(canvas.width/2,150,40,100);
+    wall8 = new Obj(canvas.width-240,90,40,100);
+    wall9 = new Obj(240,canvas.height-150,40,100,"dimgrey");
+    wall10 = new Obj(canvas.width/2,canvas.height-90,40,100,"dimgrey");
+    wall11 = new Obj(canvas.width-240,canvas.height-150,40,100,"dimgrey");
+    setTps(-100,-100,-100,-100);
+    a_objects = [goal,player,wall1,wall2,wall3,wall4,wall5,wall9,wall10,wall11];
+    a_collides = [wall1,wall2,wall3,wall4,wall5,wall6,wall7,wall8];
+},
+
+function level11(){
+    gameTimer = 275;
+    goal = new Obj(canvas.width-100,canvas.height/2,40,40,"yellow",2);
+    player.x = 200;
+    player.y = canvas.height/2;
+    wall5 = new Obj(canvas.width/2+60,canvas.height/2-130,60,180,"dimgrey");
+    wall6 = new Obj(canvas.width/2+60,canvas.height/2+130,60,180,"dimgrey");
+    wall7 = new Obj(120,canvas.height/2,40,600,"dimgrey");
+    setTps(canvas.width/2+60,canvas.height/2,70,canvas.height/2);
+    a_objects = [goal,player,wall1,wall2,wall3,wall4,wall5,wall6,wall7];
+    a_collides = [wall1,wall2,wall3,wall4,wall5,wall6,wall7];
 }
 ];
 
@@ -508,6 +556,10 @@ function doLevel(){
     }
 
     if(player.collides(goal)){
+        if(confettiReady){
+            makeExplosion(player.x,player.y);
+            confettiReady = false;
+        }
         nextLevel++;
         menuText = "Press Space to Continue";
         changeLevel(0);
@@ -516,7 +568,49 @@ function doLevel(){
 
 function theEnd(){
     gameTimer--;
-    if(gameTimer<0){gameTimer=0;}
+    if(gameTimer<0){
+        gameTimer=0;
+        if(confettiReady){
+            makeExplosion(player.x,player.y,50);
+            confettiReady = false;
+        }
+    }
+}
+
+//Particle Function ~
+function makeExplosion(x,y,cnt=20,size=4,col="rand",vxrang=[-10,10],vyrang=[-10,10]){
+    var pColor = col;
+    for(var m=0; m<cnt; m++){
+        if(col=="rand"){pColor = getRandCol();}
+        a_particles.push(new Obj(x,y,size,size,pColor));
+        a_particles[a_particles.length-1].vx = randNum(vxrang[0],vxrang[1]);
+        a_particles[a_particles.length-1].vy = randNum(vyrang[0],vyrang[1]);
+    }
+}
+
+function getRandCol(){
+    var r_num = randInt(0,100);
+    if(r_num<=10){
+        return "red";
+    }else if(r_num<=20){
+        return "orange";
+    }else if(r_num<=30){
+        return "yellow";
+    }else if(r_num<=40){
+        return "green";
+    }else if(r_num<=50){
+        return "blue";
+    }else if(r_num<=60){
+        return "purple";
+    }else if(r_num<=70){
+        return "lime";
+    }else if(r_num<=80){
+        return "magenta";
+    }else if(r_num<=90){
+        return "cyan";
+    }else{
+        return "pink";
+    }
 }
 
 changeLevel(0);
