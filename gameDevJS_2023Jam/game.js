@@ -94,6 +94,15 @@ function getCollisionBorder(other){
     return {left:other.left-1,right:other.right+1,top:other.top-1,bottom:other.bottom+1};
 }
 
+function setTps(x1,y1,x2,y2){
+    tp1.x = x1;
+    tp1.y = y1;
+    tp1.refreshColPoints();
+    tp2.x = x2;
+    tp2.y = y2;
+    tp2.refreshColPoints();
+}
+
 /*-----------------------------------OBJECTS-----------------------------------*/
 function Obj(x=0,y=0,w=100,h=100,col="red",bor=0){
     this.x = x;
@@ -249,6 +258,8 @@ var wall10 = new Obj(-100,-100,10,10,"dimgrey");
 var wall11 = new Obj(-100,-100,10,10,"dimgrey");
 var wall12 = new Obj(-100,-100,10,10,"dimgrey");
 
+var tp1 = new Obj(-100,-100,30,30,"magenta");
+var tp2 = new Obj(-100,-100,30,30,"magenta");
 
 var goal = new Obj(canvas.width-100,canvas.height-100,40,40,"yellow",2);
 
@@ -284,6 +295,12 @@ function main(){
     }
     hitWall(temp_hit);
 
+    //If player hits teleporter
+    if(player.collides({top:tp1.y,bottom:tp1.y,left:tp1.x,right:tp1.x,})){
+        player.x = tp2.x + (player.x-tp1.x);
+        player.y = tp2.y + (player.y-tp1.y);
+    }
+
     //Player Collision
     for(var i=0; i<a_collides.length; i++){
         player.collision(a_collides[i]);
@@ -296,6 +313,8 @@ function main(){
     }
 
     //Drawing Objects
+    tp1.draw("circle");
+    tp2.draw("circle");
     for(var i=0; i<a_objects.length; i++){
         a_objects[i].draw();
     }
@@ -348,6 +367,7 @@ function changeLevel(level){
         a_collides = [wall1,wall2,wall3,wall4];
         player.x = canvas.width/2;
         player.y = canvas.height*3/4;
+        setTps(-100,-100,-100,-100);
     }
     if(level!=0&&currentState!="won"){ //Player Continues/Restarts to next level
         levels[level-1]();
@@ -453,11 +473,12 @@ function level8(){
 },
 
 function level9(){
-    gameTimer = 650;
+    gameTimer = 475;
     goal = new Obj(100,120,40,40,"yellow",2);
     player.x = 100;
     player.y = canvas.height-120;
     wall5 = new Obj(canvas.width/2,canvas.height/2,800,200,"dimgrey");
+    setTps(canvas.width-100,canvas.height-120,canvas.width-100,120);
     a_objects = [goal,player,wall1,wall2,wall3,wall4,wall5];
     a_collides = [wall1,wall2,wall3,wall4,wall5];
 }
@@ -498,7 +519,7 @@ function theEnd(){
     if(gameTimer<0){gameTimer=0;}
 }
 
-changeLevel(9);
+changeLevel(0);
 
 
 /*
