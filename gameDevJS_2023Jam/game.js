@@ -235,11 +235,15 @@ function Obj(x=0,y=0,w=100,h=100,col="red",bor=0){
     }
 }
 /*-----------------------------------VARIABLES-----------------------------------*/
-var gameTimer = 300;
+var gameTimer = 225;
+
+var totalTime = 0;
+var finalTime = 0;
+var started = false;
 
 var player = new Obj(100,100,20,20,"rgb(50,210,50)");
-player.force = 0.2;
-player.friction = 0.95;
+player.force = 0.3;
+player.friction = 0.98;
 player.controls = true;
 
 //Border Walls -NO-TOUCH-
@@ -281,6 +285,8 @@ function main(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     //
 
+    if(started){totalTime++;}
+
     //Moving
     player.move();
 
@@ -288,6 +294,10 @@ function main(){
     for(var i=0; i<a_particles.length; i++){
         a_particles[i].x += a_particles[i].vx;
         a_particles[i].y += a_particles[i].vy;
+        a_particles[i].refreshColPoints();
+        if(!a_particles[i].collides({left:0,right:canvas.width,top:0,bottom:canvas.height})){
+            a_particles.splice(i,1);
+        }
     }
 
     //Do level stuff or Menu stuff?
@@ -319,6 +329,7 @@ function main(){
     if(sPress){
         changeLevel(nextLevel);
         sPress = false;
+        started = true;
     }
 
     //Drawing Objects
@@ -339,14 +350,12 @@ function main(){
     ctx.fillStyle = "black";
     ctx.font = "bold 18px Courier New";
     ctx.fillText(gameTimer,player.x,player.top-1);
+
+    ctx.restore();
     
     //Level Count Text
-    ctx.font = "bold 24px Courier New";
-    ctx.fillText(nextLevel,18,22);
-    ctx.fillStyle = "white";
-    ctx.font = "bold 22px Courier New";
-    ctx.fillText(nextLevel,20,20);
-    ctx.restore();
+    drawUIText(nextLevel,20,20);
+    drawUIText(getTime(totalTime),canvas.width-70,20);
 
     //Menu Text & Special Win State
     if(currentState=="won"){theEnd();}
@@ -379,11 +388,13 @@ function changeLevel(level){
         currentState = "won";
         gameTimer = 1000;
         menuText = "Congratulations, You've Won!";
+        finalTime = getTime(totalTime);
         a_objects = [player,wall1,wall2,wall3,wall4];
         a_collides = [wall1,wall2,wall3,wall4];
         player.x = canvas.width/2;
         player.y = canvas.height*3/4;
         setTps(-100,-100,-100,-100);
+        confettiReady = true;
     }
     if(level!=0&&currentState!="won"){ //Player Continues/Restarts to next level
         levels[level-1]();
@@ -402,7 +413,7 @@ function changeLevel(level){
 
 var levels = [
 function level1(){
-    gameTimer = 300;
+    gameTimer = 225;
     goal = new Obj(canvas.width-100,canvas.height-100,40,40,"yellow",2);
     player.x = 100;
     player.y = 100;
@@ -411,7 +422,7 @@ function level1(){
 },
 
 function level2(){
-    gameTimer = 350;
+    gameTimer = 275;
     goal = new Obj(canvas.width-100,100,40,40,"yellow",2);
     player.x = 100;
     player.y = 100;
@@ -421,7 +432,7 @@ function level2(){
 },
 
 function level3(){
-    gameTimer = 460;
+    gameTimer = 350;
     goal = new Obj(100,100,40,40,"yellow",2);
     player.x = 100;
     player.y = canvas.height-100;
@@ -431,7 +442,7 @@ function level3(){
 },
 
 function level4(){
-    gameTimer = 440;
+    gameTimer = 325;
     goal = new Obj(canvas.width-100,canvas.height-100,40,40,"yellow",2);
     player.x = 100;
     player.y = 100;
@@ -442,7 +453,7 @@ function level4(){
 },
 
 function level5(){
-    gameTimer = 525;
+    gameTimer = 400;
     goal = new Obj(canvas.width-100,canvas.height-100,40,40,"yellow",2);
     player.x = 100;
     player.y = 100;
@@ -453,7 +464,7 @@ function level5(){
 },
 
 function level6(){
-    gameTimer = 425;
+    gameTimer = 320;
     goal = new Obj(canvas.width-80,canvas.height-80,40,40,"yellow",2);
     player.x = 80;
     player.y = 80;
@@ -463,7 +474,7 @@ function level6(){
 },
 
 function level7(){
-    gameTimer = 650;
+    gameTimer = 475;
     goal = new Obj(canvas.width/2+140,70,40,40,"yellow",2);
     player.x = canvas.width/2-140;
     player.y = 70;
@@ -474,7 +485,7 @@ function level7(){
 },
 
 function level8(){
-    gameTimer = 350;
+    gameTimer = 275;
     goal = new Obj(canvas.width-80,canvas.height-80,40,40,"yellow",2);
     player.x = 80;
     player.y = 80;
@@ -491,7 +502,7 @@ function level8(){
 },
 
 function level9(){
-    gameTimer = 475;
+    gameTimer = 360;
     goal = new Obj(100,120,40,40,"yellow",2);
     player.x = 100;
     player.y = canvas.height-120;
@@ -502,7 +513,7 @@ function level9(){
 },
 
 function level10(){
-    gameTimer = 350;
+    gameTimer = 250;
     goal = new Obj(canvas.width-100,120,40,40,"yellow",2);
     player.x = 100;
     player.y = 120;
@@ -519,7 +530,7 @@ function level10(){
 },
 
 function level11(){
-    gameTimer = 275;
+    gameTimer = 215;
     goal = new Obj(canvas.width-100,canvas.height/2,40,40,"yellow",2);
     player.x = 200;
     player.y = canvas.height/2;
@@ -571,14 +582,19 @@ function theEnd(){
     if(gameTimer<0){
         gameTimer=0;
         if(confettiReady){
-            makeExplosion(player.x,player.y,50);
+            makeExplosion(player.x,player.y,500,8,"rand",[-5,5],[-5,5]);
             confettiReady = false;
         }
     }
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.font = "bold 32px Courier New";
+    ctx.fillText("Final Time: "+finalTime,canvas.width/2,canvas.height/2+48);
+    ctx.restore();
 }
 
 //Particle Function ~
-function makeExplosion(x,y,cnt=20,size=4,col="rand",vxrang=[-10,10],vyrang=[-10,10]){
+function makeExplosion(x,y,cnt=30,size=5,col="rand",vxrang=[-10,10],vyrang=[-10,10]){
     var pColor = col;
     for(var m=0; m<cnt; m++){
         if(col=="rand"){pColor = getRandCol();}
@@ -613,6 +629,31 @@ function getRandCol(){
     }
 }
 
+//Some other functions ~
+function getTime(tm){
+    var fram,sec,min;
+    min = Math.floor(tm/3600);
+    sec = Math.floor(tm/60)-(min*60);
+    fram = tm-(sec*60)-(min*3600);
+    if(sec<10){sec = "0"+sec;}
+    if(fram<10){fram = "0"+fram;}
+    if(min<10){min = "0"+min;}
+    return (min+":"+sec+":"+fram);
+}
+
+function drawUIText(txt,x,y){
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.fillStyle = "black";
+    ctx.font = "bold 24px Courier New";
+    ctx.fillText(txt,x-2,y+2);
+    ctx.fillStyle = "white";
+    ctx.font = "bold 24px Courier New";
+    ctx.fillText(txt,x,y);
+    ctx.restore();
+}
+
+//I dont think I need this, but keeping just in case
 changeLevel(0);
 
 
