@@ -39,10 +39,20 @@ box1.maxMag = 10;
 box1.bounded = false;
 box1.color = "saddlebrown";
 
-var physicsObjs = [player,ball1,ball2,box1];
+var enemy1 = new Obj(">:(",40,100,30,30,"circle");
+enemy1.maxMag = 3;
+enemy1.bounded = false;
+enemy1.color = "red";
+enemy1.ax = 0.1;
+enemy1.ay = 0.2;
+enemy1.maxVx = 4;
+enemy1.maxVy = 4;
+
+var physicsObjs = [player,ball1,ball2,box1,enemy1];
 var pickable = [ball1,ball2];
 var particles = [];
 var boxes = [box1];
+var enemies = [enemy1];
 
 //
 
@@ -64,56 +74,67 @@ function main(){
         canJump = false;
     }
 
-    // ~~~ INPUTS ~~~
-    if(a){
-        player.vx += getPoint([player.ax,player.angle+270],"x");
-        player.vy += getPoint([player.ax,player.angle+270],"y");
-    }
-    if(d){
-        player.vx += getPoint([player.ax,player.angle+90],"x");
-        player.vy += getPoint([player.ax,player.angle+90],"y");
-    }
-
-    //Jump
-    if(space&&canJump){
-        player.vx += getPoint([100,player.angle],"x");
-        player.vy += getPoint([100,player.angle],"y");
-        canJump=false;
-        player.maxMag = 42;
-    }else if(player.maxMag>24){
-        player.maxMag-=0.25;
-    }
-
-    // ~~~ Pickup/throw/drop Object ~~~
-    if(ek){
-        if(eTimer>0){
-            
+    //Enemy Movement
+    for(var i=0; i<enemies.length; i++){
+        if(enemies[i].health>0){
+            moveEnemy(enemies[i]);
         }else{
-            if(holdingObj){
-                heldObj.vx = player.vx;
-                heldObj.vy = player.vy;
-
-                if(w||space){
-                    addForce(heldObj,40,0,player.angle);
-                }else if(!s){
-                    addForce(heldObj,40,(-60*player.dir));
-                }
-
-                heldObj = undefined;
-                holdingObj = false;
-            }else{
-                pickable.sort(function(a, b){return (getMag(player.x-a.x,player.y-a.y) - getMag(player.x-b.x,player.y-b.y))});
-                if(getMag(player.x-pickable[0].x,player.y-pickable[0].y)<50){
-                    heldObj = pickable[0];
-                    holdingObj = true;
-                }
-            }
-            
-            eTimer = st;
+            enemies[i].y=-1000;
         }
-        eTimer--;
-    }else{
-        eTimer = 0;
+    }
+
+    // ~~~ INPUTS ~~~
+    if(player.health>0){
+        if(a){
+            player.vx += getPoint([player.ax,player.angle+270],"x");
+            player.vy += getPoint([player.ax,player.angle+270],"y");
+        }
+        if(d){
+            player.vx += getPoint([player.ax,player.angle+90],"x");
+            player.vy += getPoint([player.ax,player.angle+90],"y");
+        }
+
+        //Jump
+        if(space&&canJump){
+            player.vx += getPoint([100,player.angle],"x");
+            player.vy += getPoint([100,player.angle],"y");
+            canJump=false;
+            player.maxMag = 42;
+        }else if(player.maxMag>24){
+            player.maxMag-=0.25;
+        }
+
+        // ~~~ Pickup/throw/drop Object ~~~
+        if(ek){
+            if(eTimer>0){
+                
+            }else{
+                if(holdingObj){
+                    heldObj.vx = player.vx;
+                    heldObj.vy = player.vy;
+
+                    if(w||space){
+                        addForce(heldObj,40,0,player.angle);
+                    }else if(!s){
+                        addForce(heldObj,40,(-60*player.dir));
+                    }
+
+                    heldObj = undefined;
+                    holdingObj = false;
+                }else{
+                    pickable.sort(function(a, b){return (getMag(player.x-a.x,player.y-a.y) - getMag(player.x-b.x,player.y-b.y))});
+                    if(getMag(player.x-pickable[0].x,player.y-pickable[0].y)<50){
+                        heldObj = pickable[0];
+                        holdingObj = true;
+                    }
+                }
+                
+                eTimer = st;
+            }
+            eTimer--;
+        }else{
+            eTimer = 0;
+        }
     }
 
     //If the player is holding an object
@@ -157,6 +178,25 @@ function main(){
 
     //if(getMag(ball1.vx,ball1.vy)>0){addForce(ball1,-0.4,0);}
 
+    //Enemy Collisions
+    for(var i=0; i<enemies.length; i++){
+        if(enemies[i].health>0){
+            for(var j=0; j<pickable.length; j++){
+                if(getMag(enemies[i].y-pickable[j].y,enemies[i].x-pickable[j].x)<enemies[i].radius+pickable[j].radius){
+                    enemies[i].health = 0;
+                    console.log("enemy hit");
+                    break;
+                }
+            }
+            if(getMag(enemies[i].y-player.y,enemies[i].x-player.x)<enemies[i].radius+player.radius){
+                player.health = 0;
+                player.y = -10000;
+                player.vy = 0;
+                console.log("player hit");
+            }
+        }
+    }
+
     //Ball collisions
     for(var j=0; j<pickable.length; j++){
         if(heldObj!=pickable[j]){
@@ -173,6 +213,7 @@ function main(){
     grav.draw();
     ground.draw();
     player.draw();
+    enemy1.draw();
     ball1.draw();
     ball2.draw();
     box1.draw();
@@ -357,7 +398,7 @@ function addForce(obj, magDif, angDif, angStart=getAngle(obj.vx,obj.vy)){
     obj.vy = getPoint([fmag+magDif,angStart+angDif],"y");
 }
 
-function getDir(obj){
+function getDir(obj){ //More like setObjDir()
     var mang = getAngle(obj.vx,obj.vy);
     if(mang<0){mang+=360;}
     if(obj.angle<0){obj.angle+=360;}
@@ -377,7 +418,7 @@ function getDir(obj){
 function breakBox(box){
     for(var bb=0; bb<20; bb++){
         particles.push(new Obj("p",box.x,box.y,5,5,"rect"))
-        particles[bb].color = "saddlebrown";
+        particles[bb].color = box.color;
         particles[bb].vx = randNum(-10,10);
         particles[bb].vy = randNum(-10,10);
         particles[bb].maxVx = 100;
@@ -385,4 +426,21 @@ function breakBox(box){
         particles[bb].bounded = false;
     }
     box.x = 10000;
+}
+
+function moveEnemy(enm){
+    var newVx = getPoint([enm.vx+enm.ax,enm.angle],"x");
+    var newVy = getPoint([enm.vy+enm.ay*enm.dir,enm.angle],"y");
+
+    //if newVx>maxVx --> newVx=maxVx;
+    if(Math.abs(newVx)>enm.maxVx){
+        newVx = enm.maxVx;
+    }
+    //if newVy>mavVy --> dir*=-1
+    if(Math.abs(newVy)>maxVy){
+        enm.dir*=-1;
+    }
+
+    enm.x += newVx;
+    enm.y += newVy;
 }
