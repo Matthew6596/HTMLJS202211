@@ -40,12 +40,12 @@ box1.bounded = false;
 box1.color = "saddlebrown";
 
 var enemy1 = new Obj(">:(",40,100,30,30,"circle");
-enemy1.maxMag = 3;
+enemy1.maxMag = 60;
 enemy1.bounded = false;
 enemy1.color = "red";
-enemy1.ax = 0.1;
+enemy1.ax = 0.02;
 enemy1.ay = 0.2;
-enemy1.maxVx = 4;
+enemy1.maxVx = 1;
 enemy1.maxVy = 4;
 
 var physicsObjs = [player,ball1,ball2,box1,enemy1];
@@ -78,8 +78,6 @@ function main(){
     for(var i=0; i<enemies.length; i++){
         if(enemies[i].health>0){
             moveEnemy(enemies[i]);
-        }else{
-            enemies[i].y=-1000;
         }
     }
 
@@ -163,7 +161,7 @@ function main(){
     
     //Physics Objects Movement/Collision
     for(var j=0; j<physicsObjs.length; j++){
-        if(heldObj!=physicsObjs[j]){
+        if(heldObj!=physicsObjs[j]&&!enemies.includes(physicsObjs[j])){
             objMovement(physicsObjs[j]);
         }
 
@@ -184,6 +182,7 @@ function main(){
             for(var j=0; j<pickable.length; j++){
                 if(getMag(enemies[i].y-pickable[j].y,enemies[i].x-pickable[j].x)<enemies[i].radius+pickable[j].radius){
                     enemies[i].health = 0;
+                    breakBox(enemies[i]);
                     console.log("enemy hit");
                     break;
                 }
@@ -429,18 +428,25 @@ function breakBox(box){
 }
 
 function moveEnemy(enm){
-    var newVx = getPoint([enm.vx+enm.ax,enm.angle],"x");
-    var newVy = getPoint([enm.vy+enm.ay*enm.dir,enm.angle],"y");
+    enm.vx += enm.ax;
+    enm.vy += enm.ay*enm.dir;
+
+    var newVx = getPoint([enm.vx,enm.angle],"x");
+    var newVy = getPoint([enm.vy,enm.angle],"y");
 
     //if newVx>maxVx --> newVx=maxVx;
     if(Math.abs(newVx)>enm.maxVx){
         newVx = enm.maxVx;
+        console.log("too fast!");
     }
     //if newVy>mavVy --> dir*=-1
-    if(Math.abs(newVy)>maxVy){
+    if(Math.abs(newVy)>enm.maxVy){
         enm.dir*=-1;
     }
 
-    enm.x += newVx;
-    enm.y += newVy;
+    enm.vx = newVx;
+    enm.vy = newVy;
+
+    enm.x += enm.vx;
+    enm.y += enm.vy;
 }
