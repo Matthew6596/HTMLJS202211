@@ -229,14 +229,14 @@ function main(){
         }
     }
 
-    /*ctx.save();
-    ctx.strokeStyle = "red";
+    ctx.save();
+    ctx.strokeStyle = "black";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(player.x,player.y);
-    ctx.lineTo(grav.x,grav.y);
+    ctx.moveTo(enemy1.x,enemy1.y);
+    ctx.lineTo(getPoint([20,enemy1.angle],"x"),getPoint([20,enemy1.angle],"y"));
     ctx.stroke();
-    ctx.restore();*/
+    ctx.restore();
 
     ctx.save();
     ctx.fillStyle = "black";
@@ -437,7 +437,6 @@ function moveEnemy(enm){
     //if newVx>maxVx --> newVx=maxVx;
     if(Math.abs(newVx)>enm.maxVx){
         newVx = enm.maxVx;
-        console.log("too fast!");
     }
     //if newVy>mavVy --> dir*=-1
     if(Math.abs(newVy)>enm.maxVy){
