@@ -43,11 +43,10 @@ var enemy1 = new Obj(">:(",40,100,30,30,"circle");
 enemy1.maxMag = 60;
 enemy1.bounded = false;
 enemy1.color = "red";
-enemy1.ax = 0.02;
-enemy1.ay = 0.06;
-enemy1.maxVx = 1;
-enemy1.maxVy = 1.4;
-enemy1.angle -= 90;
+enemy1.ax = 100;
+enemy1.ay = 0.2;
+enemy1.maxVx = 6;
+enemy1.maxVy = 6;
 
 var physicsObjs = [player,ball1,ball2,box1,enemy1];
 var pickable = [ball1,ball2];
@@ -230,14 +229,7 @@ function main(){
         }
     }
 
-    ctx.save();
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(enemy1.x,enemy1.y);
-    ctx.lineTo(enemy1.x+getPoint([40,enemy1.angle],"x"),enemy1.y+getPoint([40,enemy1.angle],"y"));
-    ctx.stroke();
-    ctx.restore();
+    drawDebug();
 
     ctx.save();
     ctx.fillStyle = "black";
@@ -431,26 +423,67 @@ function breakBox(box){
 }
 
 function moveEnemy(enm){
-    enm.vx += enm.ax;
-    enm.vy += enm.ay*enm.dir;
+    var friction = 0.1;
 
-    //Debugging to be done here
-
-    var newVx = getPoint([enm.vx,enm.angle+90],"x");
-    var newVy = getPoint([enm.vy,enm.angle+180],"y");
-
-    //if newVx>maxVx --> newVx=maxVx;
-    if(Math.abs(newVx)>enm.maxVx){
-        newVx = enm.maxVx;
+    if(getMag(enm.x-grav.x,enm.y-grav.y)<=grav.radius){
+        enm.angle = getAngle((enm.x-grav.x),(enm.y-grav.y))*-1 - 90;
+        console.log(enm.angle);
     }
-    //if newVy>mavVy --> dir*=-1
-    if(Math.abs(newVy)>enm.maxVy){
+
+    enm.vx += getPoint([enm.ax,enm.angle],"x");
+    enm.vy += getPoint([enm.ay,enm.angle+(90*enm.dir)],"y");
+
+    var maxX = getPoint([enm.maxVx,enm.angle],"x");
+    var maxY = getPoint([enm.maxVx,enm.angle+(90*enm.dir)],"y");
+
+    if(Math.abs(enm.vx)>maxX){
+        enm.vx = maxX;
+    }
+    console.log(maxY);
+    if(Math.abs(enm.vy)>maxY){
+        enm.vy = maxY*enm.dir;
         enm.dir*=-1;
     }
 
-    enm.vx = newVx;
-    enm.vy = newVy;
+    enm.x += enm.vx*friction;
+    enm.y += enm.vy*friction;
 
-    enm.x += enm.vx;
-    enm.y += enm.vy;
+    /*------------------------------------------------
+    angle determined by grav field
+    enm accelerates by ax in angle
+    enm accelerates by ay in angle+(90*dir)
+
+    vx += ax in angle
+    vy += ay in angle+(90*dir)
+    
+    maxVelocities
+
+    maxVx = enm.maxVx in angle
+    maxVy = enm.maxVy in angle+(90*dir)
+
+    if |mag(vx)| > maxVx --> vx = [maxVx,angle];
+    if |mag(vy)| > maxVy --> dir*=-1;
+
+    ------------------------------------------------*/
+    //console.log("max-X: "+maxX+", max-Y: "+maxY);
+}
+
+function drawDebug(){
+    ctx.save();
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(enemy1.x,enemy1.y);
+    ctx.lineTo(enemy1.x+getPoint([40,enemy1.angle],"x"),enemy1.y+getPoint([40,enemy1.angle],"y"));
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    ctx.strokeStyle = "blue";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(enemy1.x,enemy1.y);
+    ctx.lineTo(enemy1.x+getPoint([enemy1.vx,enemy1.angle+180],"x")*40,enemy1.y+getPoint([enemy1.vy,enemy1.angle-90],"y")*10);
+    ctx.stroke();
+    ctx.restore();
 }
