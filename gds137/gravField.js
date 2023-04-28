@@ -44,9 +44,10 @@ enemy1.maxMag = 60;
 enemy1.bounded = false;
 enemy1.color = "red";
 enemy1.ax = 0.02;
-enemy1.ay = 0.2;
+enemy1.ay = 0.06;
 enemy1.maxVx = 1;
-enemy1.maxVy = 4;
+enemy1.maxVy = 1.4;
+enemy1.angle -= 90;
 
 var physicsObjs = [player,ball1,ball2,box1,enemy1];
 var pickable = [ball1,ball2];
@@ -234,7 +235,7 @@ function main(){
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(enemy1.x,enemy1.y);
-    ctx.lineTo(getPoint([20,enemy1.angle],"x"),getPoint([20,enemy1.angle],"y"));
+    ctx.lineTo(enemy1.x+getPoint([40,enemy1.angle],"x"),enemy1.y+getPoint([40,enemy1.angle],"y"));
     ctx.stroke();
     ctx.restore();
 
@@ -273,8 +274,10 @@ function objGrav(obj){
         obj.angle = getAngle((obj.x-grav.x),(obj.y-grav.y));
         if(obj.angle<0){obj.angle+=360;}
 
-        obj.vx += getPoint([gravForce,obj.angle],"x");
-        obj.vy += getPoint([gravForce,obj.angle],"y");
+        if(!enemies.includes(obj)){
+            obj.vx += getPoint([gravForce,obj.angle],"x");
+            obj.vy += getPoint([gravForce,obj.angle],"y");
+        }
     }
 }
 
@@ -431,8 +434,10 @@ function moveEnemy(enm){
     enm.vx += enm.ax;
     enm.vy += enm.ay*enm.dir;
 
-    var newVx = getPoint([enm.vx,enm.angle],"x");
-    var newVy = getPoint([enm.vy,enm.angle],"y");
+    //Debugging to be done here
+
+    var newVx = getPoint([enm.vx,enm.angle+90],"x");
+    var newVy = getPoint([enm.vy,enm.angle+180],"y");
 
     //if newVx>maxVx --> newVx=maxVx;
     if(Math.abs(newVx)>enm.maxVx){
