@@ -450,22 +450,38 @@ function moveEnemy(enm){
 
     /*------------------------------------------------
     angle determined by grav field
-    enm accelerates by ax in angle
-    enm accelerates by ay in angle+(90*dir)
-
-    vx += ax in angle
-    vy += ay in angle+(90*dir)
     
-    maxVelocities
+    xspd += ax;
+    yspd += ay*dir;
 
-    maxVx = enm.maxVx in angle
-    maxVy = enm.maxVy in angle+(90*dir)
+    vx = g([xspd,angle],"x")+g([yspd,angle+90*dir],"x");
+    vy = g([xspd,angle],"y")+g([yspd,angle+90*dir],"y");
 
-    if |mag(vx)| > maxVx --> vx = [maxVx,angle];
-    if |mag(vy)| > maxVy --> dir*=-1;
+    (Math.abs(yspd)>maxY){reverse dir}
 
     ------------------------------------------------*/
     //console.log("max-X: "+maxX+", max-Y: "+maxY);
+
+    /*------------------------------------------------~~~
+    Game Making Process
+    -brainstorm ideas
+    -make some pitches
+    -choose one
+    -make checklist/gantt
+    -set some smaller goals
+    -set some deadlines
+    -design start
+    -do design things
+    -prototyping start
+    -do code things
+    -get fun core gameplay loop going
+    -reflect on design
+    -code more stuff
+    -writing next
+    -art/music last
+    -polish and stuff
+    -playtest throughout whole thing
+    ------------------------------------------------~~~*/
 }
 
 function drawDebug(){
