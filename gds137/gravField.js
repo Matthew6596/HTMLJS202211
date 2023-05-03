@@ -39,12 +39,12 @@ box1.maxMag = 10;
 box1.bounded = false;
 box1.color = "saddlebrown";
 
-var enemy1 = new Obj(">:(",40,100,30,30,"circle");
+var enemy1 = new Obj(">:(",300,480,30,30,"circle");
 enemy1.maxMag = 60;
 enemy1.bounded = false;
 enemy1.color = "red";
-enemy1.ax = 100;
-enemy1.ay = 0.2;
+enemy1.ax = 0.1;
+enemy1.ay = 0.1;
 enemy1.maxVx = 6;
 enemy1.maxVy = 6;
 
@@ -236,6 +236,8 @@ function main(){
     ctx.font = "16px Arial";
     ctx.fillText("Space to jump, E to pickup when near a ball",30,30);
     ctx.fillText("W+E to throw up, S+E to drop",30,50);
+    ctx.font = "20px Arial black";
+    ctx.fillText("Health: "+player.health,30,80);
     ctx.restore();
 
 }
@@ -275,7 +277,7 @@ function objGrav(obj){
 
 function objMovement(obj){
     var dec = 0.8; //friction
-    if(obj!=player){dec=0.9;}
+    if(obj!=player){dec=0.87;}
 
     //Max Magnitude/Velocity
     var pmag = getMag(obj.vx,obj.vy);
@@ -426,27 +428,25 @@ function moveEnemy(enm){
     var friction = 0.1;
 
     if(getMag(enm.x-grav.x,enm.y-grav.y)<=grav.radius){
-        enm.angle = getAngle((enm.x-grav.x),(enm.y-grav.y))*-1 - 90;
-        console.log(enm.angle);
+        enm.angle = getAngle((enm.x-grav.x),(enm.y-grav.y))+90;
     }
 
-    enm.vx += getPoint([enm.ax,enm.angle],"x");
-    enm.vy += getPoint([enm.ay,enm.angle+(90*enm.dir)],"y");
+    enm.vx += enm.ax;
+    enm.vy += enm.ay*enm.dir;
 
-    var maxX = getPoint([enm.maxVx,enm.angle],"x");
-    var maxY = getPoint([enm.maxVx,enm.angle+(90*enm.dir)],"y");
-
-    if(Math.abs(enm.vx)>maxX){
-        enm.vx = maxX;
+    if(enm.vx>enm.maxVx){
+        enm.vx = enm.maxVx;
     }
-    console.log(maxY);
-    if(Math.abs(enm.vy)>maxY){
-        enm.vy = maxY*enm.dir;
+    if(Math.abs(enm.vy)>enm.maxVy){
+        //enm.vy = enm.maxVy*enm.dir;
         enm.dir*=-1;
     }
 
-    enm.x += enm.vx*friction;
-    enm.y += enm.vy*friction;
+    var vx = getPoint([enm.vx,enm.angle],"x")+getPoint([enm.vy,enm.angle+(90)],"x");
+    var vy = getPoint([enm.vx,enm.angle],"y")+getPoint([enm.vy,enm.angle+(90)],"y");
+
+    enm.x += vx*friction;
+    enm.y += vy*friction;
 
     /*------------------------------------------------
     angle determined by grav field
@@ -456,6 +456,8 @@ function moveEnemy(enm){
 
     vx = g([xspd,angle],"x")+g([yspd,angle+90*dir],"x");
     vy = g([xspd,angle],"y")+g([yspd,angle+90*dir],"y");
+
+    x += 
 
     (Math.abs(yspd)>maxY){reverse dir}
 
@@ -485,7 +487,7 @@ function moveEnemy(enm){
 }
 
 function drawDebug(){
-    ctx.save();
+    /*ctx.save();
     ctx.strokeStyle = "black";
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -501,5 +503,5 @@ function drawDebug(){
     ctx.moveTo(enemy1.x,enemy1.y);
     ctx.lineTo(enemy1.x+getPoint([enemy1.vx,enemy1.angle+180],"x")*40,enemy1.y+getPoint([enemy1.vy,enemy1.angle-90],"y")*10);
     ctx.stroke();
-    ctx.restore();
+    ctx.restore();*/
 }
