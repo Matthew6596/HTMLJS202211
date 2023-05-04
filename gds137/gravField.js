@@ -180,17 +180,29 @@ function main(){
     for(var i=0; i<enemies.length; i++){
         if(enemies[i].health>0){
             for(var j=0; j<pickable.length; j++){
-                if(getMag(enemies[i].y-pickable[j].y,enemies[i].x-pickable[j].x)<enemies[i].radius+pickable[j].radius){
+                if(getMag(enemies[i].y-pickable[j].y,enemies[i].x-pickable[j].x)<enemies[i].radius+pickable[j].radius){ //Enemy gets hit by ball
                     enemies[i].health = 0;
                     breakBox(enemies[i]);
                     console.log("enemy hit");
                     break;
                 }
             }
-            if(getMag(enemies[i].y-player.y,enemies[i].x-player.x)<enemies[i].radius+player.radius){
-                player.health = 0;
-                player.y = -10000;
-                player.vy = 0;
+            if(getMag(enemies[i].y-player.y,enemies[i].x-player.x)<enemies[i].radius+player.radius){ //Player gets hit by enemy
+                player.health -= 10;
+
+                //Player die
+                if(player.health<=0){
+                    player.vy = 0;
+                    player.y = -10000;
+                    
+                }
+
+                //Reverse enemy vx
+                enemies[i].vx*=-1
+
+                //Give player knockback
+                player.vx = getPoint([10,player.angle+90],"x");
+
                 console.log("player hit");
             }
         }
