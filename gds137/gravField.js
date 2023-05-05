@@ -47,6 +47,7 @@ enemy1.ax = 0.1;
 enemy1.ay = 0.1;
 enemy1.maxVx = 6;
 enemy1.maxVy = 6;
+enemy1.bouncy = 10; //Enemy Knockback
 
 var physicsObjs = [player,ball1,ball2,box1,enemy1];
 var pickable = [ball1,ball2];
@@ -188,21 +189,7 @@ function main(){
                 }
             }
             if(getMag(enemies[i].y-player.y,enemies[i].x-player.x)<enemies[i].radius+player.radius){ //Player gets hit by enemy
-                player.health -= 10;
-
-                //Player die
-                if(player.health<=0){
-                    player.vy = 0;
-                    player.y = -10000;
-                    
-                }
-
-                //Reverse enemy vx
-                enemies[i].vx*=-1
-
-                //Give player knockback
-                player.vx = getPoint([10,player.angle+90],"x");
-
+                playerEnemyHit(enemies[i]);
                 console.log("player hit");
             }
         }
@@ -496,6 +483,31 @@ function moveEnemy(enm){
     -polish and stuff
     -playtest throughout whole thing
     ------------------------------------------------~~~*/
+}
+
+function playerEnemyHit(enm){
+    player.health -= 10;
+
+    //Player die :skull:
+    if(player.health<=0){
+        player.vy = 0;
+        player.y = -10000;
+    }
+
+    //Reverse enemy vx
+    enm.vx*=-1
+
+    //Give player knockback ~~~
+    var dist1 = getMag((player.x-(enm.x+getPoint([1,enm.angle],"x"))),(player.y-(enm.y+getPoint([1,enm.angle],"y"))));
+    var dist2 = getMag((player.x-(enm.x+getPoint([-1,enm.angle],"x"))),(player.y-(enm.y+getPoint([-1,enm.angle],"y"))));
+
+    if(dist1<dist2){ //Player on right side, knockback in enmAngle direction
+        player.vx = getPoint([enm.bouncy,enm.angle],"x");
+        player.vy = getPoint([enm.bouncy,enm.angle],"y");
+    }else{ //Player on left side, knockback in enmAngle+180 direction
+        player.vx = getPoint([-enm.bouncy,enm.angle],"x");
+        player.vy = getPoint([-enm.bouncy,enm.angle],"y");
+    }
 }
 
 function drawDebug(){
