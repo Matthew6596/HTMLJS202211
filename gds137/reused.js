@@ -155,4 +155,5 @@ function getPoint(vect,XorY){
     if(XorY=="x"){return Math.cos(toRadians(vect[1]))*vect[0];}
     else if(XorY=="y"){return Math.sin(toRadians(vect[1]))*vect[0];}
 }
-
+function getCircum(radius){return (2*Math.PI*radius);}
+function getRotatePercent(amount,radius){return amount/getCircum(radius);}

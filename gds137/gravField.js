@@ -447,21 +447,6 @@ function moveEnemy(enm){
     enm.x += vx*friction;
     enm.y += vy*friction;
 
-    /*------------------------------------------------
-    angle determined by grav field
-    
-    xspd += ax;
-    yspd += ay*dir;
-
-    vx = g([xspd,angle],"x")+g([yspd,angle+90*dir],"x");
-    vy = g([xspd,angle],"y")+g([yspd,angle+90*dir],"y");
-
-    x += 
-
-    (Math.abs(yspd)>maxY){reverse dir}
-
-    ------------------------------------------------*/
-    //console.log("max-X: "+maxX+", max-Y: "+maxY);
 
     /*------------------------------------------------~~~
     Game Making Process
@@ -529,3 +514,27 @@ function drawDebug(){
     ctx.stroke();
     ctx.restore();*/
 }
+
+/*~~~~~----------
+_Swinging_Rope_Pseudo-Code_
+_____________________________________
+
+Player x,y is set to rope radius when touch
+
+Timer after s/w to prevent grabbing rope
+
+Rope angle +=/-= towards grav field angle
+Rope angle += with a/d
+
+After s/w, vx/vy = somethingidk
+
+or
+
+Rope.angle += circumfrence((player.vy/vx) or player.magnitude);
+
+________________________________________________
+Rope Object:
+-Square at x,y
+-Line from x,y to gp([rope.radius,rope.angle]);
+
+~~~~~----------*/
