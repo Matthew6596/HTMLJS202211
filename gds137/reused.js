@@ -150,7 +150,7 @@ function toRadians(deg){return deg*(Math.PI/180);}
 function toDegrees(rad){return rad*(180/Math.PI);}
 
 function getAngle(a,b){return toDegrees(Math.atan2(b,a));}
-function getMag(a,b){return Math.sqrt(Math.pow(a,2)+Math.pow(b,2));}
+function getMag(a,b){return Math.hypot(a,b);}
 function getPoint(vect,XorY){
     if(XorY=="x"){return Math.cos(toRadians(vect[1]))*vect[0];}
     else if(XorY=="y"){return Math.sin(toRadians(vect[1]))*vect[0];}
