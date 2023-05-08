@@ -124,6 +124,10 @@ var opcodes = {
 }
 /*
 opcodes["$00000000"](); <-- calling opcode
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+OPCODES REFERENCE: http://www.6502.org/tutorials/6502opcodes.html
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 _________________________________
 Opcodes to sort:
 -Jump (JMA, JMB, JMX, JMY, *JMV <-- Jumptovalue)
