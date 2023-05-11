@@ -524,6 +524,6 @@ function drawDebug(){
     ctx.lineTo(enemy1.x+getPoint([40,enemy1.angle],"x"),enemy1.y+getPoint([40,enemy1.angle],"y"));
     ctx.stroke();
     ctx.restore();
-<<<<<<< HEAD
+<<<<<<< HEAD << ok this is funny
     */
 }
