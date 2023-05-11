@@ -5,6 +5,17 @@ var ctx = canvas.getContext("2d");
 var timer = setInterval(main,1000/60);
 
 document.addEventListener("mousemove",function(e){updateMousePos(e);});
+document.addEventListener("click",function(){
+    if(mouseInside(0,canvas.width,0,canvas.height)){
+        canvas.focus();
+        if(!started){
+            started = true;
+            changeLevel(nextLevel);
+        }
+    }else{
+        document.getElementById("tReduce").focus();
+    }
+});
 
 function updateMousePos(e){
     var rect = canvas.getBoundingClientRect();
@@ -37,6 +48,7 @@ document.addEventListener("keypress",onKeyPress);
 var a_KeysPressed = [];
 var onClick = function(){}
 var sPress = false;
+var justStarted = false;
 
 function onKeyPress(e){
     if(e.which==32){sPress=true;}
@@ -160,17 +172,22 @@ function Obj(x=0,y=0,w=100,h=100,col="red",bor=0){
     }
 
     this.controller = function(){
-        if(getAnyKey(["w","arrowup"])){
+        if(getAnyKey(["w","arrowup","W"])){
             this.vy -= this.force;
         }
-        if(getAnyKey(["s","arrowdown"])){
+        if(getAnyKey(["s","arrowdown","S"])){
             this.vy += this.force;
         }
-        if(getAnyKey(["a","arrowleft"])){
+        if(getAnyKey(["a","arrowleft","A"])){
             this.vx -= this.force;
         }
-        if(getAnyKey(["d","arrowright"])){
+        if(getAnyKey(["d","arrowright","D"])){
             this.vx += this.force;
+        }
+        if(getAnyKey(["w","s","a","d","arrowup","arrowdown","arrowleft","arrowright","W","A","S","D"])){
+            if(started&&!justStarted&&currentLevel!=0){
+                justStarted = true;
+            }
         }
     }
 
@@ -274,7 +291,7 @@ var a_particles = [];
 var currentLevel = 0; //Level
 var currentState = "alive"; //Player State
 var nextLevel = 1;
-var menuText = "Press Space to Start";
+var menuText = "Click Here to Start";
 
 var timeReducer = 0; //Highest Val: 100
 
@@ -326,10 +343,9 @@ function main(){
     }
 
     //Restart or Start Level
-    if(sPress){
+    if(sPress&&started){
         changeLevel(nextLevel);
         sPress = false;
-        started = true;
     }
 
     //Drawing Objects
@@ -555,7 +571,7 @@ function doStart(){
 
 function doLevel(){
     //Moving
-    gameTimer--;
+    if(justStarted){gameTimer--;}
 
     //Doing Stuff
     if(gameTimer<=0){
@@ -571,6 +587,7 @@ function doLevel(){
             makeExplosion(player.x,player.y);
             confettiReady = false;
         }
+        justStarted = false;
         nextLevel++;
         menuText = "Press Space to Continue";
         changeLevel(0);
