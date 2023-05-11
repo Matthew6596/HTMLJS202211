@@ -48,6 +48,10 @@ enemy1.ay = 0.1;
 enemy1.maxVx = 6;
 enemy1.maxVy = 6;
 
+var rope1 = new Obj("idk",0,0,40,40,"rect");
+rope1.color = "grey";
+rope1.mag = 80;
+
 var physicsObjs = [player,ball1,ball2,box1,enemy1];
 var pickable = [ball1,ball2];
 var particles = [];
@@ -223,6 +227,7 @@ function main(){
     //Drawing Objects
     grav.draw();
     ground.draw();
+    drawRope(rope1); //for loop bruh
     player.draw();
     enemy1.draw();
     ball1.draw();
@@ -460,42 +465,42 @@ function moveEnemy(enm){
     enm.x += vx*friction;
     enm.y += vy*friction;
 
-    /*------------------------------------------------
-    angle determined by grav field
+}
+
+function drawRope(rope){
+    //drawBase (rect)
+    rope.draw();
+    //drawRope (line)
+    ctx.save();
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(rope.x,rope.y);
+    ctx.lineTo(rope.x+getPoint([rope.mag,rope.dir],"x"),rope.y+getPoint([rope.mag,rope.dir],"y"));
+    ctx.stroke();
+    ctx.restore();
+}
+
+function doRopeThings(rope){
+    //Get rope angle
+    if(getMag(rope.x-grav.x,rope.y-grav.y)<=grav.radius){
+        rope.angle = getAngle((rope.x-grav.x),(rope.y-grav.y))+90; //resting angle
+    }
+
+    //Get player angle compare to rope.dir (if within margin and player within mag, player collide)
+        //if player collide, toggle variable (onRope=rope1) : playerPos=rope.x+mag, player.angle=rope.dir
+
+    /*Outside Function*///movement stuff i guess (if ropes.include(onRope))
+        //If player press 'd', rope.vx += ax;
+        //If player press 'a', rope.vx += -ax;
+        //resting angle <-- angle, rope.vx += [some grav force?]*friction (towards angle)
+        //maxVx :skull:
+        //Use ax,vx --> dir change determined by circum, <!rope dir!> (determines pos basically)
+
+    /*Outside Function*///if player jump
+        //onRope = undefined, player.v <-- calculate from rope vx/vy or smth, rope.v go towards angle
+
     
-    xspd += ax;
-    yspd += ay*dir;
-
-    vx = g([xspd,angle],"x")+g([yspd,angle+90*dir],"x");
-    vy = g([xspd,angle],"y")+g([yspd,angle+90*dir],"y");
-
-    x += 
-
-    (Math.abs(yspd)>maxY){reverse dir}
-
-    ------------------------------------------------*/
-    //console.log("max-X: "+maxX+", max-Y: "+maxY);
-
-    /*------------------------------------------------~~~
-    Game Making Process
-    -brainstorm ideas
-    -make some pitches
-    -choose one
-    -make checklist/gantt
-    -set some smaller goals
-    -set some deadlines
-    -design start
-    -do design things
-    -prototyping start
-    -do code things
-    -get fun core gameplay loop going
-    -reflect on design
-    -code more stuff
-    -writing next
-    -art/music last
-    -polish and stuff
-    -playtest throughout whole thing
-    ------------------------------------------------~~~*/
 }
 
 function drawDebug(){
@@ -507,13 +512,5 @@ function drawDebug(){
     ctx.lineTo(enemy1.x+getPoint([40,enemy1.angle],"x"),enemy1.y+getPoint([40,enemy1.angle],"y"));
     ctx.stroke();
     ctx.restore();
-
-    ctx.save();
-    ctx.strokeStyle = "blue";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(enemy1.x,enemy1.y);
-    ctx.lineTo(enemy1.x+getPoint([enemy1.vx,enemy1.angle+180],"x")*40,enemy1.y+getPoint([enemy1.vy,enemy1.angle-90],"y")*10);
-    ctx.stroke();
-    ctx.restore();*/
+    */
 }
