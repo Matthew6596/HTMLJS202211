@@ -469,6 +469,13 @@ function playerEnemyHit(enm){
         player.vx = getPoint([-enm.bouncy,enm.angle],"x");
         player.vy = getPoint([-enm.bouncy,enm.angle],"y");
     }
+
+    if(currentState=="onRope"){
+        ropeObj = undefined;
+        currentState = "default";
+        ropeCool = false;
+        setTimeout(ropeCoolDown,1000);
+    }
 }
 
 function drawRope(rope){
