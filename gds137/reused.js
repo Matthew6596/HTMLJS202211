@@ -93,6 +93,8 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
     }
     this.collides = function(obj,x1=0,y1=0,x2=1,y2=1){
         if(obj!=-1){x1=obj.left; y1=obj.top; x2=obj.right; y2=obj.bottom;}
+        //Draw Debug
+        ctx.strokeRect();
         return (((this.right>=x1)
         &&(this.left<=x2))&&
         ((this.bottom>=y1)
@@ -117,19 +119,19 @@ document.addEventListener("keyup",keyUp);
 
 function keyDown(e){
     //console.log(e.key);
-    if(e.key=="a"){a=true;}
-    if(e.key=="d"){d=true;}
-    if(e.key=="w"){w=true;}
-    if(e.key=="s"){s=true;}
-    if(e.key=="e"){ek=true;}
+    if(e.key=="a"||e.key=="A"){a=true;}
+    if(e.key=="d"||e.key=="D"){d=true;}
+    if(e.key=="w"||e.key=="W"){w=true;}
+    if(e.key=="s"||e.key=="S"){s=true;}
+    if(e.key=="e"||e.key=="E"){ek=true;}
     if(e.which==32){space=true;}
 }
 function keyUp(e){
-    if(e.key=="a"){a=false;}
-    if(e.key=="d"){d=false;}
-    if(e.key=="s"){s=false;}
-    if(e.key=="w"){w=false;}
-    if(e.key=="e"){ek=false;}
+    if(e.key=="a"||e.key=="A"){a=false;}
+    if(e.key=="d"||e.key=="D"){d=false;}
+    if(e.key=="s"||e.key=="S"){s=false;}
+    if(e.key=="w"||e.key=="W"){w=false;}
+    if(e.key=="e"||e.key=="E"){ek=false;}
     if(e.which==32){space=false;}
 }
 //
@@ -144,7 +146,7 @@ var space = false;
 var ek = false;
 
 function randNum(low, high){return Math.random()*(high-low)+low;}
-function randInt(lo, hi){return Math.round(randNum(lo, hi))}
+function randInt(lo, hi){return Math.round(randNum(lo, hi));}
 
 function toRadians(deg){return deg*(Math.PI/180);}
 function toDegrees(rad){return rad*(180/Math.PI);}

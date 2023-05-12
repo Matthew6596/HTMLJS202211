@@ -7,6 +7,8 @@ var eTimer = 0;
 
 var holdingObj = false;
 var heldObj = undefined;
+var ropeObj = undefined;
+var ropeCool = true;
 
 /* --------------- OBJECT DECLARATIONS HERE --------------- */
 var player = new Obj("joe",600,100,20,40,"rect");
@@ -49,15 +51,18 @@ enemy1.maxVx = 6;
 enemy1.maxVy = 6;
 enemy1.bouncy = 10; //Enemy Knockback
 
-var rope1 = new Obj("idk",0,0,40,40,"rect");
+var rope1 = new Obj("idk",750,300,40,40,"rect");
 rope1.color = "grey";
 rope1.mag = 80;
+rope1.ax = 15;
+rope1.dir += 180;
 
 var physicsObjs = [player,ball1,ball2,box1,enemy1];
 var pickable = [ball1,ball2];
 var particles = [];
 var boxes = [box1];
 var enemies = [enemy1];
+var currentState = "default";
 
 //
 
@@ -88,24 +93,8 @@ function main(){
 
     // ~~~ INPUTS ~~~
     if(player.health>0){
-        if(a){
-            player.vx += getPoint([player.ax,player.angle+270],"x");
-            player.vy += getPoint([player.ax,player.angle+270],"y");
-        }
-        if(d){
-            player.vx += getPoint([player.ax,player.angle+90],"x");
-            player.vy += getPoint([player.ax,player.angle+90],"y");
-        }
 
-        //Jump
-        if(space&&canJump){
-            player.vx += getPoint([100,player.angle],"x");
-            player.vy += getPoint([100,player.angle],"y");
-            canJump=false;
-            player.maxMag = 42;
-        }else if(player.maxMag>24){
-            player.maxMag-=0.25;
-        }
+        states[currentState]();
 
         // ~~~ Pickup/throw/drop Object ~~~
         if(ek){
@@ -210,6 +199,9 @@ function main(){
     objCollision(ball1,ball2);
     objCollision(ball1,box1);
     objCollision(ball2,box1);
+
+    //Rope collisions
+    doRopeThings(rope1);
 
     //Drawing Objects
     grav.draw();
@@ -454,42 +446,6 @@ function moveEnemy(enm){
 
 }
 
-function drawRope(rope){
-    //drawBase (rect)
-    rope.draw();
-    //drawRope (line)
-    ctx.save();
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(rope.x,rope.y);
-    ctx.lineTo(rope.x+getPoint([rope.mag,rope.dir],"x"),rope.y+getPoint([rope.mag,rope.dir],"y"));
-    ctx.stroke();
-    ctx.restore();
-}
-
-function doRopeThings(rope){
-    //Get rope angle
-    if(getMag(rope.x-grav.x,rope.y-grav.y)<=grav.radius){
-        rope.angle = getAngle((rope.x-grav.x),(rope.y-grav.y))+90; //resting angle
-    }
-
-    //Get player angle compare to rope.dir (if within margin and player within mag, player collide)
-        //if player collide, toggle variable (onRope=rope1) : playerPos=rope.x+mag, player.angle=rope.dir
-
-    /*Outside Function*///movement stuff i guess (if ropes.include(onRope))
-        //If player press 'd', rope.vx += ax;
-        //If player press 'a', rope.vx += -ax;
-        //resting angle <-- angle, rope.vx += [some grav force?]*friction (towards angle)
-        //maxVx :skull:
-        //Use ax,vx --> dir change determined by circum, <!rope dir!> (determines pos basically)
-
-    /*Outside Function*///if player jump
-        //onRope = undefined, player.v <-- calculate from rope vx/vy or smth, rope.v go towards angle
-
-    
-}
-
 function playerEnemyHit(enm){
     player.health -= 10;
 
@@ -513,6 +469,136 @@ function playerEnemyHit(enm){
         player.vx = getPoint([-enm.bouncy,enm.angle],"x");
         player.vy = getPoint([-enm.bouncy,enm.angle],"y");
     }
+}
+
+function drawRope(rope){
+    //drawBase (rect)
+    rope.draw();
+    //drawRope (line)
+    ctx.save();
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(rope.x,rope.y);
+    ctx.lineTo(rope.x+getPoint([rope.mag,rope.dir],"x"),rope.y+getPoint([rope.mag,rope.dir],"y"));
+    ctx.stroke();
+    ctx.restore();
+}
+
+function doRopeThings(rope){
+    //Get rope angle
+    if(getMag(rope.x-grav.x,rope.y-grav.y)<=grav.radius){
+        rope.angle = getAngle((rope.x-grav.x),(rope.y-grav.y))+90; //resting angle
+    }
+
+    //Get player angle compare to rope.dir
+    var collisionSize = 25;
+    var ropeX = rope.x+getPoint([rope.mag,rope.dir],"x");
+    var ropeY = rope.y+getPoint([rope.mag,rope.dir],"y");
+    if(getMag(player.x-ropeX,player.y-ropeY)<collisionSize&&currentState!="onRope"&&ropeCool){
+        console.log("collided with rope");
+        ropeObj = rope;
+        currentState = "onRope";
+        ropeCool = false;
+        setTimeout(ropeCoolDown,1000);
+    }
+
+    if(currentState!="onRope"){
+        var restingAngle = rope.angle + 90;
+        var friction = 0.98;
+        rope.vx *= friction;
+        var gravForce = 10;
+        if(rope.dir-restingAngle>0){
+            rope.vx += -gravForce;
+        }else if(rope.dir-restingAngle<0){
+            rope.vx += gravForce;
+        }
+        if(Math.abs(rope.vx)<2){rope.vx=0;}
+        rope.dir += getRotatePercent(rope.vx,rope.mag);
+    }
+
+}
+
+states = {
+    "default": function(){
+        //Move left right
+        if(a){
+            player.vx += getPoint([player.ax,player.angle+270],"x");
+            player.vy += getPoint([player.ax,player.angle+270],"y");
+        }
+        if(d){
+            player.vx += getPoint([player.ax,player.angle+90],"x");
+            player.vy += getPoint([player.ax,player.angle+90],"y");
+        }
+
+        //Jump
+        if(space&&canJump){
+            player.vx += getPoint([100,player.angle],"x");
+            player.vy += getPoint([100,player.angle],"y");
+            canJump=false;
+            player.maxMag = 42;
+        }else if(player.maxMag>24){
+            player.maxMag-=0.25;
+        }
+    },
+    "onRope": function(){
+        player.x = ropeObj.x+getPoint([ropeObj.mag,ropeObj.dir],"x");
+        player.y = ropeObj.y+getPoint([ropeObj.mag,ropeObj.dir],"y");
+        player.angle = ropeObj.dir;
+
+        var restingAngle = ropeObj.angle + 90;
+
+        /*Outside Function*///movement stuff i guess (if ropes.include(onRope))
+            //If player press 'd', rope.vx += ax;
+            //If player press 'a', rope.vx += -ax;
+            //resting angle <-- angle, rope.vx += [some grav force?]*friction (towards angle)
+            //maxVx :skull:
+            //Use ax,vx --> dir change determined by circum, <!rope dir!> (determines pos basically)
+
+        if(a){
+            ropeObj.vx += ropeObj.ax;
+        }
+        if(d){
+            ropeObj.vx += -ropeObj.ax;
+        }
+
+        if(ropeObj.dir<0){ropeObj.dir+=360;}
+        if(ropeObj.dir>=360){ropeObj.dir-=360;}
+
+        var friction = 0.98;
+        ropeObj.vx *= friction;
+        var gravForce = 10;
+        if(ropeObj.dir-restingAngle>0){
+            ropeObj.vx += -gravForce;
+        }else if(ropeObj.dir-restingAngle<0){
+            ropeObj.vx += gravForce;
+        }
+        
+        if(Math.abs(ropeObj.vx)<2){ropeObj.vx=0;}
+
+        ropeObj.dir += getRotatePercent(ropeObj.vx,ropeObj.mag);
+
+        /*Outside Function*///if player jump
+            //onRope = undefined, player.v <-- calculate from rope vx/vy or smth, rope.v go towards angle
+
+        if(space&&ropeCool){
+            var newAngle = getAngle((player.x-grav.x),(player.y-grav.y));
+
+            player.angle = newAngle;
+            player.vx = getPoint([ropeObj.dir,ropeObj.vx*0.1],"x");
+            player.vy = getPoint([ropeObj.dir,ropeObj.vx*0.1],"y");
+
+            //Last step
+            ropeObj = undefined;
+            currentState = "default";
+            ropeCool = false;
+            setTimeout(ropeCoolDown,1000);
+        }
+    }
+};
+
+function ropeCoolDown(){
+    ropeCool = true;
 }
 
 function drawDebug(){
