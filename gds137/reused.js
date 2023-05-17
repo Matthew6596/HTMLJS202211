@@ -15,7 +15,7 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
     this.maxVy = 1;
     this.shape = shape;
     this.bouncy = 1;
-    this.bounded = true;
+    this.bounded = false;
     this.hitEdge = false;
     this.dir = 1; //reuse as angle in radian
     this.angle = 0;
@@ -119,18 +119,18 @@ document.addEventListener("keyup",keyUp);
 
 function keyDown(e){
     //console.log(e.key);
-    if(e.key=="a"||e.key=="A"){a=true;}
-    if(e.key=="d"||e.key=="D"){d=true;}
-    if(e.key=="w"||e.key=="W"){w=true;}
-    if(e.key=="s"||e.key=="S"){s=true;}
+    if(e.key=="a"||e.key=="A"||e.key=="ArrowLeft"){a=true;}
+    if(e.key=="d"||e.key=="D"||e.key=="ArrowRight"){d=true;}
+    if(e.key=="w"||e.key=="W"||e.key=="ArrowUp"){w=true;}
+    if(e.key=="s"||e.key=="S"||e.key=="ArrowDown"){s=true;}
     if(e.key=="e"||e.key=="E"){ek=true;}
     if(e.which==32){space=true;}
 }
 function keyUp(e){
-    if(e.key=="a"||e.key=="A"){a=false;}
-    if(e.key=="d"||e.key=="D"){d=false;}
-    if(e.key=="s"||e.key=="S"){s=false;}
-    if(e.key=="w"||e.key=="W"){w=false;}
+    if(e.key=="a"||e.key=="A"||e.key=="ArrowLeft"){a=false;}
+    if(e.key=="d"||e.key=="D"||e.key=="ArrowRight"){d=false;}
+    if(e.key=="w"||e.key=="W"||e.key=="ArrowUp"){w=false;}
+    if(e.key=="s"||e.key=="S"||e.key=="ArrowDown"){s=false;}
     if(e.key=="e"||e.key=="E"){ek=false;}
     if(e.which==32){space=false;}
 }
@@ -159,3 +159,24 @@ function getPoint(vect,XorY){
 }
 function getCircum(radius){return (2*Math.PI*radius);}
 function getRotatePercent(amount,radius){return amount/getCircum(radius);}
+
+//Mouse stuff
+var mousex = 0;
+var mousey = 0;
+function mouseInside(l,r,t,b){
+    return ((mousex>l)&&(mousex<r))&&((mousey>t)&&(mousey<b));
+}
+function mouseInsideObj(obj){
+    return mouseInside(obj.left,obj.right,obj.top,obj.bottom);
+}
+
+document.addEventListener("mousemove",function(e){updateMousePos(e);});
+
+function updateMousePos(e){
+    var rect = canvas.getBoundingClientRect();
+    mousex = Math.round(e.clientX - rect.left);
+    mousey = Math.round(e.clientY - rect.top);
+}
+
+var clicked = false;
+document.addEventListener("click",function(e){clicked=true;});

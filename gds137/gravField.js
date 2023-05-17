@@ -13,7 +13,6 @@ var ropeCool = true;
 /* --------------- OBJECT DECLARATIONS HERE --------------- */
 var player = new Obj("joe",600,100,20,40,"rect");
 player.maxMag = 24;
-player.bounded = false;
 player.ax = 1.4;
 var canJump = false;
 
@@ -28,22 +27,18 @@ ground.color = "grey";
 
 var ball1 = new Obj("baller",300,100,20,20,"circle");
 ball1.maxMag = 60;
-ball1.bounded = false;
 ball1.color = "purple";
 
 var ball2 = new Obj("lameo",500,100,20,20,"circle");
 ball2.maxMag = 60;
-ball2.bounded = false;
 ball2.color = "blue";
 
 var box1 = new Obj("Mike",600,400,30,30,"rect");
 box1.maxMag = 10;
-box1.bounded = false;
 box1.color = "saddlebrown";
 
 var enemy1 = new Obj(">:(",300,480,30,30,"circle");
 enemy1.maxMag = 60;
-enemy1.bounded = false;
 enemy1.color = "red";
 enemy1.ax = 0.1;
 enemy1.ay = 0.1;
@@ -57,185 +52,38 @@ rope1.mag = 80;
 rope1.ax = 15;
 rope1.dir += 180;
 
+var titleBtn = new Obj("button!",canvas.width/2,canvas.height/2-5,150,50);
+titleBtn.color = "lime";
+titleBtn.angle = 90;
+titleBtn.maxVx = 10000;
+titleBtn.maxVy = 10000;
+
+var titleTxt = new Obj("t",canvas.width/2,canvas.height/6);
+titleTxt.maxVx = 10000;
+titleTxt.maxVy = 10000;
+var howToTxt = new Obj("t",-1000,70);
+howToTxt.maxVx = 10000;
+howToTxt.maxVy = 10000;
+
 var physicsObjs = [player,ball1,ball2,box1,enemy1];
 var pickable = [ball1,ball2];
 var particles = [];
 var boxes = [box1];
 var enemies = [enemy1];
 var currentState = "default";
+var currentScreen = "title";
+
+//tutorial triggers
+var triggers = [];
 
 //
 
 function main(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     //
+    screens[currentScreen](); //Game state
 
-    //Do Gravity
-    for(var i=0; i<physicsObjs.length; i++){
-        if(heldObj!=physicsObjs[i]){
-            objGrav(physicsObjs[i]);
-        }
-    }
-
-    //If player can jump
-    if(getMag(player.x-ground.x,player.y-ground.y)<ground.radius+player.width+2){
-        canJump = true;
-    }else{
-        canJump = false;
-    }
-
-    //Enemy Movement
-    for(var i=0; i<enemies.length; i++){
-        if(enemies[i].health>0){
-            moveEnemy(enemies[i]);
-        }
-    }
-
-    // ~~~ INPUTS ~~~
-    if(player.health>0){
-
-        states[currentState]();
-
-        // ~~~ Pickup/throw/drop Object ~~~
-        if(ek){
-            if(eTimer>0){
-                
-            }else{
-                if(holdingObj){
-                    heldObj.vx = player.vx;
-                    heldObj.vy = player.vy;
-
-                    if(w||space){
-                        addForce(heldObj,40,0,player.angle);
-                    }else if(!s){
-                        addForce(heldObj,40,(-60*player.dir));
-                    }
-
-                    heldObj = undefined;
-                    holdingObj = false;
-                }else{
-                    pickable.sort(function(a, b){return (getMag(player.x-a.x,player.y-a.y) - getMag(player.x-b.x,player.y-b.y))});
-                    if(getMag(player.x-pickable[0].x,player.y-pickable[0].y)<50){
-                        heldObj = pickable[0];
-                        holdingObj = true;
-                    }
-                }
-                
-                eTimer = st;
-            }
-            eTimer--;
-        }else{
-            eTimer = 0;
-        }
-    }
-
-    //If the player is holding an object
-    if(holdingObj){
-        //getting movement angle
-        var mang = getAngle(player.vx,player.vy);
-        if(mang<0){mang+=360;}
-        if(player.angle<0){player.angle+=360;}
-        var dirAngle = player.angle-mang
-        if(dirAngle<0){dirAngle+=360;}
-
-        //getting player dir
-        mang = player.angle+90;
-        if(dirAngle>180){
-            player.dir = 1;
-            mang = player.angle+90;
-        }else if(dirAngle<180){
-            player.dir = -1;
-            mang = player.angle+270;
-        }
-
-        //holding object on left or right side
-        heldObj.x = player.x + getPoint([player.width,mang],"x");
-        heldObj.y = player.y + getPoint([player.width,mang],"y");
-    }
-    
-    //Physics Objects Movement/Collision
-    for(var j=0; j<physicsObjs.length; j++){
-        if(heldObj!=physicsObjs[j]&&!enemies.includes(physicsObjs[j])){
-            objMovement(physicsObjs[j]);
-        }
-
-        //Box collision
-        //(for boxes)
-        if(getMag(physicsObjs[j].y-box1.y,physicsObjs[j].x-box1.x)<physicsObjs[j].radius+box1.radius){
-            if(getMag(physicsObjs[j].vx,physicsObjs[j].vy)>20){
-                breakBox(box1);
-            }
-        }
-    }
-
-    //if(getMag(ball1.vx,ball1.vy)>0){addForce(ball1,-0.4,0);}
-
-    //Enemy Collisions
-    for(var i=0; i<enemies.length; i++){
-        if(enemies[i].health>0){
-            for(var j=0; j<pickable.length; j++){
-                if(getMag(enemies[i].y-pickable[j].y,enemies[i].x-pickable[j].x)<enemies[i].radius+pickable[j].radius){ //Enemy gets hit by ball
-                    enemies[i].health = 0;
-                    breakBox(enemies[i]);
-                    console.log("enemy hit");
-                    break;
-                }
-            }
-            if(getMag(enemies[i].y-player.y,enemies[i].x-player.x)<enemies[i].radius+player.radius){ //Player gets hit by enemy
-                playerEnemyHit(enemies[i]);
-                console.log("player hit");
-            }
-        }
-    }
-
-    //Ball collisions
-    for(var j=0; j<pickable.length; j++){
-        if(heldObj!=pickable[j]){
-            //do collision
-            playerCollision(pickable[j]);
-        }
-    }
-    playerCollision(box1);
-    objCollision(ball1,ball2);
-    objCollision(ball1,box1);
-    objCollision(ball2,box1);
-
-    //Rope collisions
-    doRopeThings(rope1);
-
-    //Drawing Objects
-    grav.draw();
-    ground.draw();
-    drawRope(rope1); //for loop bruh
-    player.draw();
-    enemy1.draw();
-    ball1.draw();
-    ball2.draw();
-    box1.draw();
-
-    //Particles
-    for(var j=0; j<particles.length; j++){
-        var pa = particles[j];
-        if(pa.x<0||pa.x>canvas.width||pa.y>canvas.height||pa.y<0||pa.health<=0){
-            particles.splice(j,1);
-        }else{
-            particles[j].move();
-            particles[j].draw();
-            particles[j].health-=0.6;
-        }
-    }
-
-    drawDebug();
-
-    ctx.save();
-    ctx.fillStyle = "black";
-    ctx.font = "16px Arial";
-    ctx.fillText("Space to jump, E to pickup when near a ball",30,30);
-    ctx.fillText("W+E to throw up, S+E to drop",30,50);
-    ctx.font = "20px Arial black";
-    ctx.fillText("Health: "+player.health,30,80);
-    ctx.restore();
-
+    clicked = false; //reset if-clicked variable manually
 }
 
 /* --------------- FUNCTIONS --------------- */
@@ -526,7 +374,8 @@ function doRopeThings(rope){
 
 }
 
-states = {
+//Player States <<< -----------------------------------------------------------------
+var states = { 
     "default": function(){
         //Move left right
         if(a){
@@ -604,6 +453,302 @@ states = {
     }
 };
 
+//Game States <<< -----------------------------------------------------------------
+var screens = {
+    "title": function(){
+        //If press start button
+        if(mouseInsideObj(titleBtn)&&clicked){
+            //titleBtn.y += 230;
+            currentScreen = "instructions";
+        }
+
+        //Draw Start Button
+        titleBtn.draw();
+
+        //Title Screen Text
+        ctx.save();
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.font = "28px Arial black";
+        ctx.fillText("Start",canvas.width/2,titleBtn.y+7);
+        ctx.font = "48px Calibri black";
+        ctx.fillText("Title Screen!",canvas.width/2,canvas.height/6);
+        ctx.restore();
+    },
+    "playing": function(){
+        //Do Gravity
+        for(var i=0; i<physicsObjs.length; i++){
+            if(heldObj!=physicsObjs[i]){
+                objGrav(physicsObjs[i]);
+            }
+        }
+
+        //If player can jump
+        if(getMag(player.x-ground.x,player.y-ground.y)<ground.radius+player.width+2){
+            canJump = true;
+        }else{
+            canJump = false;
+        }
+
+        //Enemy Movement
+        for(var i=0; i<enemies.length; i++){
+            if(enemies[i].health>0){
+                moveEnemy(enemies[i]);
+            }
+        }
+
+        // ~~~ INPUTS ~~~
+        if(player.health>0){
+
+            states[currentState]();
+
+            // ~~~ Pickup/throw/drop Object ~~~
+            pickUpObjectCode();
+
+        }
+        
+        //Physics Objects Movement/Collision
+        for(var j=0; j<physicsObjs.length; j++){
+            if(heldObj!=physicsObjs[j]&&!enemies.includes(physicsObjs[j])){
+                objMovement(physicsObjs[j]);
+            }
+
+            //Box collision
+            //(for boxes)
+            if(getMag(physicsObjs[j].y-box1.y,physicsObjs[j].x-box1.x)<physicsObjs[j].radius+box1.radius){
+                if(getMag(physicsObjs[j].vx,physicsObjs[j].vy)>20){
+                    breakBox(box1);
+                }
+            }
+        }
+
+        //if(getMag(ball1.vx,ball1.vy)>0){addForce(ball1,-0.4,0);}
+
+        //Enemy Collisions
+        for(var i=0; i<enemies.length; i++){
+            if(enemies[i].health>0){
+                for(var j=0; j<pickable.length; j++){
+                    if(getMag(enemies[i].y-pickable[j].y,enemies[i].x-pickable[j].x)<enemies[i].radius+pickable[j].radius){ //Enemy gets hit by ball
+                        enemies[i].health = 0;
+                        breakBox(enemies[i]);
+                        console.log("enemy hit");
+                        break;
+                    }
+                }
+                if(getMag(enemies[i].y-player.y,enemies[i].x-player.x)<enemies[i].radius+player.radius){ //Player gets hit by enemy
+                    playerEnemyHit(enemies[i]);
+                    console.log("player hit");
+                }
+            }
+        }
+
+        //Ball collisions
+        for(var j=0; j<pickable.length; j++){
+            if(heldObj!=pickable[j]){
+                //do collision
+                playerCollision(pickable[j]);
+            }
+        }
+        playerCollision(box1);
+        objCollision(ball1,ball2);
+        objCollision(ball1,box1);
+        objCollision(ball2,box1);
+
+        //Rope collisions
+        doRopeThings(rope1);
+
+        //Drawing Objects
+        grav.draw();
+        ground.draw();
+        drawRope(rope1); //for loop bruh
+        player.draw();
+        enemy1.draw();
+        ball1.draw();
+        ball2.draw();
+        box1.draw();
+
+        //Particles
+        for(var j=0; j<particles.length; j++){
+            var pa = particles[j];
+            if(pa.x<0||pa.x>canvas.width||pa.y>canvas.height||pa.y<0||pa.health<=0){
+                particles.splice(j,1);
+            }else{
+                particles[j].move();
+                particles[j].draw();
+                particles[j].health-=0.6;
+            }
+        }
+
+        drawDebug();
+
+        ctx.save();
+        ctx.fillStyle = "black";
+        ctx.font = "16px Arial";
+        ctx.fillText("Space to jump, E to pickup when near a ball",30,30);
+        ctx.fillText("W+E to throw up, S+E to drop",30,50);
+        ctx.font = "20px Arial black";
+        ctx.fillText("Health: "+player.health,30,80);
+        ctx.restore();
+    },
+    "instructions": function(){
+        //If press continue button
+        if(mouseInsideObj(titleBtn)&&clicked){
+            titleTxt.x = -1100
+            titleTxt.y = 80
+            resetTriggers();
+            currentScreen = "tutorial";
+            player.x = canvas.width/2;
+            player.y = -100;
+            player.angle = -90;
+            ground.x-=2000;
+            grav.x-=2000;
+            ball1.x = -100;
+            instructionsText[20] = "Use A/D or < > to move left and right, and [spacebar] to jump";
+            instructionsText[21] = "Use E to pick up and throw the ball";
+        }
+
+        //Tweening stuff
+        follow(titleBtn,{x:canvas.width/2,y:canvas.height-40},0.1);
+        follow(titleTxt,{x:canvas.width/2,y:-40},0.1);
+        follow(howToTxt,{x:canvas.width/2,y:70},0.1);
+
+        //Move continue Button and stuff
+        titleBtn.move();
+        titleTxt.move();
+        howToTxt.move();
+        //Draw continue Button
+        titleBtn.draw();
+
+        //UI-TEXT
+        ctx.save();
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.font = "28px Arial black";
+        ctx.fillText("Start",canvas.width/2,titleBtn.y+7);
+        ctx.font = "48px Calibri black";
+        ctx.fillText("Title Screen!",titleTxt.x,titleTxt.y);
+        ctx.font = "40px Calibri black";
+        for(var i=0; i<instructionsText.length; i++){
+            if(i==1){ctx.font="28px Calibri black";}
+            ctx.fillText(instructionsText[i],howToTxt.x,howToTxt.y+(i*40));
+        }
+        ctx.restore();
+    },
+    "tutorial": function(){
+
+        var localGrav = 2;
+        //When stuff done, continue
+        tutorialStages[currentStage]();
+
+        //Player Stuff
+        if(player.y+player.height/2>canvas.height/2+100){
+            canJump = true;
+            while(player.y+player.height/2>canvas.height/2+100){
+                player.y--;
+            }
+        }else{
+            canJump = false;
+        }
+
+        states[currentState]();
+
+        player.vy += localGrav;
+
+        pickUpObjectCode();
+
+        //Ball Stuff
+        while(ball1.y+ball1.height/2>canvas.height/2+94){
+            ball1.y--;
+        }
+
+        ball1.vy += localGrav;
+
+        //Physics objects movement
+        objMovement(player);
+        objMovement(ball1);
+
+        //Collision stuff
+        if(heldObj!=ball1){playerCollision(ball1);}
+        
+        //Tweening Stuff
+        follow(titleBtn,{x:canvas.width/2,y:canvas.height+100},0.05);
+        follow(howToTxt,{x:canvas.width+300,y:70},0.1);
+        follow(titleTxt,{x:40,y:70},0.1);
+
+        //Move stuff
+        titleBtn.move();
+        howToTxt.move();
+        titleTxt.move();
+
+        //Draw Stuff
+        titleBtn.draw();
+        player.draw();
+        ball1.draw();
+
+        //UI-TEXT
+        ctx.save();
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.font = "28px Arial black";
+        ctx.fillText("Start",canvas.width/2,titleBtn.y+7);
+
+        ctx.textAlign = "left";
+        ctx.font="28px Calibri black";
+        ctx.fillText(instructionsText[currentStage+20],titleTxt.x,titleTxt.y);
+
+        ctx.textAlign = "center";
+        ctx.font = "40px Calibri black";
+        for(var i=0; i<instructionsText.length; i++){
+            if(i==1){ctx.font="28px Calibri black";}
+            ctx.fillText(instructionsText[i],howToTxt.x,howToTxt.y+(i*40));
+        }
+        ctx.restore();
+    },
+    "pause": function(){
+
+    }
+};
+
+var currentStage = 0;
+var tutorialStages = [
+    function(){
+        checkTutorialTrigs(3,function(){ //if all triggers true
+            ball1.x = canvas.width/3; //set up stuff for next stage
+            ball1.y = 300;
+        });
+        if(a){triggers[0]=true;} //main triggers
+        if(d){triggers[1]=true;}
+        if(space&&canJump){triggers[2]=true;}
+    },
+    function(){
+        checkTutorialTrigs(1,function(){
+            //SETUP FOR NEXT STAGE
+        });
+        if(ek&&physicsObjs.includes(heldObj)){triggers[0]=true;} //main triggers
+    },
+    function(){
+
+    }
+];
+
+function checkTutorialTrigs(numTrigs, setup){
+    if(checkAllTriggers(numTrigs)){ //check triggers
+        setTimeout(function(){triggers[numTrigs]=true;},2000); //time trigger
+        if(checkAllTriggers(numTrigs+1)){
+            resetTriggers(); //reset triggers
+            setup();
+            currentStage++; //go to next stage
+        }
+    }
+}
+
+function follow(obj,target,rate){
+    var dx = target.x-obj.x;
+    var dy = target.y-obj.y;
+    obj.vx = dx*rate;
+    obj.vy = dy*rate;
+}
+
 function ropeCoolDown(){
     ropeCool = true;
 }
@@ -619,4 +764,93 @@ function drawDebug(){
     ctx.restore();
 <<<<<<< HEAD << ok this is funny
     */
+}
+
+function pickUpObjectCode(){
+    if(ek){
+        if(eTimer>0){
+            
+        }else{
+            if(holdingObj){
+                heldObj.vx = player.vx;
+                heldObj.vy = player.vy;
+
+                if(w||space){
+                    addForce(heldObj,40,0,player.angle);
+                }else if(!s){
+                    if(getMag(player.x-grav.x,player.y-grav.y)<=grav.radius){
+                        addForce(heldObj,40,(-60*player.dir));
+                    }else{
+                        addForce(heldObj,40,(90*player.dir),player.angle);
+                    }
+                }
+
+                heldObj = undefined;
+                holdingObj = false;
+            }else{
+                pickable.sort(function(a, b){return (getMag(player.x-a.x,player.y-a.y) - getMag(player.x-b.x,player.y-b.y))});
+                if(getMag(player.x-pickable[0].x,player.y-pickable[0].y)<50){
+                    heldObj = pickable[0];
+                    holdingObj = true;
+                }
+            }
+            
+            eTimer = st;
+        }
+        eTimer--;
+    }else{
+        eTimer = 0;
+    }
+    //If the player is holding an object
+    if(holdingObj){
+        //getting movement angle
+        var mang = getAngle(player.vx,player.vy);
+        if(mang<0){mang+=360;}
+        if(player.angle<0){player.angle+=360;}
+        var dirAngle = player.angle-mang
+        if(dirAngle<0){dirAngle+=360;}
+
+        //getting player dir
+        mang = player.angle+90;
+        if(dirAngle>180){
+            player.dir = 1;
+            mang = player.angle+90;
+        }else if(dirAngle<180){
+            player.dir = -1;
+            mang = player.angle+270;
+        }
+
+        //holding object on left or right side
+        heldObj.x = player.x + getPoint([player.width,mang],"x");
+        heldObj.y = player.y + getPoint([player.width,mang],"y");
+    }
+}
+
+function resetTriggers(){
+    for(var rt=0; rt<20; rt++){
+        triggers[rt] = false;
+    }
+}
+function checkAllTriggers(upTil){
+    var returnBool = true;
+    for(var ct=0; ct<upTil; ct++){
+        if(!triggers[ct]){returnBool=false; break;}
+    }
+    return returnBool;
+}
+
+var instructionsText = [
+    "How To Play",
+    "___________",
+    "\n",
+    "Use A/D or < > to move left and right",
+    "Use [spacebar] to jump",
+    "\n",
+    "You can use E to pick up objects",
+    "and throw them too",
+    "\n",
+    "Let's try mechanics out through a tutorial"
+];
+for(var i=10; i<20; i++){
+    instructionsText[i] = "\n";
 }
