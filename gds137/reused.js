@@ -30,6 +30,8 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
     this.top = this.y-this.height/2;
     this.bottom = this.y+this.height/2;
 
+    this.points = [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}];
+
     this.draw = function(){
         switch(this.shape){
             case "circle":
@@ -99,6 +101,9 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
         &&(this.left<=x2))&&
         ((this.bottom>=y1)
         &&(this.top<=y2)));
+    }
+    this.advCollides = function(obj){
+        //this obj loop points, other obj loop lines
     }
 }
 

@@ -13,7 +13,7 @@
         -remap throw btn
     -restart tutorial
 -Other bug fixes?
--
+-Secure tutorial area (ball/player doesnt leave screen)
 
 *Separate: Make basic engine (thats decent) for future use
 
@@ -734,25 +734,25 @@ var screens = {
         //Rope Collisions
         doRopeThings(rope1);
 
-       //Drawing Objects
-       drawRope(rope1);
-       player.draw();
-       enemy1.draw();
-       ball1.draw();
-       box1.draw();
-       titleBtn.draw();
+        //Drawing Objects
+        drawRope(rope1);
+        player.draw();
+        enemy1.draw();
+        ball1.draw();
+        box1.draw();
+        titleBtn.draw();
 
-       //Particles
-       for(var j=0; j<particles.length; j++){
-           var pa = particles[j];
-           if(pa.x<0||pa.x>canvas.width||pa.y>canvas.height||pa.y<0||pa.health<=0){
-               particles.splice(j,1);
-           }else{
-               particles[j].move();
-               particles[j].draw();
-               particles[j].health-=0.6;
-           }
-       }
+        //Particles
+        for(var j=0; j<particles.length; j++){
+            var pa = particles[j];
+            if(pa.x<0||pa.x>canvas.width||pa.y>canvas.height||pa.y<0||pa.health<=0){
+                particles.splice(j,1);
+            }else{
+                particles[j].move();
+                particles[j].draw();
+                particles[j].health-=0.6;
+            }
+        }
 
         //UI-TEXT
         ctx.save();
@@ -778,6 +778,45 @@ var screens = {
             //Set stuff up for Demo
             currentScreen = "playing";
         }
+
+        //Tweening Stuff
+        //to off-screen
+        follow(player,{x:player.x,y:1000},0.1);
+        follow(rope1,{x:rope1.x,y:1000},0.1);
+        follow(ball1,{x:ball1.x,y:1000},0.1);
+        //to on-screen
+        follow(titleCurtain,{x:canvas.width/2,y:canvas.height/2},0.1);
+        follow(titleBtn,{x:canvas.width/2,y:canvas.height-40},0.05);
+        follow(howToTxt,{x:canvas.width/2,y:70},0.1);
+        follow(titleTxt,{x:-1000,y:70},0.1);
+
+        //Moving Stuff
+        player.move();
+        rope1.move();
+        ball1.move();
+        titleCurtain.move();
+        titleBtn.move();
+        howToTxt.move();
+        titleTxt.move();
+
+        //Drawing Stuff
+        player.draw();
+        ball1.draw();
+        drawRope(rope1);
+        titleCurtain.draw();
+
+        //UI-TEXT
+        ctx.save();
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.font = "28px Arial black";
+        ctx.fillText("Start",canvas.width/2,titleBtn.y+7);
+
+        ctx.font="28px Calibri black";
+        ctx.fillText(instructionsText[currentStage+20],titleTxt.x,titleTxt.y);
+        ctx.fillText("Tutorial Complete!: Time to start the demo!",howToTxt.x,howToTxt.y);
+
+        ctx.restore();
     },
     "pause": function(){
 
@@ -821,7 +860,7 @@ var tutorialStages = [
         if(currentState=="onRope"){triggers[1]=true;}
         if(currentState=="default"&&triggers[1]){triggers[2]=true;}
         checkTutorialTrigs(3,function(){
-            //Change Screen to postTutorial
+            //Prepare for postTutorial
             currentScreen = "postTutorial";
         });
     }
