@@ -1,3 +1,25 @@
+/*TO DO LIST!!!!!!!
+
+-Redo collision with point-line (asteroids)
+-Fix jump off rope
+-Add camera to follow player
+-Increase playing demo size
+-Finish tutorial transition to demo
+-Pause menu
+    -Continue
+    -view controls
+    -settings
+        -show button prompts
+        -remap throw btn
+    -restart tutorial
+-Other bug fixes?
+-
+
+*Separate: Make basic engine (thats decent) for future use
+
+*/
+
+
 var timer = setInterval(main,1000/60);
 
 var pInput = [3,0];
@@ -65,6 +87,11 @@ var howToTxt = new Obj("t",-1000,70);
 howToTxt.maxVx = 10000;
 howToTxt.maxVy = 10000;
 
+var titleCurtain = new Obj("hiya",canvas.width*(3/2),canvas.height/2,canvas.width,canvas.height,"rect");
+titleCurtain.angle = 90;
+titleCurtain.maxVx = 10000;
+titleCurtain.maxVy = 10000;
+
 var physicsObjs = [player,ball1,ball2,box1,enemy1];
 var pickable = [ball1,ball2];
 var particles = [];
@@ -87,23 +114,6 @@ function main(){
 }
 
 /* --------------- FUNCTIONS --------------- */
-
-function getAngle(a,b){
-    /*if(b==0){return (a>0) ? 0:180;}
-    return toDegrees((Math.acos(a/getMag(a,b))*(b/(Math.abs(b)))));*/
-    return toDegrees(Math.atan2(b,a));
-}
-function getMag(a,b){
-    return Math.sqrt(Math.pow(a,2)+Math.pow(b,2));
-}
-
-function getPoint(vect,XorY){
-    if(XorY=="x"){return Math.cos(toRadians(vect[1]))*vect[0];}
-    else if(XorY=="y"){return Math.sin(toRadians(vect[1]))*vect[0];}
-}
-
-function toRadians(deg){return deg*(Math.PI/180);}
-function toDegrees(rad){return rad*(180/Math.PI);}
 
 function objGrav(obj){
     var gravForce = grav.force;
@@ -363,10 +373,13 @@ function doRopeThings(rope){
         var friction = 0.98;
         rope.vx *= friction;
         var gravForce = 10;
-        if(rope.dir-restingAngle>0){
-            rope.vx += -gravForce;
-        }else if(rope.dir-restingAngle<0){
+        var ropeAngle = rope.dir-restingAngle;
+        while(ropeAngle<0){ropeAngle+=360;}
+        while(ropeAngle>=360){ropeAngle-=360;}
+        if(ropeAngle>180){
             rope.vx += gravForce;
+        }else if(ropeAngle<180){
+            rope.vx += -gravForce;
         }
         if(Math.abs(rope.vx)<2){rope.vx=0;}
         rope.dir += getRotatePercent(rope.vx,rope.mag);
@@ -418,16 +431,19 @@ var states = {
             ropeObj.vx += -ropeObj.ax;
         }
 
-        if(ropeObj.dir<0){ropeObj.dir+=360;}
-        if(ropeObj.dir>=360){ropeObj.dir-=360;}
+        var ropeAngle = ropeObj.dir-restingAngle;
+
+        while(ropeAngle<0){ropeAngle+=360;}
+        while(ropeAngle>=360){ropeAngle-=360;}
 
         var friction = 0.98;
         ropeObj.vx *= friction;
         var gravForce = 10;
-        if(ropeObj.dir-restingAngle>0){
-            ropeObj.vx += -gravForce;
-        }else if(ropeObj.dir-restingAngle<0){
+
+        if(ropeAngle>180){
             ropeObj.vx += gravForce;
+        }else if(ropeAngle<180){
+            ropeObj.vx += -gravForce;
         }
         
         if(Math.abs(ropeObj.vx)<2){ropeObj.vx=0;}
@@ -593,6 +609,7 @@ var screens = {
     "instructions": function(){
         //If press continue button
         if(mouseInsideObj(titleBtn)&&clicked){
+            //Setting up stuff for tutorial
             titleTxt.x = -1100
             titleTxt.y = 80
             resetTriggers();
@@ -603,8 +620,14 @@ var screens = {
             ground.x-=2000;
             grav.x-=2000;
             ball1.x = -100;
+            box1.x = -100;
+            enemy1.y = -1000;
+            rope1.x = -1000;
             instructionsText[20] = "Use A/D or < > to move left and right, and [spacebar] to jump";
             instructionsText[21] = "Use E to pick up and throw the ball";
+            instructionsText[22] = "Try breaking the box by throwing the ball at it (the ball must be fast enough)";
+            instructionsText[23] = "Hold W while throwing the ball to throw it up at the enemies overhead";
+            instructionsText[24] = "Use A/D to swing on the rope, and jump to get off the rope";
         }
 
         //Tweening stuff
@@ -650,6 +673,12 @@ var screens = {
             canJump = false;
         }
 
+        //Enemy Move
+        if(enemy1.health>0){
+            moveEnemy(enemy1);
+        }
+
+        //More player stuff
         states[currentState]();
 
         player.vy += localGrav;
@@ -660,15 +689,39 @@ var screens = {
         while(ball1.y+ball1.height/2>canvas.height/2+94){
             ball1.y--;
         }
-
         ball1.vy += localGrav;
+
+        //Box Stuff
+        while(box1.y+box1.height/2>canvas.height/2+100){
+            box1.y--;
+        }
+        box1.vy += localGrav;
 
         //Physics objects movement
         objMovement(player);
         objMovement(ball1);
+        objMovement(box1);
 
         //Collision stuff
+        if(getMag(ball1.y-box1.y,ball1.x-box1.x)<ball1.radius+box1.radius){
+            if(getMag(ball1.vx,ball1.vy)>20){
+                breakBox(box1);
+            }
+        }
         if(heldObj!=ball1){playerCollision(ball1);}
+        playerCollision(box1);
+        objCollision(ball1,box1);
+
+        //Enemy Collisions
+        if(enemy1.health>0){
+            if(getMag(enemy1.y-ball1.y,enemy1.x-ball1.x)<enemy1.radius+ball1.radius){ //Enemy gets hit by ball
+                enemy1.health = 0;
+                breakBox(enemy1);
+            }
+            if(getMag(enemy1.y-player.y,enemy1.x-player.x)<enemy1.radius+player.radius){ //Player gets hit by enemy
+                playerEnemyHit(enemy1);
+            }
+        }
         
         //Tweening Stuff
         follow(titleBtn,{x:canvas.width/2,y:canvas.height+100},0.05);
@@ -680,10 +733,28 @@ var screens = {
         howToTxt.move();
         titleTxt.move();
 
-        //Draw Stuff
-        titleBtn.draw();
-        player.draw();
-        ball1.draw();
+        //Rope Collisions
+        doRopeThings(rope1);
+
+       //Drawing Objects
+       drawRope(rope1);
+       player.draw();
+       enemy1.draw();
+       ball1.draw();
+       box1.draw();
+       titleBtn.draw();
+
+       //Particles
+       for(var j=0; j<particles.length; j++){
+           var pa = particles[j];
+           if(pa.x<0||pa.x>canvas.width||pa.y>canvas.height||pa.y<0||pa.health<=0){
+               particles.splice(j,1);
+           }else{
+               particles[j].move();
+               particles[j].draw();
+               particles[j].health-=0.6;
+           }
+       }
 
         //UI-TEXT
         ctx.save();
@@ -704,6 +775,12 @@ var screens = {
         }
         ctx.restore();
     },
+    "postTutorial":function(){
+        if(mouseInsideObj(titleBtn)&&clicked){
+            //Set stuff up for Demo
+            currentScreen = "playing";
+        }
+    },
     "pause": function(){
 
     }
@@ -712,31 +789,57 @@ var screens = {
 var currentStage = 0;
 var tutorialStages = [
     function(){
+        if(a){triggers[0]=true;} //main triggers
+        if(d){triggers[1]=true;}
+        if(space&&canJump){triggers[2]=true;}
         checkTutorialTrigs(3,function(){ //if all triggers true
             ball1.x = canvas.width/3; //set up stuff for next stage
             ball1.y = 300;
         });
-        if(a){triggers[0]=true;} //main triggers
-        if(d){triggers[1]=true;}
-        if(space&&canJump){triggers[2]=true;}
     },
     function(){
-        checkTutorialTrigs(1,function(){
-            //SETUP FOR NEXT STAGE
+        if(triggers[0]&&!physicsObjs.includes(heldObj)){triggers[1]=true;}
+        if(ek&&physicsObjs.includes(heldObj)&&!triggers[0]){setInterval(function(){triggers[0]=true;},100)} //main triggers
+        checkTutorialTrigs(2,function(){
+            box1.x=500;
+            box1.y=-100;
         });
-        if(ek&&physicsObjs.includes(heldObj)){triggers[0]=true;} //main triggers
     },
     function(){
-
+        triggers[0] = (box1.x>5000);
+        checkTutorialTrigs(1,function(){
+            enemy1.x = -enemy1.width;
+            enemy1.y = 260;
+        });
+    },
+    function(){
+        triggers[0] = (enemy1.health<=0);
+        checkTutorialTrigs(1,function(){
+            rope1.x = canvas.width/2;
+            rope1.y = 300;
+        });
+    },
+    function(){
+        if(currentState=="onRope"){triggers[1]=true;}
+        if(currentState=="default"&&triggers[1]){triggers[2]=true;}
+        checkTutorialTrigs(3,function(){
+            //Change Screen to postTutorial
+            currentScreen = "postTutorial";
+        });
     }
 ];
 
+var timeoutActive = false;
 function checkTutorialTrigs(numTrigs, setup){
     if(checkAllTriggers(numTrigs)){ //check triggers
-        setTimeout(function(){triggers[numTrigs]=true;},2000); //time trigger
+        if(!timeoutActive){
+            setTimeout(function(){triggers[numTrigs]=true;},2000); //time trigger
+            timeoutActive = true;
+        }
         if(checkAllTriggers(numTrigs+1)){
             resetTriggers(); //reset triggers
             setup();
+            timeoutActive = false;
             currentStage++; //go to next stage
         }
     }
