@@ -22,8 +22,6 @@
 
 var timer = setInterval(main,1000/60);
 
-var pInput = [3,0];
-
 var st = 24;
 var eTimer = 0;
 
