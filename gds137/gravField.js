@@ -5,6 +5,7 @@
 -Add camera to follow player
 -Increase playing demo size
 -Finish tutorial transition to demo
+    -set up demo playing
 -Pause menu
     -Continue
     -view controls
@@ -12,13 +13,10 @@
         -show button prompts
         -remap throw btn
     -restart tutorial
--Other bug fixes?
--Secure tutorial area (ball/player doesnt leave screen)
 
-*Separate: Make basic engine (thats decent) for future use
+*Separate: Make basic engine (that's decent) for future use
 
 */
-
 
 var timer = setInterval(main,1000/60);
 
@@ -89,6 +87,7 @@ var titleCurtain = new Obj("hiya",canvas.width*(3/2),canvas.height/2,canvas.widt
 titleCurtain.angle = 90;
 titleCurtain.maxVx = 10000;
 titleCurtain.maxVy = 10000;
+titleCurtain.color = "white";
 
 var physicsObjs = [player,ball1,ball2,box1,enemy1];
 var pickable = [ball1,ball2];
@@ -621,11 +620,6 @@ var screens = {
             box1.x = -100;
             enemy1.y = -1000;
             rope1.x = -1000;
-            instructionsText[20] = "Use A/D or < > to move left and right, and [spacebar] to jump";
-            instructionsText[21] = "Use E to pick up and throw the ball";
-            instructionsText[22] = "Try breaking the box by throwing the ball at it (the ball must be fast enough)";
-            instructionsText[23] = "Hold W while throwing the ball to throw it up at the enemies overhead";
-            instructionsText[24] = "Use A/D to swing on the rope, and jump to get off the rope";
         }
 
         //Tweening stuff
@@ -649,7 +643,7 @@ var screens = {
         ctx.font = "48px Calibri black";
         ctx.fillText("Title Screen!",titleTxt.x,titleTxt.y);
         ctx.font = "40px Calibri black";
-        for(var i=0; i<instructionsText.length; i++){
+        for(var i=0; i<10; i++){
             if(i==1){ctx.font="28px Calibri black";}
             ctx.fillText(instructionsText[i],howToTxt.x,howToTxt.y+(i*40));
         }
@@ -670,6 +664,8 @@ var screens = {
         }else{
             canJump = false;
         }
+        while(player.x-player.width/2<0&&player.x>-100){player.x++; player.vx=0;}
+        while(player.x+player.width/2>canvas.width){player.x--; player.vx=0;}
 
         //Enemy Move
         if(enemy1.health>0){
@@ -684,15 +680,15 @@ var screens = {
         pickUpObjectCode();
 
         //Ball Stuff
-        while(ball1.y+ball1.height/2>canvas.height/2+94){
-            ball1.y--;
-        }
+        while(ball1.y+ball1.height/2>canvas.height/2+94){ball1.y--; ball1.vy=0;}
+        while(ball1.x-ball1.width/2<0&&ball1.x>-100){ball1.x++; ball1.vx=0;}
+        while(ball1.x+ball1.width/2>canvas.width){ball1.x--; ball1.vx=0;}
         ball1.vy += localGrav;
 
         //Box Stuff
-        while(box1.y+box1.height/2>canvas.height/2+100){
-            box1.y--;
-        }
+        while(box1.y+box1.height/2>canvas.height/2+100){box1.y--; box1.vy=0;}
+        while(box1.x-box1.width/2<0&&box1.x>-100){box1.x++; box1.vx=0;}
+        while(box1.x+box1.width/2>canvas.width&&box1.x<5000){box1.x--; box1.vx=0;}
         box1.vy += localGrav;
 
         //Physics objects movement
@@ -763,11 +759,11 @@ var screens = {
 
         ctx.textAlign = "left";
         ctx.font="28px Calibri black";
-        ctx.fillText(instructionsText[currentStage+20],titleTxt.x,titleTxt.y);
+        ctx.fillText(instructionsText[currentStage+15],titleTxt.x,titleTxt.y);
 
         ctx.textAlign = "center";
         ctx.font = "40px Calibri black";
-        for(var i=0; i<instructionsText.length; i++){
+        for(var i=0; i<10; i++){
             if(i==1){ctx.font="28px Calibri black";}
             ctx.fillText(instructionsText[i],howToTxt.x,howToTxt.y+(i*40));
         }
@@ -780,20 +776,11 @@ var screens = {
         }
 
         //Tweening Stuff
-        //to off-screen
-        follow(player,{x:player.x,y:1000},0.1);
-        follow(rope1,{x:rope1.x,y:1000},0.1);
-        follow(ball1,{x:ball1.x,y:1000},0.1);
-        //to on-screen
-        follow(titleCurtain,{x:canvas.width/2,y:canvas.height/2},0.1);
-        follow(titleBtn,{x:canvas.width/2,y:canvas.height-40},0.05);
-        follow(howToTxt,{x:canvas.width/2,y:70},0.1);
-        follow(titleTxt,{x:-1000,y:70},0.1);
+        follow(titleCurtain,{x:canvas.width/2,y:canvas.height/2},0.05);
+        follow(titleBtn,{x:canvas.width/2,y:titleBtn.y},0.05);
+        follow(howToTxt,{x:canvas.width/2,y:howToTxt.y},0.05);
 
         //Moving Stuff
-        player.move();
-        rope1.move();
-        ball1.move();
         titleCurtain.move();
         titleBtn.move();
         howToTxt.move();
@@ -803,23 +790,36 @@ var screens = {
         player.draw();
         ball1.draw();
         drawRope(rope1);
+        ctx.save();
+        ctx.fillStyle = "black";
+        ctx.textAlign = "left";
+        ctx.font="28px Calibri black";
+        ctx.fillText("Use A/D to swing on the rope, and jump to get off the rope",titleTxt.x,titleTxt.y);
+        ctx.restore();
         titleCurtain.draw();
+        titleBtn.draw();
 
         //UI-TEXT
         ctx.save();
         ctx.fillStyle = "black";
         ctx.textAlign = "center";
         ctx.font = "28px Arial black";
-        ctx.fillText("Start",canvas.width/2,titleBtn.y+7);
-
-        ctx.font="28px Calibri black";
-        ctx.fillText(instructionsText[currentStage+20],titleTxt.x,titleTxt.y);
-        ctx.fillText("Tutorial Complete!: Time to start the demo!",howToTxt.x,howToTxt.y);
-
+        ctx.fillText("Start",titleBtn.x,titleBtn.y+7);
+        ctx.font = "40px Calibri black";
+        for(var i=0; i<5; i++){
+            if(i==1){ctx.font="28px Calibri black";}
+            ctx.fillText(instructionsText[i+10],howToTxt.x,howToTxt.y+(i*40));
+        }
         ctx.restore();
     },
     "pause": function(){
 
+    },
+    "controls": function(){
+
+    },
+    "settings": function(){
+        
     }
 };
 
@@ -860,7 +860,10 @@ var tutorialStages = [
         if(currentState=="onRope"){triggers[1]=true;}
         if(currentState=="default"&&triggers[1]){triggers[2]=true;}
         checkTutorialTrigs(3,function(){
-            //Prepare for postTutorial
+            howToTxt.y = 140;
+            howToTxt.x = canvas.width*(3/2);
+            titleBtn.x = canvas.width*(3/2);
+            titleBtn.y = canvas.height/2+60;
             currentScreen = "postTutorial";
         });
     }
@@ -989,8 +992,15 @@ var instructionsText = [
     "You can use E to pick up objects",
     "and throw them too",
     "\n",
-    "Let's try mechanics out through a tutorial"
+    "Let's try mechanics out through a tutorial",
+    "Tutorial Complete!",
+    "__________________",
+    "\n",
+    "There's one last twisty twist though!",
+    "Press start to begin the demo and see for yourself!",
+    "Use A/D or < > to move left and right, and [spacebar] to jump",
+    "Use E to pick up and throw the ball",
+    "Try breaking the box by throwing the ball at it (the ball must be fast enough)",
+    "Hold W while throwing the ball to throw it up at the enemies overhead",
+    "Use A/D to swing on the rope, and jump to get off the rope",
 ];
-for(var i=10; i<20; i++){
-    instructionsText[i] = "\n";
-}
