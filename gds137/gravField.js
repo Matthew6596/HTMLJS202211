@@ -1,11 +1,8 @@
+//Matthew Satterfield
 /*TO DO LIST!!!!!!!
 
 -Redo collision with point-line (asteroids)
 -Fix jump off rope
--Add camera to follow player
--Increase playing demo size
--Finish tutorial transition to demo
-    -set up demo playing
 -Pause menu
     -Continue
     -view controls
@@ -34,13 +31,13 @@ player.maxMag = 24;
 player.ax = 1.4;
 var canJump = false;
 
-var grav = new Obj("field1",canvas.width/2,canvas.height/2,600,600,"circle");
+var grav = new Obj("field1",canvas.width/2,canvas.height/2,1000,1000,"circle");
 grav.color = "lightblue";
 grav.force = -2;
 grav.angle = player.angle+90;
 grav.movement = [0,grav.angle];
 
-var ground = new Obj("steve",canvas.width/2,canvas.height/2,240,240,"circle");
+var ground = new Obj("steve",canvas.width/2,canvas.height/2,600,600,"circle");
 ground.color = "grey";
 
 var ball1 = new Obj("baller",300,100,20,20,"circle");
@@ -76,12 +73,15 @@ titleBtn.angle = 90;
 titleBtn.maxVx = 10000;
 titleBtn.maxVy = 10000;
 
-var titleTxt = new Obj("t",canvas.width/2,canvas.height/6);
+var titleTxt = new Obj("Game Prototype!",canvas.width/2,canvas.height/6);
 titleTxt.maxVx = 10000;
 titleTxt.maxVy = 10000;
 var howToTxt = new Obj("t",-1000,70);
 howToTxt.maxVx = 10000;
 howToTxt.maxVy = 10000;
+var byMatt = new Obj("Matthew Satterfield",canvas.width/2,canvas.height/4);
+byMatt.maxVx = 10000;
+byMatt.maxVy = 10000;
 
 var titleCurtain = new Obj("hiya",canvas.width*(3/2),canvas.height/2,canvas.width,canvas.height,"rect");
 titleCurtain.angle = 90;
@@ -89,6 +89,7 @@ titleCurtain.maxVx = 10000;
 titleCurtain.maxVy = 10000;
 titleCurtain.color = "white";
 
+var demo = [player,ball1,ball2,box1,enemy1,rope1,grav,ground];
 var physicsObjs = [player,ball1,ball2,box1,enemy1];
 var pickable = [ball1,ball2];
 var particles = [];
@@ -96,6 +97,9 @@ var boxes = [box1];
 var enemies = [enemy1];
 var currentState = "default";
 var currentScreen = "title";
+
+//level or somthing
+var offset = {x:0,y:0};
 
 //tutorial triggers
 var triggers = [];
@@ -160,9 +164,15 @@ function objMovement(obj){
     obj.x += obj.vx;
     obj.y += obj.vy;
 
+    if(obj==player){
+        offset = {x:obj.vx,y:obj.vy};
+        p_x = obj.x;
+        p_y = obj.y;
+    }
+
     groundCollision(obj,ground);
 }
-    
+var p_x,p_y;
 
 function groundCollision(obj,grd){
     if(getMag(obj.x-grd.x,obj.y-grd.y)<grd.radius+obj.height/2){
@@ -172,6 +182,11 @@ function groundCollision(obj,grd){
 
         obj.x = getPoint([grd.radius+obj.height/2,oang],"x")+grd.x;
         obj.y = getPoint([grd.radius+obj.height/2,oang],"y")+grd.y;
+
+        if(obj==player){
+            offset.x -= p_x-obj.x;
+            offset.y -= p_y-obj.y;
+        }
 
         /*getDir(obj);   Gotta learn physics then fix this
 
@@ -484,11 +499,20 @@ var screens = {
         ctx.textAlign = "center";
         ctx.font = "28px Arial black";
         ctx.fillText("Start",canvas.width/2,titleBtn.y+7);
+        ctx.font = "24px Arial";
+        ctx.fillText(byMatt.name,byMatt.x,byMatt.y);
         ctx.font = "48px Calibri black";
-        ctx.fillText("Title Screen!",canvas.width/2,canvas.height/6);
+        ctx.fillText(titleTxt.name,titleTxt.x,titleTxt.y);
         ctx.restore();
     },
     "playing": function(){
+        var p_x1 = player.x;
+        var p_y1 = player.y;
+
+        if(p){
+            currentScreen = "pause";
+        }
+
         //Do Gravity
         for(var i=0; i<physicsObjs.length; i++){
             if(heldObj!=physicsObjs[i]){
@@ -518,6 +542,11 @@ var screens = {
             // ~~~ Pickup/throw/drop Object ~~~
             pickUpObjectCode();
 
+        }
+
+        //Update Collision Points
+        for(var j=0; j<physicsObjs.length; j++){
+            if(physicsObjs[j].shape=="rect"){physicsObjs[j].updateColPoints();}
         }
         
         //Physics Objects Movement/Collision
@@ -570,6 +599,17 @@ var screens = {
         //Rope collisions
         doRopeThings(rope1);
 
+        //Move Level
+        if(currentState=="onRope"){
+            offset.x = player.x-p_x1;
+            offset.y = player.y-p_y1;
+        }
+        console.log(offset);
+        for(var j=0; j<demo.length; j++){
+            demo[j].x -= offset.x;
+            demo[j].y -= offset.y;
+        }
+
         //Drawing Objects
         grav.draw();
         ground.draw();
@@ -602,6 +642,29 @@ var screens = {
         ctx.font = "20px Arial black";
         ctx.fillText("Health: "+player.health,30,80);
         ctx.restore();
+
+        //Tween postTutorial off screen
+        follow(titleCurtain,{x:canvas.width*(3/2),y:titleCurtain.y},0.1);
+        follow(titleBtn,{x:canvas.width*(3/2),y:titleBtn.y},0.1);
+        follow(howToTxt,{x:canvas.width*(3/2),y:howToTxt.y},0.1);
+        titleCurtain.move();
+        titleBtn.move();
+        howToTxt.move();
+
+        //UI-TEXT + Curtain
+        titleCurtain.draw();
+        titleBtn.draw();
+        ctx.save();
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.font = "28px Arial black";
+        ctx.fillText("Start",titleBtn.x,titleBtn.y+7);
+        ctx.font = "40px Calibri black";
+        for(var i=0; i<5; i++){
+            if(i==1){ctx.font="28px Calibri black";}
+            ctx.fillText(instructionsText[i+10],howToTxt.x,howToTxt.y+(i*40));
+        }
+        ctx.restore();
     },
     "instructions": function(){
         //If press continue button
@@ -614,8 +677,8 @@ var screens = {
             player.x = canvas.width/2;
             player.y = -100;
             player.angle = -90;
-            ground.x-=2000;
-            grav.x-=2000;
+            ground.x=-2000;
+            grav.x=-2000;
             ball1.x = -100;
             box1.x = -100;
             enemy1.y = -1000;
@@ -626,11 +689,13 @@ var screens = {
         follow(titleBtn,{x:canvas.width/2,y:canvas.height-40},0.1);
         follow(titleTxt,{x:canvas.width/2,y:-40},0.1);
         follow(howToTxt,{x:canvas.width/2,y:70},0.1);
+        follow(byMatt,{x:byMatt.x,y:-40},0.1);
 
         //Move continue Button and stuff
         titleBtn.move();
         titleTxt.move();
         howToTxt.move();
+        byMatt.move();
         //Draw continue Button
         titleBtn.draw();
 
@@ -640,8 +705,10 @@ var screens = {
         ctx.textAlign = "center";
         ctx.font = "28px Arial black";
         ctx.fillText("Start",canvas.width/2,titleBtn.y+7);
+        ctx.font = "24px Arial";
+        ctx.fillText(byMatt.name,byMatt.x,byMatt.y);
         ctx.font = "48px Calibri black";
-        ctx.fillText("Title Screen!",titleTxt.x,titleTxt.y);
+        ctx.fillText(titleTxt.name,titleTxt.x,titleTxt.y);
         ctx.font = "40px Calibri black";
         for(var i=0; i<10; i++){
             if(i==1){ctx.font="28px Calibri black";}
@@ -772,6 +839,23 @@ var screens = {
     "postTutorial":function(){
         if(mouseInsideObj(titleBtn)&&clicked){
             //Set stuff up for Demo
+            player.x = canvas.width/2; //500
+            player.y = canvas.height/2; //300
+            grav.x = 100;
+            grav.y = 100;
+            ground.x = grav.x; //300 radius, r:  400, l:-200
+            ground.y = grav.y; //            t: -200, b: 400
+            ball1.x = 500;
+            ball1.y = 200;
+            ball2.x = -280;
+            ball2.y = 170;
+            box1.x = -200
+            box1.y = -100
+            enemy1.x = 100;
+            enemy1.y = 475;
+            rope1.x = 460;
+            rope1.y = -140;
+
             currentScreen = "playing";
         }
 
@@ -813,7 +897,70 @@ var screens = {
         ctx.restore();
     },
     "pause": function(){
+        //Tweening Stuff
+        follow(titleCurtain,{x:canvas.width/2,y:canvas.height/2},0.1);
+        follow(howToTxt,{x:canvas.width/2,y:howToTxt.y},0.1);
 
+        //Moving Stuff
+        titleCurtain.move();
+        howToTxt.move();
+
+        //Drawing Stuff
+        if(mouseInside(howToTxt.x-100,howToTxt.x+100,howToTxt.y+(3*40)-40,howToTxt.y+(3*40)+20)){ //Inside option 1
+            ctx.save();
+            ctx.fillStyle = "rgba(0,255,0,0.5)";
+            ctx.fillRect(howToTxt.x-100,howToTxt.y+(3*40)-40,200,60);
+            ctx.restore();
+            if(clicked){ //Option 1 clicked!
+                currentScreen = "playing";
+            }
+        }
+        if(mouseInside(howToTxt.x-100,howToTxt.x+100,howToTxt.y+(5*40)-40,howToTxt.y+(5*40)+20)){ //Inside option 2
+            ctx.save();
+            ctx.fillStyle = "rgba(0,255,0,0.5)";
+            ctx.fillRect(howToTxt.x-100,howToTxt.y+(5*40)-40,200,60);
+            ctx.restore();
+            if(clicked){ //Option 2 clicked!
+                currentScreen = "controls";
+            }
+        }
+        if(mouseInside(howToTxt.x-100,howToTxt.x+100,howToTxt.y+(7*40)-40,howToTxt.y+(7*40)+20)){ //Inside option 3
+            ctx.save();
+            ctx.fillStyle = "rgba(0,255,0,0.5)";
+            ctx.fillRect(howToTxt.x-100,howToTxt.y+(7*40)-40,200,60);
+            ctx.restore();
+            if(clicked){ //Option 3 clicked!
+                titleBtn.y = canvas.height;
+                titleTxt.x = -1100
+                titleTxt.y = 80
+                resetTriggers();
+                player.x = canvas.width/2;
+                player.y = -100;
+                player.angle = -90;
+                ground.x=-2000;
+                grav.x=-2000;
+                ball1.x = -80;
+                ball1.vx = 0;
+                ball1.vy = 0;
+                box1.x = -100;
+                enemy1.y = -1000;
+                rope1.x = -1000;
+                currentScreen = "tutorial";
+            }
+        }
+        
+        //UI-TEXT
+        ctx.save();
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        //ctx.font = "28px Arial black";
+        //ctx.fillText("Start",titleBtn.x,titleBtn.y+7);
+        ctx.font = "40px Calibri black";
+        for(var i=0; i<8; i++){
+            if(i==1){ctx.font="28px Calibri black";}
+            ctx.fillText(instructionsText[i+20],howToTxt.x,howToTxt.y+(i*40));
+        }
+        ctx.restore();
     },
     "controls": function(){
 
@@ -905,8 +1052,21 @@ function drawDebug(){
     ctx.lineTo(enemy1.x+getPoint([40,enemy1.angle],"x"),enemy1.y+getPoint([40,enemy1.angle],"y"));
     ctx.stroke();
     ctx.restore();
-<<<<<<< HEAD << ok this is funny
     */
+    for(var dj=0; dj<physicsObjs.length; dj++){
+        if(physicsObjs[dj].shape=="rect"){
+            for(var dd=0; dd<4; dd++){
+                ctx.save();
+                ctx.fillStyle = "red";
+                ctx.beginPath();
+                ctx.translate(physicsObjs[dj].x+physicsObjs[dj].points[dd].x,physicsObjs[dj].y+physicsObjs[dj].points[dd].y);
+                ctx.arc(0,0,3,0,Math.PI/180,true);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+    }
 }
 
 function pickUpObjectCode(){
@@ -983,7 +1143,7 @@ function checkAllTriggers(upTil){
 }
 
 var instructionsText = [
-    "How To Play",
+    "How To Play", //0
     "___________",
     "\n",
     "Use A/D or < > to move left and right",
@@ -992,15 +1152,23 @@ var instructionsText = [
     "You can use E to pick up objects",
     "and throw them too",
     "\n",
-    "Let's try mechanics out through a tutorial",
-    "Tutorial Complete!",
+    "Let's try mechanics out through a tutorial", //9
+    "Tutorial Complete!", //10
     "__________________",
     "\n",
     "There's one last twisty twist though!",
-    "Press start to begin the demo and see for yourself!",
-    "Use A/D or < > to move left and right, and [spacebar] to jump",
+    "Press start to begin the demo and see for yourself!", //14
+    "Use A/D or < > to move left and right, and [spacebar] to jump", //15
     "Use E to pick up and throw the ball",
     "Try breaking the box by throwing the ball at it (the ball must be fast enough)",
     "Hold W while throwing the ball to throw it up at the enemies overhead",
-    "Use A/D to swing on the rope, and jump to get off the rope",
+    "Use A/D to swing on the rope, and jump to get off the rope", //19
+    "Paused", //20
+    "______",
+    "\n",
+    "Return to Demo",
+    "\n",
+    "View Controls",
+    "\n",
+    "Restart Tutorial" //27
 ];

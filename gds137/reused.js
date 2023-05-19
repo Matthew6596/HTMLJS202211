@@ -76,6 +76,16 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
         this.right = this.x+this.radius;
         this.top = this.y-this.height/2;
         this.bottom = this.y+this.height/2;
+
+        this.setColPoint(0,-1,-1);
+        this.setColPoint(1,1,-1);
+        this.setColPoint(2,1,1);
+        this.setColPoint(3,-1,1);
+    }
+
+    this.setColPoint = function(p,l,t){
+        this.points[p].x = getPoint([getMag(this.width/2,this.height/2),getAngle(l*this.width/2,t*this.height/2)+this.angle+90],"x");
+        this.points[p].y = getPoint([getMag(this.width/2,this.height/2),getAngle(l*this.width/2,t*this.height/2)+this.angle+90],"y");
     }
 
     this.bounceIn = function(x1,y1,x2,y2){
@@ -102,8 +112,51 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
         ((this.bottom>=y1)
         &&(this.top<=y2)));
     }
-    this.advCollides = function(obj){
-        //this obj loop points, other obj loop lines
+    this.advCollides = function(obj){ //
+        var ltc = 0;
+        var gtc = 0;
+    
+        for(zz=0; zz<obj.points.length; zz++){ //For each asteroid line _______________ Player Point in Asteroid
+            var C = obj.points[zz];
+            var D, CDm, CDy;
+    
+            if(zz==obj.points.length-1){D = obj.points[0];}//First and last point get paired
+            else{D = obj.points[zz+1];} //Points get paired
+            
+            if(C.x>D.x){ //Making sure points are in order
+                var temp = C;
+                C = D;
+                D = temp;
+            }
+    
+            if(D.x-C.x==0){return false;} //Vertical Line
+            else{
+                CDm = (D.y-C.y)/(D.x-C.x);
+                CDy = function(x, CDm, Cx, Cy){return CDm*(x-Cx)+Cy;} //Line equation
+            }
+
+            if(this.shape=="rect"){
+                for(iz=0; iz<this.points.length; iz++){ //For each player point
+                    var A = this.points[iz];
+                    if(A.x>Cx&&A.x<D.x){//Domain
+                        if(A.y>CDy(A.x,CDm,C.x,C.y)){ltc=true;}//Point is under/above line
+                        else{gtc=true;}
+                    }
+                    if(gtc>2||ltc>2){iz=this.points.length; zz=obj.points.length;}
+                    else if(gtc>=1&&ltc>=1){return true;}
+                }
+            }else{
+                var Aangle = 0; //find the angle of the closest point
+                var A = {x:getPoint([this.width/2,Aangle],"x"),y:getPoint([this.width/2,Aangle],"y")};
+                if(A.x>Cx&&A.x<D.x){//Domain
+                    if(A.y>CDy(A.x,CDm,C.x,C.y)){ltc=true;}//Point is under/above line
+                    else{gtc=true;}
+                }
+                if(gtc>2||ltc>2){iz=this.points.length; zz=obj.points.length;}
+                else if(gtc>=1&&ltc>=1){return true;}
+            }
+        }
+        return false;
     }
 }
 
@@ -112,8 +165,6 @@ function funnyFunction(){
         console.log("Poptartsus");
     }
 }
-
-
 
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
@@ -129,6 +180,7 @@ function keyDown(e){
     if(e.key=="w"||e.key=="W"||e.key=="ArrowUp"){w=true;}
     if(e.key=="s"||e.key=="S"||e.key=="ArrowDown"){s=true;}
     if(e.key=="e"||e.key=="E"){ek=true;}
+    if(e.key=="p"||e.key=="P"){p=true;}
     if(e.which==32){space=true;}
 }
 function keyUp(e){
@@ -137,6 +189,7 @@ function keyUp(e){
     if(e.key=="w"||e.key=="W"||e.key=="ArrowUp"){w=false;}
     if(e.key=="s"||e.key=="S"||e.key=="ArrowDown"){s=false;}
     if(e.key=="e"||e.key=="E"){ek=false;}
+    if(e.key=="p"||e.key=="P"){p=false;}
     if(e.which==32){space=false;}
 }
 //
@@ -149,6 +202,7 @@ var w = false;
 var s = false;
 var space = false;
 var ek = false;
+var p = false;
 
 function randNum(low, high){return Math.random()*(high-low)+low;}
 function randInt(lo, hi){return Math.round(randNum(lo, hi));}
