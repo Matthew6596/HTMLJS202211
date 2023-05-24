@@ -17,7 +17,7 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
     this.bouncy = 1;
     this.bounded = false;
     this.hitEdge = false;
-    this.dir = 1; //reuse as angle in radian
+    this.dir = 1;
     this.angle = 0;
     this.mag = 0;
     this.movement = [this.mag,this.angle];
@@ -84,8 +84,8 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
     }
 
     this.setColPoint = function(p,l,t){
-        this.points[p].x = getPoint([getMag(this.width/2,this.height/2),getAngle(l*this.width/2,t*this.height/2)+this.angle+90],"x");
-        this.points[p].y = getPoint([getMag(this.width/2,this.height/2),getAngle(l*this.width/2,t*this.height/2)+this.angle+90],"y");
+        this.points[p].x = getPoint([getMag(this.width/2,this.height/2),getAngle(l*this.width/2,t*this.height/2)+this.angle+90],"x")+this.x;
+        this.points[p].y = getPoint([getMag(this.width/2,this.height/2),getAngle(l*this.width/2,t*this.height/2)+this.angle+90],"y")+this.y;
     }
 
     this.bounceIn = function(x1,y1,x2,y2){
@@ -112,51 +112,65 @@ function Obj(name="Unnamed :(",x=canvas.width/2,y=canvas.height/2,width=80,heigh
         ((this.bottom>=y1)
         &&(this.top<=y2)));
     }
-    this.advCollides = function(obj){ //
+    this.advCollides = function(obj){ //<<<this must be shape "rect"
         var ltc = 0;
         var gtc = 0;
-    
-        for(zz=0; zz<obj.points.length; zz++){ //For each asteroid line _______________ Player Point in Asteroid
-            var C = obj.points[zz];
-            var D, CDm, CDy;
-    
-            if(zz==obj.points.length-1){D = obj.points[0];}//First and last point get paired
-            else{D = obj.points[zz+1];} //Points get paired
-            
-            if(C.x>D.x){ //Making sure points are in order
-                var temp = C;
-                C = D;
-                D = temp;
-            }
-    
-            if(D.x-C.x==0){return false;} //Vertical Line
-            else{
-                CDm = (D.y-C.y)/(D.x-C.x);
-                CDy = function(x, CDm, Cx, Cy){return CDm*(x-Cx)+Cy;} //Line equation
-            }
 
-            if(this.shape=="rect"){
-                for(iz=0; iz<this.points.length; iz++){ //For each player point
-                    var A = this.points[iz];
-                    if(A.x>Cx&&A.x<D.x){//Domain
-                        if(A.y>CDy(A.x,CDm,C.x,C.y)){ltc=true;}//Point is under/above line
-                        else{gtc=true;}
-                    }
-                    if(gtc>2||ltc>2){iz=this.points.length; zz=obj.points.length;}
-                    else if(gtc>=1&&ltc>=1){return true;}
+        var lines = [];
+        //if shape "rect", calculate obj lines
+        if(obj.shape=="rect"){
+            for(var ac=0; ac<obj.points.length; ac++){
+                var mm;
+                //Making the line equations
+                if(ac==0){ //Pairing first & last points
+                    mm = (obj.points[obj.points.length-1].y-obj.points[0].y)/(obj.points[obj.points.length-1].x-obj.points[0].x); //slope
+                    if(mm===undefined||mm>10000||mm<10000){lines[0]=undefined;} //If vertical line, skip later on
+                    lines[0] = {m:mm,x1:obj.points[0].x,y1:obj.points[0].y}; //Point-slope
+                }else{
+                    mm = (obj.points[ac-1].y-obj.points[ac].y)/(obj.points[ac-1].x-obj.points[ac].x);
+                    if(mm===undefined||mm>10000||mm<10000){lines[ac]=undefined;}
+                    lines[ac] = {m:mm,x1:obj.points[ac].x,y1:obj.points[ac].y};
                 }
-            }else{
-                var Aangle = 0; //find the angle of the closest point
-                var A = {x:getPoint([this.width/2,Aangle],"x"),y:getPoint([this.width/2,Aangle],"y")};
-                if(A.x>Cx&&A.x<D.x){//Domain
-                    if(A.y>CDy(A.x,CDm,C.x,C.y)){ltc=true;}//Point is under/above line
-                    else{gtc=true;}
-                }
-                if(gtc>2||ltc>2){iz=this.points.length; zz=obj.points.length;}
-                else if(gtc>=1&&ltc>=1){return true;}
             }
         }
-        return false;
+        //else (if "cirlce") calculate this lines
+
+        if(obj.shape=="rect"){
+            for(var pt=0; pt<this.points.length; pt++){
+                ltc = 0;
+                gtc = 0;
+                for(var ln=0; ln<lines.length; ln++){
+                    var left,right;
+                    if(lines[ln]===undefined){break;}
+                    if(ln==0){ //Get left and right x coords
+                        left = obj.points[obj.points.length-1].x;
+                        right = obj.points[0].x;
+                    }else{
+                        left = obj.points[ln-1].x;
+                        right = obj.points[ln].x;
+                    }
+                    //reorganize coords if needed
+                    if(left>right){
+                        var _temp = right;
+                        right = left;
+                        left = _temp;
+                    }
+                    //If point is in line domain
+                    if(this.points[pt].x>left&&this.points[pt].x<right){
+                        if(getLineY(lines[ln],this.points[pt].x)>this.points[pt].y){ //If line y at point x is > point y
+                            ltc++; //point is below line
+                        }else{
+                            gtc++; //point is above line
+                        }
+                    }
+                }
+                if(ltc>0&&gtc>0){
+                    return true;
+                }
+            }
+        }
+        //else (if "circle")
+            //
     }
 }
 
@@ -218,6 +232,10 @@ function getPoint(vect,XorY){
 }
 function getCircum(radius){return (2*Math.PI*radius);}
 function getRotatePercent(amount,radius){return amount/getCircum(radius);}
+
+function getLineY(line,xval){
+    return (line.m*(xval-line.x1)+line.y1);
+}
 
 //Mouse stuff
 var mousex = 0;

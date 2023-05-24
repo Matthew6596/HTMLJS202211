@@ -1,17 +1,7 @@
 //Matthew Satterfield
 /*TO DO LIST!!!!!!!
 
--Redo collision with point-line (asteroids)
--Fix jump off rope
--Pause menu
-    -Continue
-    -view controls
-    -settings
-        -show button prompts
-        -remap throw btn
-    -restart tutorial
-
-*Separate: Make basic engine (that's decent) for future use
+-Restart when die
 
 */
 
@@ -25,13 +15,17 @@ var heldObj = undefined;
 var ropeObj = undefined;
 var ropeCool = true;
 
+var musicReady = false;
+var musicPlaying = false;
+
 /* --------------- OBJECT DECLARATIONS HERE --------------- */
 var player = new Obj("joe",600,100,20,40,"rect");
 player.maxMag = 24;
 player.ax = 1.4;
 var canJump = false;
+var boxJump = false;
 
-var grav = new Obj("field1",canvas.width/2,canvas.height/2,1000,1000,"circle");
+var grav = new Obj("field1",canvas.width/2,canvas.height/2,1200,1200,"circle");
 grav.color = "lightblue";
 grav.force = -2;
 grav.angle = player.angle+90;
@@ -112,6 +106,13 @@ function main(){
     screens[currentScreen](); //Game state
 
     clicked = false; //reset if-clicked variable manually
+
+    if(musicReady&&currentScreen!="title"&&!musicPlaying){
+        musicPlaying = true;
+        console.log("playing music");
+        document.getElementById("game-music").currentTime = 0;
+        document.getElementById("game-music").play();
+    }
 }
 
 /* --------------- FUNCTIONS --------------- */
@@ -206,35 +207,129 @@ function groundCollision(obj,grd){
 
 function playerCollision(obj){
 
-    var tempPx1 = getPoint([player.height/4,player.angle],"x")+player.x;
-    var tempPy1 = getPoint([player.height/4,player.angle],"y")+player.y;
-    var tempPx2 = getPoint([player.height/4,player.angle+180],"x")+player.x;
-    var tempPy2 = getPoint([player.height/4,player.angle+180],"y")+player.y;
+    if(obj.shape=="circle"){
+        var tempPx1 = getPoint([player.height/4,player.angle],"x")+player.x;
+        var tempPy1 = getPoint([player.height/4,player.angle],"y")+player.y;
+        var tempPx2 = getPoint([player.height/4,player.angle+180],"x")+player.x;
+        var tempPy2 = getPoint([player.height/4,player.angle+180],"y")+player.y;
 
-    if(getMag(obj.x-tempPx1,obj.y-tempPy1)<player.radius+obj.height/2
-    ||getMag(obj.x-tempPx2,obj.y-tempPy2)<player.radius+obj.height/2){
+        if(getMag(obj.x-tempPx1,obj.y-tempPy1)<player.radius+obj.height/2
+        ||getMag(obj.x-tempPx2,obj.y-tempPy2)<player.radius+obj.height/2){
 
-        var oang;
+            var oang;
 
-        if(getMag(obj.x-tempPx1,obj.y-tempPy1)<player.radius+obj.height/2){
-            oang = getAngle(obj.x-tempPx1,obj.y-tempPy1);
-            obj.x = getPoint([player.radius+obj.height/2+1,oang],"x")+tempPx1;
-            obj.y = getPoint([player.radius+obj.height/2+1,oang],"y")+tempPy1;
-            obj.vx = getPoint([10,oang],"x");
-            obj.vy = getPoint([10,oang],"y");
-        }else{
-            oang = getAngle(obj.x-tempPx2,obj.y-tempPy2);
-            obj.x = getPoint([player.radius+obj.height/2+1,oang],"x")+tempPx2;
-            obj.y = getPoint([player.radius+obj.height/2+1,oang],"y")+tempPy2;
-            obj.vx *= -0.01;
-            obj.vy *= -0.01;
-            if(boxes.includes(obj)){
-                obj.vx = player.vx*2;
-                obj.vy = player.vy*2;
+            if(getMag(obj.x-tempPx1,obj.y-tempPy1)<player.radius+obj.height/2){
+                oang = getAngle(obj.x-tempPx1,obj.y-tempPy1);
+                obj.x = getPoint([player.radius+obj.height/2+1,oang],"x")+tempPx1;
+                obj.y = getPoint([player.radius+obj.height/2+1,oang],"y")+tempPy1;
+                obj.vx = getPoint([10,oang],"x");
+                obj.vy = getPoint([10,oang],"y");
+            }else{
+                oang = getAngle(obj.x-tempPx2,obj.y-tempPy2);
+                obj.x = getPoint([player.radius+obj.height/2+1,oang],"x")+tempPx2;
+                obj.y = getPoint([player.radius+obj.height/2+1,oang],"y")+tempPy2;
+                obj.vx *= -0.01;
+                obj.vy *= -0.01;
+                if(boxes.includes(obj)){
+                    obj.vx = player.vx*2;
+                    obj.vy = player.vy*2;
+                }
             }
+            
+        }
+    }else{
+        player.updateColPoints();
+        obj.updateColPoints();
+        
+        //new collision
+        boxJump = false;
+        while(player.advCollides(obj)||obj.advCollides(player)){
+            var ang = getAngle((player.x-obj.x),(player.y-obj.y));
+            var margin = 3;
+            if(player.angle>obj.angle-margin&&player.angle<obj.angle+margin&&!playerAboveBox(obj)&&getMag((player.x-obj.x),(player.y-obj.y))>(player.width/2+obj.width/2+1)){
+                boxJump = true;
+                ang = obj.angle;
+            }
+            player.x += getPoint([1,ang],"x");
+            player.y += getPoint([1,ang],"y");
+            offset.x += getPoint([1,ang],"x");
+            offset.y += getPoint([1,ang],"y");
+            if(!boxJump){
+                obj.x += getPoint([-1,ang],"x");
+                obj.y += getPoint([-1,ang],"y");
+            }
+            player.updateColPoints();
+            obj.updateColPoints();
         }
         
     }
+
+}
+
+function playerAboveBox(obj){
+    var ltc = 0;
+    var gtc = 0;
+
+    var lines = [];
+    for(var ac=0; ac<obj.points.length; ac++){
+        var mm;
+        //Making the line equations
+        if(ac==0){ //Pairing first & last points
+            mm = (obj.points[obj.points.length-1].y-obj.points[0].y)/(obj.points[obj.points.length-1].x-obj.points[0].x); //slope
+            if(mm===undefined||mm>10000||mm<10000){lines[0]=undefined;} //If vertical line, skip later on
+            lines[0] = {m:mm,x1:obj.points[0].x,y1:obj.points[0].y}; //Point-slope
+        }else{
+            mm = (obj.points[ac-1].y-obj.points[ac].y)/(obj.points[ac-1].x-obj.points[ac].x);
+            if(mm===undefined||mm>10000||mm<10000){lines[ac]=undefined;}
+            lines[ac] = {m:mm,x1:obj.points[ac].x,y1:obj.points[ac].y};
+         }
+    }
+
+    var left,right;
+
+    //Line 0
+    if(lines[0]===undefined||lines[2]===undefined){return false;}
+
+    left = obj.points[obj.points.length-1].x;
+    right = obj.points[0].x;
+
+    //reorganize coords if needed
+    if(left>right){
+        var _temp = right;
+        right = left;
+        left = _temp;
+    }
+
+    //If player is in line domain
+    //if(player.x>left&&player.x<right){
+        if(getLineY(lines[0],player.x)>player.y){ //If line y at point x is > point y
+            ltc++; //point is below line
+        }else{
+            gtc++; //point is above line
+        }
+    //}
+
+    //Line 2
+    left = obj.points[1].x;
+    right = obj.points[2].x;
+
+    //reorganize coords if needed
+    if(left>right){
+        var _temp = right;
+        right = left;
+        left = _temp;
+    }
+
+    //If player is in line domain
+    //if(player.x>left&&player.x<right){
+        if(getLineY(lines[2],player.x)>player.y){ //If line y at point x is > point y
+            ltc++; //point is below line
+        }else{
+            gtc++; //point is above line
+        }
+    //}
+
+    return ((gtc>0)&&(ltc>0));
 }
 
 function objCollision(obj1,obj2){
@@ -413,6 +508,7 @@ var states = {
         }
 
         //Jump
+        if(boxJump){canJump=true;}
         if(space&&canJump){
             player.vx += getPoint([100,player.angle],"x");
             player.vy += getPoint([100,player.angle],"y");
@@ -466,11 +562,25 @@ var states = {
             //onRope = undefined, player.v <-- calculate from rope vx/vy or smth, rope.v go towards angle
 
         if(space&&ropeCool){
-            var newAngle = getAngle((player.x-grav.x),(player.y-grav.y));
+            /*var newAngle = getAngle((player.x-grav.x),(player.y-grav.y));
 
             player.angle = newAngle;
             player.vx = getPoint([ropeObj.dir,ropeObj.vx*0.1],"x");
-            player.vy = getPoint([ropeObj.dir,ropeObj.vx*0.1],"y");
+            player.vy = getPoint([ropeObj.dir,ropeObj.vx*0.1],"y");*/
+
+            player.angle+=180;
+
+            if(!getMag(player.x-grav.x,player.y-grav.y)<=grav.radius){
+                player.angle = -90;
+            }
+
+            if(ropeAngle>180){
+                player.vx += getPoint([ropeObj.vx,player.angle-90],"x");
+                player.vy += getPoint([ropeObj.vx,player.angle-90],"y");
+            }else if(ropeAngle<180){
+                player.vx += getPoint([ropeObj.vx,player.angle-90],"x");
+                player.vy += getPoint([ropeObj.vx,player.angle-90],"y");
+            }
 
             //Last step
             ropeObj = undefined;
@@ -510,6 +620,7 @@ var screens = {
         var p_y1 = player.y;
 
         if(p){
+            titleBtn.x = -1000;
             currentScreen = "pause";
         }
 
@@ -604,7 +715,7 @@ var screens = {
             offset.x = player.x-p_x1;
             offset.y = player.y-p_y1;
         }
-        console.log(offset);
+
         for(var j=0; j<demo.length; j++){
             demo[j].x -= offset.x;
             demo[j].y -= offset.y;
@@ -632,7 +743,7 @@ var screens = {
             }
         }
 
-        drawDebug();
+        //drawDebug();
 
         ctx.save();
         ctx.fillStyle = "black";
@@ -641,6 +752,7 @@ var screens = {
         ctx.fillText("W+E to throw up, S+E to drop",30,50);
         ctx.font = "20px Arial black";
         ctx.fillText("Health: "+player.health,30,80);
+        ctx.fillText(byMatt.name,byMatt.x,byMatt.y);
         ctx.restore();
 
         //Tween postTutorial off screen
@@ -681,6 +793,7 @@ var screens = {
             grav.x=-2000;
             ball1.x = -100;
             box1.x = -100;
+            box1.angle = 270;
             enemy1.y = -1000;
             rope1.x = -1000;
         }
@@ -747,13 +860,13 @@ var screens = {
         pickUpObjectCode();
 
         //Ball Stuff
-        while(ball1.y+ball1.height/2>canvas.height/2+94){ball1.y--; ball1.vy=0;}
-        while(ball1.x-ball1.width/2<0&&ball1.x>-100){ball1.x++; ball1.vx=0;}
+        while(ball1.y+ball1.width/2>canvas.height/2+105){ball1.y--; ball1.vy=0;}
+        while(ball1.x-ball1.width/2<0&&ball1.x>-100&&currentStage>0){ball1.x++; ball1.vx=0;}
         while(ball1.x+ball1.width/2>canvas.width){ball1.x--; ball1.vx=0;}
         ball1.vy += localGrav;
 
         //Box Stuff
-        while(box1.y+box1.height/2>canvas.height/2+100){box1.y--; box1.vy=0;}
+        while(box1.y+box1.height/2>canvas.height/2+105){box1.y--; box1.vy=0;}
         while(box1.x-box1.width/2<0&&box1.x>-100){box1.x++; box1.vx=0;}
         while(box1.x+box1.width/2>canvas.width&&box1.x<5000){box1.x--; box1.vx=0;}
         box1.vy += localGrav;
@@ -781,6 +894,7 @@ var screens = {
             }
             if(getMag(enemy1.y-player.y,enemy1.x-player.x)<enemy1.radius+player.radius){ //Player gets hit by enemy
                 playerEnemyHit(enemy1);
+                player.health = 100;
             }
         }
         
@@ -855,7 +969,16 @@ var screens = {
             enemy1.y = 475;
             rope1.x = 460;
             rope1.y = -140;
-
+            byMatt.name = "Press [P] to Pause"
+            byMatt.y = 50;
+            byMatt.x = canvas.width-240;
+            player.health = 100;
+            enemy1.health = 100;
+            holdingObj = false;
+            heldObj = undefined;
+            ropeObj = undefined;
+            ropeCool = true;
+            currentState = "default";
             currentScreen = "playing";
         }
 
@@ -900,12 +1023,37 @@ var screens = {
         //Tweening Stuff
         follow(titleCurtain,{x:canvas.width/2,y:canvas.height/2},0.1);
         follow(howToTxt,{x:canvas.width/2,y:howToTxt.y},0.1);
+        follow(titleBtn,{x:titleBtn.x,y:-100},0.1);
 
         //Moving Stuff
         titleCurtain.move();
         howToTxt.move();
+        titleBtn.move();
 
-        //Drawing Stuff
+        //Drawing Demo Stuff
+        grav.draw();
+        ground.draw();
+        drawRope(rope1);
+        player.draw();
+        enemy1.draw();
+        ball1.draw();
+        ball2.draw();
+        box1.draw();
+
+        ctx.save();
+        ctx.fillStyle = "black";
+        ctx.font = "16px Arial";
+        ctx.fillText("Space to jump, E to pickup when near a ball",30,30);
+        ctx.fillText("W+E to throw up, S+E to drop",30,50);
+        ctx.font = "20px Arial black";
+        ctx.fillText("Health: "+player.health,30,80);
+        ctx.fillText(byMatt.name,byMatt.x,byMatt.y);
+        ctx.restore();
+
+        //Drawing Pause Menu Stuff
+        titleCurtain.draw();
+        titleBtn.draw();
+
         if(mouseInside(howToTxt.x-100,howToTxt.x+100,howToTxt.y+(3*40)-40,howToTxt.y+(3*40)+20)){ //Inside option 1
             ctx.save();
             ctx.fillStyle = "rgba(0,255,0,0.5)";
@@ -921,6 +1069,7 @@ var screens = {
             ctx.fillRect(howToTxt.x-100,howToTxt.y+(5*40)-40,200,60);
             ctx.restore();
             if(clicked){ //Option 2 clicked!
+                titleBtn.x = 90;
                 currentScreen = "controls";
             }
         }
@@ -944,17 +1093,28 @@ var screens = {
                 ball1.vy = 0;
                 box1.x = -100;
                 enemy1.y = -1000;
+                enemy1.health = 100;
                 rope1.x = -1000;
+                currentStage = 0;
+                currentState = "default";
                 currentScreen = "tutorial";
+                enemy1.angle = 0;
+                ball1.angle = 0;
+                box1.angle = 270;
+                rope1.angle = 0;
+                holdingObj = false;
+                heldObj = undefined;
+                ropeObj = undefined;
+                ropeCool = true;
             }
         }
-        
+
         //UI-TEXT
         ctx.save();
         ctx.fillStyle = "black";
         ctx.textAlign = "center";
-        //ctx.font = "28px Arial black";
-        //ctx.fillText("Start",titleBtn.x,titleBtn.y+7);
+        ctx.font = "28px Arial black";
+        ctx.fillText("Back",titleBtn.x,titleBtn.y+7);
         ctx.font = "40px Calibri black";
         for(var i=0; i<8; i++){
             if(i==1){ctx.font="28px Calibri black";}
@@ -963,10 +1123,36 @@ var screens = {
         ctx.restore();
     },
     "controls": function(){
+        //Button
+        if(mouseInsideObj(titleBtn)&&clicked){
+            currentScreen = "pause";
+        }
 
+        //Tweening Stuff
+        follow(titleBtn,{x:titleBtn.x,y:40},0.1);
+
+        //Moving Stuff
+        titleBtn.move();
+
+        //Drawing Pause Menu Stuff
+        titleCurtain.draw();
+        titleBtn.draw();
+
+        //UI-TEXT
+        ctx.save();
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.font = "28px Arial black";
+        ctx.fillText("Back",titleBtn.x,titleBtn.y+7);
+        ctx.font = "40px Calibri black";
+        for(var i=0; i<12; i++){
+            if(i==1){ctx.font="28px Calibri black";}
+            ctx.fillText(instructionsText[i+28],howToTxt.x,howToTxt.y+(i*40));
+        }
+        ctx.restore();
     },
     "settings": function(){
-        
+        currentScreen = "pause";
     }
 };
 
@@ -1054,18 +1240,18 @@ function drawDebug(){
     ctx.restore();
     */
     for(var dj=0; dj<physicsObjs.length; dj++){
-        if(physicsObjs[dj].shape=="rect"){
+        //if(physicsObjs[dj].shape=="rect"){
             for(var dd=0; dd<4; dd++){
                 ctx.save();
                 ctx.fillStyle = "red";
                 ctx.beginPath();
-                ctx.translate(physicsObjs[dj].x+physicsObjs[dj].points[dd].x,physicsObjs[dj].y+physicsObjs[dj].points[dd].y);
+                ctx.translate(physicsObjs[dj].points[dd].x,physicsObjs[dj].points[dd].y);
                 ctx.arc(0,0,3,0,Math.PI/180,true);
                 ctx.closePath();
                 ctx.fill();
                 ctx.restore();
             }
-        }
+        //}
     }
 }
 
@@ -1170,5 +1356,17 @@ var instructionsText = [
     "\n",
     "View Controls",
     "\n",
-    "Restart Tutorial" //27
+    "Restart Tutorial", //27
+    "Controls", //28
+    "________",
+    "\n",
+    "A, D, <, >  -  Move left / right",
+    "[spacebar]  -  Jump",
+    "\n",
+    "W, Up Arrow  -  Aim ball up",
+    "S, Down Arrow  -  Aim ball down",
+    "\n",
+    "E  -  Throw / Pick up ball",
+    "\n",
+    "P  -  Pause" //39
 ];
