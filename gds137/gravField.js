@@ -1,7 +1,7 @@
 //Matthew Satterfield
 /*TO DO LIST!!!!!!!
 
--Restart when die
+-uhhh idk
 
 */
 
@@ -645,6 +645,7 @@ var screens = {
             }
         }
 
+        var pDead = false;
         // ~~~ INPUTS ~~~
         if(player.health>0){
 
@@ -653,6 +654,8 @@ var screens = {
             // ~~~ Pickup/throw/drop Object ~~~
             pickUpObjectCode();
 
+        }else{
+            pDead = true;
         }
 
         //Update Collision Points
@@ -763,6 +766,14 @@ var screens = {
         titleBtn.move();
         howToTxt.move();
 
+        if(pDead){
+            titleBtn.x = canvas.width/2;
+            titleBtn.y = -canvas.height/2;
+            titleCurtain.x = canvas.width/2;
+            titleCurtain.y = -canvas.height/2;
+            currentScreen = "gameover";
+        }
+
         //UI-TEXT + Curtain
         titleCurtain.draw();
         titleBtn.draw();
@@ -772,6 +783,7 @@ var screens = {
         ctx.font = "28px Arial black";
         ctx.fillText("Start",titleBtn.x,titleBtn.y+7);
         ctx.font = "40px Calibri black";
+        ctx.fillText("You died!",titleBtn.x,titleBtn.y-120);
         for(var i=0; i<5; i++){
             if(i==1){ctx.font="28px Calibri black";}
             ctx.fillText(instructionsText[i+10],howToTxt.x,howToTxt.y+(i*40));
@@ -1151,8 +1163,69 @@ var screens = {
         }
         ctx.restore();
     },
-    "settings": function(){
-        currentScreen = "pause";
+    "gameover":function(){
+        //Button
+        if(mouseInsideObj(titleBtn)&&clicked){
+            player.x = canvas.width/2; //500
+            player.y = canvas.height/2; //300
+            grav.x = 100;
+            grav.y = 100;
+            ground.x = grav.x; //300 radius, r:  400, l:-200
+            ground.y = grav.y; //            t: -200, b: 400
+            ball1.x = 500;
+            ball1.y = 200;
+            ball2.x = -280;
+            ball2.y = 170;
+            box1.x = -200
+            box1.y = -100
+            enemy1.x = 100;
+            enemy1.y = 475;
+            rope1.x = 460;
+            rope1.y = -140;
+            byMatt.name = "Press [P] to Pause"
+            byMatt.y = 50;
+            byMatt.x = canvas.width-240;
+            player.health = 100;
+            enemy1.health = 100;
+            holdingObj = false;
+            heldObj = undefined;
+            ropeObj = undefined;
+            ropeCool = true;
+            currentState = "default";
+            currentScreen = "playing";
+        }
+
+        //Tweening Stuff
+        follow(titleBtn,{x:canvas.width/2,y:canvas.height/2},0.1);
+        follow(titleCurtain,{x:canvas.width/2,y:canvas.height/2},0.1);
+
+        //Moving Stuff
+        titleCurtain.move();
+        titleBtn.move();
+
+        //Drawing level stuff below
+        grav.draw();
+        ground.draw();
+        drawRope(rope1);
+        player.draw();
+        enemy1.draw();
+        ball1.draw();
+        ball2.draw();
+        box1.draw();
+
+        //Drawing Pause Menu Stuff
+        titleCurtain.draw();
+        titleBtn.draw();
+
+        //UI-TEXT
+        ctx.save();
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.font = "28px Arial black";
+        ctx.fillText("Restart",titleBtn.x,titleBtn.y+7);
+        ctx.font = "40px Calibri black";
+        ctx.fillText("You died!",titleBtn.x,titleBtn.y-120);
+        ctx.restore();
     }
 };
 
