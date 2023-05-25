@@ -111,6 +111,7 @@ function main(){
         musicPlaying = true;
         console.log("playing music");
         document.getElementById("game-music").currentTime = 0;
+        document.getElementById("game-music").volume = 0.2;
         document.getElementById("game-music").play();
     }
 }

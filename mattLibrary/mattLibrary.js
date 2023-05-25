@@ -48,6 +48,10 @@ function move(arr){
     }
 }
 
+function pointIn(x,y,obj){
+    return ((x>=obj.left())&&(x<=obj.right()))&&((y>=obj.top())&&(y<=obj.bottom()));
+}
+
 /*--------------------------INPUT--------------------------*/
 var mousex = 0;
 var mousey = 0;
@@ -204,19 +208,54 @@ function Obj(obj){
         this.y += this.vy;
     }
 
-    this.left = function(){return this.x-this.radius;}
-    this.right = function(){return this.x+this.radius;}
+    this.left = function(){return this.x-this.width/2;}
+    this.right = function(){return this.x+this.width/2;}
     this.top = function(){return this.y-this.height/2;}
     this.bottom = function(){return this.y+this.height/2;}
 
-    this.collides = function(obj,x1=0,y1=0,x2=1,y2=1){
-        if(obj!=-1){x1=obj.left(); y1=obj.top(); x2=obj.right(); y2=obj.bottom();}
-        //Draw Debug
-        ctx.strokeRect();
-        return (((this.right()>=x1)
-        &&(this.left()<=x2))&&
-        ((this.bottom()>=y1)
-        &&(this.top()<=y2)));
+    this.hits = function(obj){
+        return (((this.right()>=obj.left())
+        &&(this.left()<=obj.right()))&&
+        ((this.bottom()>=obj.top())
+        &&(this.top()<=obj.bottom())));
+    }
+    this.collides = function(obj){
+        if(this.hits(obj)){
+            var a_temp = [
+                Math.abs(this.right()-obj.left()),
+                Math.abs(this.left()-obj.right()),
+                Math.abs(this.bottom()-obj.top()),
+                Math.abs(this.top()-obj.bottom()),
+            ];
+            a_temp.sort(function(a, b){return b-a});
+
+            switch(a_temp[3]){
+                case(Math.abs(this.right()-obj.left())):
+                while(this.right()>obj.left()){
+                    this.x--;
+                }
+                this.vx=0;
+                break;
+                case(Math.abs(this.left()-obj.right())):
+                while(this.left()<obj.right()){
+                    this.x++;
+                }
+                this.vx=0;
+                break;
+                case(Math.abs(this.bottom()-obj.top())):
+                while(this.bottom()>obj.top()){
+                    this.y--;
+                }
+                this.vy=0;
+                break;
+                case(Math.abs(this.top()-obj.bottom())):
+                while(this.top()<obj.bottom()){
+                    this.y++;
+                }
+                this.vy=0;
+                break;
+            }
+        }
     }
 
     this.doState = function(){
@@ -286,3 +325,16 @@ function main(){
 
 /*--------------------------SCREEN-MOVEMENT--------------------------*/
 var offset = {x:0,y:0};
+var levelObjs = [];
+var camTarget = {x:0,y:0}; //could set = to player
+var camera = {x:0,y:0};
+
+function moveCamera(rate){
+    follow(camera,camTarget,rate);
+    offset.x = camera.vx;
+    offset.y = camera.vy;
+    for(var mc=0; mc<levelObjs.length; mc++){
+        levelObjs[mc].x -= offset.x;
+        levelObjs[mc].y -= offset.y;
+    }
+}
