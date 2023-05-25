@@ -89,6 +89,7 @@ function onKeyPress(e){
 
 function documentKeyDown(e){
     var eventKey = e.code.toLowerCase();
+    //console.log(eventKey);
     if(!a_KeysDown.includes(eventKey)){
         a_KeysDown.push(eventKey);
     }
@@ -328,13 +329,21 @@ var offset = {x:0,y:0};
 var levelObjs = [];
 var camTarget = {x:0,y:0}; //could set = to player
 var camera = {x:0,y:0};
+var camBorders = {l:-10000000,r:10000000,t:-10000000,b:10000000};
 
 function moveCamera(rate){
     follow(camera,camTarget,rate);
-    offset.x = camera.vx;
-    offset.y = camera.vy;
-    for(var mc=0; mc<levelObjs.length; mc++){
-        levelObjs[mc].x -= offset.x;
-        levelObjs[mc].y -= offset.y;
+    var _bool1 = ((player.x<canvas.width/2&&offset.x<camBorders.l)||(player.x>canvas.width/2&&offset.x>camBorders.r));
+    var _bool2 = ((player.y<canvas.height/2&&offset.y<camBorders.t)||(player.y>canvas.height/2&&offset.y>camBorders.b));
+    if(!_bool1){
+        offset.x += camera.vx;
+        for(var mc=0; mc<levelObjs.length; mc++){
+            levelObjs[mc].x -= camera.vx;
+        }
+    }if(!_bool2){
+        offset.y += camera.vy;
+        for(var mc=0; mc<levelObjs.length; mc++){
+            levelObjs[mc].y -= camera.vy;
+        }
     }
 }
