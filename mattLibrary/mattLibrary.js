@@ -52,6 +52,10 @@ function pointIn(x,y,obj){
     return ((x>=obj.left())&&(x<=obj.right()))&&((y>=obj.top())&&(y<=obj.bottom()));
 }
 
+function pushArray(arr1,arr2){
+    for(var pa=0; pa<arr1.length; pa++){arr2.push(arr1[pa]);}
+}
+
 /*--------------------------INPUT--------------------------*/
 var mousex = 0;
 var mousey = 0;
@@ -73,11 +77,13 @@ document.addEventListener("keydown",documentKeyDown);
 document.addEventListener("keyup",documentKeyUp);
 document.addEventListener("click",onUserClick);
 document.addEventListener("keypress",onKeyPress);
+document.addEventListener("mousedown",function(){mouseDown=true;});
+document.addEventListener("mouseup",function(){mouseDown=false;});
 
 var a_KeysDown = [];
 var a_KeysPressed = [];
 var onClick = function(){}
-var justStarted = false;
+var mouseDown = false;
 
 function onKeyPress(e){
     var eventKey = e.code.toLowerCase();
