@@ -34,6 +34,7 @@ gamestateInits = {
     "playing":function(){
         levelObjs = [cam,world];
         fusables = [];
+        pushArray(borders,levelObjs);
         //Setting up environment
         for(var gi=0; gi<10; gi++){
             var len = fusables.length;
@@ -161,7 +162,7 @@ function fuse(i2){
 }
 
 function creaturesMove(){
-    var range = 200;
+    var range = 00;
     for(var cm=0; cm<creatures.length; cm++){
         var _inRange = [];
         for(var m=0; m<fusables.length; m++){
@@ -181,5 +182,8 @@ function creaturesMove(){
             creatures[cm].vy = getPoint([2,creatures[cm].angle],"y");
         }
         creatures[cm].move();
+        for(var ps=0; ps<borders.length; ps++){
+            creatures[cm].collides(borders[ps]);
+        }
     }
 }
