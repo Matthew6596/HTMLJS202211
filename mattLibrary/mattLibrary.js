@@ -182,7 +182,7 @@ function Obj(obj){
                 ctx.lineWidth = this.lineWidth;
                 ctx.beginPath();
                 ctx.translate(this.x,this.y);
-                ctx.arc(0,0,this.radius,0,Math.PI/180,true)
+                ctx.arc(0,0,this.width/2,0,Math.PI/180,true)
                 ctx.closePath();
                 ctx.fill();
                 ctx.stroke();
@@ -316,6 +316,16 @@ var gamestates = {
         // "main" code
     }
 }
+var gamestateInits = {
+    "default":function(){
+        // init code
+    }
+}
+
+function changeState(state){
+    currentState = state;
+    gamestateInits[state]();
+}
 
 function main(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -328,22 +338,31 @@ function main(){
 var offset = {x:0,y:0};
 var levelObjs = [];
 var camTarget = {x:0,y:0}; //could set = to player
+var camAim = new Obj({x:camTarget.x,y:camTarget.y,width:1,height:1,color:"red",friction:0.2});
 var camera = {x:0,y:0};
-var camBorders = {l:-10000000,r:10000000,t:-10000000,b:10000000};
+var camBorders = [];
 
-function moveCamera(rate){
-    follow(camera,camTarget,rate);
-    var _bool1 = ((player.x<canvas.width/2&&offset.x<camBorders.l)||(player.x>canvas.width/2&&offset.x>camBorders.r));
-    var _bool2 = ((player.y<canvas.height/2&&offset.y<camBorders.t)||(player.y>canvas.height/2&&offset.y>camBorders.b));
-    if(!_bool1){
-        offset.x += camera.vx;
-        for(var mc=0; mc<levelObjs.length; mc++){
-            levelObjs[mc].x -= camera.vx;
-        }
-    }if(!_bool2){
-        offset.y += camera.vy;
-        for(var mc=0; mc<levelObjs.length; mc++){
-            levelObjs[mc].y -= camera.vy;
-        }
+function moveCamera(){
+    follow(camAim,camTarget,1);
+    camAim.move();
+
+    for(var mc=0; mc<camBorders.length; mc++){
+        camAim.collides(camBorders[mc]);
     }
+
+    follow(camera,camAim,0.1);
+
+    offset.x += camera.vx;
+    for(var mc=0; mc<levelObjs.length; mc++){
+        levelObjs[mc].x -= camera.vx;
+    }
+    offset.y += camera.vy;
+    for(var mc=0; mc<levelObjs.length; mc++){
+        levelObjs[mc].y -= camera.vy;
+    }
+}
+
+function setCameraTarget(obj){
+    camTarget = obj;
+    camAim = new Obj({x:camTarget.x,y:camTarget.y,width:1,height:1,color:"red",friction:0.2});
 }
