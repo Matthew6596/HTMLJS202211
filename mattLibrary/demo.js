@@ -10,9 +10,7 @@ var text1 = new Text({x:canvas.width/2,y:90,font:"24px monospace",text:"Press sp
 var text2 = new Text({x:40,y:canvas.height-40,font:"20px monospace",text:"Press E to end",align:"left"});
 
 //Setting camera and levelObjs
-camTarget = joe;
-camera.x = joe.x;
-camera.y = joe.y;
+setCameraTarget(joe);
 levelObjs = [joe,wall1,text1];
 
 //The Game-States

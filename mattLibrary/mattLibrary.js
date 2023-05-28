@@ -11,7 +11,7 @@ To Do:
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
-var timer = setInterval(main,1000/60);
+var timer = setInterval(main,1000/60); //fps = bottom number
 
 /*--------------------------FUNCTIONS--------------------------*/
 function randNum(low, high){return Math.random()*(high-low)+low;}
@@ -82,7 +82,7 @@ document.addEventListener("mouseup",function(){mouseDown=false;});
 
 var a_KeysDown = [];
 var a_KeysPressed = [];
-var onClick = function(){}
+var onClick = function(){}; //function called when clicked
 var mouseDown = false;
 
 function onKeyPress(e){
@@ -112,22 +112,22 @@ function documentKeyUp(e){
     }
 }
 
-function getKey(key){
+function getKey(key){ //returns if key down
     return a_KeysDown.includes(key.toLowerCase());
 }
 
-function getKeyPress(key){
+function getKeyPress(key){ //return if key pressed
     return a_KeysPressed.includes(key.toLowerCase());
 }
 
-function getAllKeys(arr){
+function getAllKeys(arr){ //return if all of the given keys are down
     for(var gak=0; gak<arr.length; gak++){
         if(!a_KeysDown.includes(arr[gak].toLowerCase())){return false;}
     }
     return true;
 }
 
-function getAnyKey(arr){
+function getAnyKey(arr){ //return if any of the given keys are down
     for(var gak=0; gak<arr.length; gak++){
         if(a_KeysDown.includes(arr[gak].toLowerCase())){return true;}
     }
@@ -146,11 +146,11 @@ function Obj(obj){
 
     this.width = 1;
     this.height = 1;
-    this.radius = this.width/2
+    this.radius = this.width/2 //likely to delete
     this.color = "rgba(0,0,0,0)";
     this.stroke = "rgba(0,0,0,0)";
     this.lineWidth = 1;
-    this.force = 0;
+    this.force = 0; //likely to delete
     this.vx = 0;
     this.vy = 0;
     this.ax = 0;
@@ -158,18 +158,21 @@ function Obj(obj){
     this.shape = "rect";
     this.angle = 0;
     this.friction = 1;
+    this.img = new Image();
     this.currentState = "default";
 
     //P for properties, extra obj properties you may want to add
     this.p = {
         health:100, //Sample Property
     };
+    //Extra note: I don't think this.p is needed for adding extra properties, but I like personally prefer this for organization
 
     //States for this obj
     this.states = {
         "default":function(){/*code*/}, //Sample State
     }
 
+    //Pass through object literal for parameters when constructing
     if(obj!== undefined)
     {
         for(value in obj)
@@ -208,6 +211,14 @@ function Obj(obj){
         }
     }
 
+    this.drawImage = function(){
+        ctx.save();
+		ctx.translate(this.x,this.y);
+		ctx.rotate(toRadians(this.angle));
+		ctx.drawImage(this.img, -this.width/2, -this.height/2, this.width, this.height);
+		ctx.restore();
+    }
+
     this.move = function(){
         this.vx*=this.friction;
         this.vy*=this.friction;
@@ -226,7 +237,7 @@ function Obj(obj){
         ((this.bottom()>=obj.top())
         &&(this.top()<=obj.bottom())));
     }
-    this.collides = function(obj){
+    this.collides = function(obj){ //goofy collision bruh
         if(this.hits(obj)){
             var a_temp = [
                 Math.abs(this.right()-obj.left()),
@@ -281,8 +292,8 @@ function Text(obj){
 
     this.text = "Text";
     this.color = "black";
-    this.stroke = "black";
-    this.lineWidth = 0;
+    this.stroke = "rgba(0,0,0,0)";
+    this.lineWidth = 1;
     this.align = "center";
     this.font = "24px Arial";
 
@@ -306,6 +317,54 @@ function Text(obj){
         ctx.rotate(toRadians(this.angle));
         ctx.fillText(this.text,0,0);
         ctx.strokeText(this.text,0,0);
+        ctx.restore();
+    }
+
+    this.move = function(){
+        this.x += this.vx*this.friction;
+        this.y += this.vy*this.friction;
+    }
+}
+
+function Bar(obj){
+    this.x = 0;
+    this.y = 0;
+
+    this.width = 1;
+    this.height = 1;
+    this.value = 1;
+    this.maxVal = 1;
+
+    this.vx = 0;
+    this.vy = 0;
+    this.friction = 1;
+    this.angle = 0;
+
+    this.backColor = "rgba(0,0,0,0)";
+    this.color = "rgba(0,0,0,0)";
+    this.stroke = "rgba(0,0,0,0)";
+    this.lineWidth = 0;
+
+    if(obj!== undefined)
+    {
+        for(value in obj)
+        {
+            if(this[value]!== undefined)
+            this[value] = obj[value];
+        }
+    }
+
+    this.draw = function(){
+        ctx.save();
+        ctx.fillStyle = this.backColor;
+        ctx.strokeStyle = this.stroke;
+        ctx.lineWidth = this.lineWidth;
+        ctx.translate(this.x,this.y);
+        ctx.rotate(toRadians(this.angle));
+        ctx.fillRect(-this.width/2,-this.height/2,this.width,this.height);
+        ctx.strokeRect(-this.width/2,-this.height/2,this.width,this.height);
+        ctx.fillStyle = this.color;
+        ctx.fillRect((-this.width+this.lineWidth)/2,(-this.height+this.lineWidth)/2,this.width*(this.value/this.maxVal),this.height-this.lineWidth);
         ctx.restore();
     }
 
@@ -341,21 +400,24 @@ function main(){
 }
 
 /*--------------------------SCREEN-MOVEMENT--------------------------*/
-var offset = {x:0,y:0};
-var levelObjs = [];
-var camTarget = {x:0,y:0}; //could set = to player
-var camAim = new Obj({x:camTarget.x,y:camTarget.y,width:1,height:1,color:"red",friction:0.2});
-var camera = {x:0,y:0};
-var camBorders = [];
+var offset = {x:0,y:0}; //Level position
+var levelObjs = []; //Objects that move due to camera (basically not UI)
+var camTarget = {x:0,y:0}; //could set = to player (thing that determines how the camera moves)
+var camAim = new Obj({x:camTarget.x,y:camTarget.y,width:1,height:1,color:"red",friction:0.2}); //Basically copies camTarget, has separate collision however
+var camera = {x:canvas.width/2,y:canvas.height/2}; //Centering the camera (we want the target on the center of screen, not top-left)
+var camBorders = []; //Objects that camera collides with
 
 function moveCamera(){
+    //Camera target moves
     follow(camAim,camTarget,1);
     camAim.move();
 
+    //Test camera target collisions
     for(var mc=0; mc<camBorders.length; mc++){
         camAim.collides(camBorders[mc]);
     }
 
+    //Move the camera towards the target
     follow(camera,camAim,0.1);
 
     offset.x += camera.vx;
