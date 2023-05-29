@@ -47,8 +47,8 @@ var creatures = [];
 var typeHint = new Text({x:canvas.width/2,y:40,align:"center",font:"28px Arial Black",text:"hi im text",stroke:"white"});
 
 //Environment Bar & Population Bar
-var envBar = new Bar({x:60,y:20,width:100,height:20,backColor:"grey",color:"lime",maxVal:20,stroke:"black",lineWidth:2});
-var popBar = new Bar({x:60,y:40,width:100,height:20,backColor:"grey",color:"blue",maxVal:20,stroke:"black",lineWidth:2});
+var envBar = new Bar({x:60,y:20,width:100,height:20,backColor:"grey",color:"green",maxVal:20,stroke:"black",lineWidth:2});
+var popBar = new Bar({x:60,y:40,width:100,height:20,backColor:"grey",color:"yellow",maxVal:20,stroke:"black",lineWidth:2});
 var bars = [envBar,popBar];
 
 //Title stuff
@@ -68,6 +68,7 @@ var howTo = [howToTxt1,howToTxt2,howToTxt3,howToTxt4,howToTxt5,howToTxt6,howToTx
 var settingsBtn = new Obj({x:canvas.width-80,y:60,width:100,height:50,color:"rgb(220,220,220)",stroke:"black",lineWidth:1});
 var settingsTxt = new Text({x:settingsBtn.x,y:settingsBtn.y+10,font:"28px times-new roman",text:"Settings"});
 var checkBox1 = new Obj({x:canvas.width/2-80,y:howToTxt2.y-8,width:40,height:40,color:"rgb(222,10,10)",stroke:"grey",lineWidth:2});
+var checkBox2 = new Obj({x:canvas.width/2-80,y:howToTxt3.y-8,width:40,height:40,color:"rgb(10,222,10)",stroke:"grey",lineWidth:2});
 
 //Other vars
 var totalTime = 0;
@@ -75,6 +76,7 @@ var highscore = 0;
 var showPlantHitboxes = false;
 var musicReady = false;
 var musicPlaying = false;
+var musicOn = true;
 
 gamestateInits = {
     "title":function(){
@@ -188,12 +190,16 @@ gamestateInits = {
                 showPlantHitboxes = !showPlantHitboxes;
                 checkBox1.color = (showPlantHitboxes) ? ("rgb(10,222,10)"):("rgb(222,10,10)");
             }
+            else if(mouseInsideObj(checkBox2)){
+                musicOn = !musicOn;
+                checkBox2.color = (musicOn) ? ("rgb(10,222,10)"):("rgb(222,10,10)");
+            }
         };
         settingsTxt.text = "How To";
         titleTxt.text = "Start";
         howToTxt1.text = "~~~ Settings! ~~~";
         howToTxt2.text = "Show Plant Hitboxes - ";
-        howToTxt3.text = "";
+        howToTxt3.text = "Music - ";
         howToTxt4.text = "";
         howToTxt5.text = "";
         howToTxt6.text = "";
@@ -225,11 +231,11 @@ gamestates = {
     },
     "playing":function(){
         //Music
-        if(musicReady&&!musicPlaying){
+        if(musicReady&&!musicPlaying&&musicOn){
             musicPlaying = true;
             console.log("playing music");
             document.getElementById("game-music").currentTime = 0;
-            document.getElementById("game-music").volume = 0.2;
+            document.getElementById("game-music").volume = 0.4;
             document.getElementById("game-music").play();
         }
 
@@ -312,6 +318,17 @@ gamestates = {
         if(mouseDown&&mouseInsideObj(titleBtn)){
             changeState("playing");
         }
+        //Music
+        if(musicReady&&!musicPlaying&&musicOn){
+            musicPlaying = true;
+            console.log("playing music");
+            document.getElementById("game-music").currentTime = 0;
+            document.getElementById("game-music").volume = 0.4;
+            document.getElementById("game-music").play();
+        }else if(!musicOn){
+            musicPlaying = false;
+            document.getElementById("game-music").volume = 0;
+        }
 
         //Drawing
         titleBtn.draw();
@@ -322,6 +339,7 @@ gamestates = {
         settingsBtn.draw();
         settingsTxt.draw();
         checkBox1.draw();
+        checkBox2.draw();
     }
 }
 
