@@ -19,8 +19,12 @@ cam.states = {
 //Background
 var ocean = new Obj({x:canvas.width/2,y:canvas.height/2,color:"rgba(10,90,140,0.9)",width:1000+canvas.width,height:1000+canvas.height});
 ocean.img.src = "images/ocean.png";
+ocean.imgData.width = 1000;
+ocean.imgData.height = 1000;
 var world = new Obj({x:canvas.width/2,y:canvas.height/2,color:"rgba(120,120,60,0.8)",width:1000,height:1000});
 world.img.src = "images/dirt.png";
+world.imgData.width = 1000;
+world.imgData.height = 1000;
 
 //Adding the singular objects to levelObjs
 levelObjs = [cam,world,ocean];
@@ -49,7 +53,10 @@ var typeHint = new Text({x:canvas.width/2,y:40,align:"center",font:"28px Arial B
 //Environment Bar & Population Bar
 var envBar = new Bar({x:60,y:20,width:100,height:20,backColor:"grey",color:"green",maxVal:20,stroke:"black",lineWidth:2});
 var popBar = new Bar({x:60,y:40,width:100,height:20,backColor:"grey",color:"yellow",maxVal:20,stroke:"black",lineWidth:2});
-var bars = [envBar,popBar];
+
+//Other bars for creature and plant Timers
+var plantBars = [];
+var creatureBars = [];
 
 //Title stuff
 var titleBtn = new Obj({x:canvas.width/2,y:canvas.height-60,width:160,height:60,color:"lime",stroke:"black",lineWidth:2});
@@ -283,7 +290,10 @@ gamestates = {
             creatures[d].drawImage();
             creatures[d].angle = _tempAng;
         }
-        for(var d=0; d<bars.length; d++){bars[d].draw();}
+        for(var d=0; d<plantBars.length; d++){plantBars[d].draw();}
+        for(var d=0; d<creatureBars.length; d++){creatureBars[d].draw();}
+        envBar.draw();
+        popBar.draw();
 
         typeHint.draw();
 
@@ -303,7 +313,9 @@ gamestates = {
         world.drawImage();
         for(var d=0; d<fusables.length; d++){fusables[d].drawImage();}
         for(var d=0; d<creatures.length; d++){creatures[d].drawImage();}
-        for(var d=0; d<bars.length; d++){bars[d].draw();}
+        //for(var d=0; d<bars.length; d++){bars[d].draw();}
+        envBar.draw();
+        popBar.draw();
 
         //Game Over Text & Btn
         howToTxt4.draw();

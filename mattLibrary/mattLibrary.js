@@ -143,10 +143,8 @@ function onUserClick(){
 function Obj(obj){
     this.x = 0;
     this.y = 0;
-
     this.width = 1;
     this.height = 1;
-    this.radius = this.width/2 //likely to delete
     this.color = "rgba(0,0,0,0)";
     this.stroke = "rgba(0,0,0,0)";
     this.lineWidth = 1;
@@ -158,7 +156,15 @@ function Obj(obj){
     this.shape = "rect";
     this.angle = 0;
     this.friction = 1;
-    this.img = new Image();
+    this.img = new Image(); //img object, .src
+    this.imgData = {
+        x:0, //Starting position, relative to img
+        y:0,
+        width:1, //Size of chunk being taken from img
+        height:1,
+        flipX:1, //dir
+        flipY:1
+    };
     this.currentState = "default";
 
     //P for properties, extra obj properties you may want to add
@@ -214,8 +220,9 @@ function Obj(obj){
     this.drawImage = function(){
         ctx.save();
 		ctx.translate(this.x,this.y);
+        ctx.scale(this.imgData.flipX,this.imgData.flipY);
 		ctx.rotate(toRadians(this.angle));
-		ctx.drawImage(this.img, -this.width/2, -this.height/2, this.width, this.height);
+		ctx.drawImage(this.img, this.imgData.x, this.imgData.y, this.imgData.width, this.imgData.height, -this.width/2, -this.height/2, this.width, this.height);
 		ctx.restore();
     }
 
@@ -279,6 +286,17 @@ function Obj(obj){
     this.doState = function(){
         this.states[this.currentState]();
     }
+
+    this.set = function(prop){
+        if(prop!== undefined)
+        {
+            for(value in prop)
+            {
+                if(this[value]!== undefined)
+                this[value] = prop[value];
+            }
+        }
+    }
 }
 
 function Text(obj){
@@ -323,6 +341,17 @@ function Text(obj){
     this.move = function(){
         this.x += this.vx*this.friction;
         this.y += this.vy*this.friction;
+    }
+
+    this.set = function(prop){
+        if(prop!== undefined)
+        {
+            for(value in prop)
+            {
+                if(this[value]!== undefined)
+                this[value] = prop[value];
+            }
+        }
     }
 }
 
@@ -371,6 +400,17 @@ function Bar(obj){
     this.move = function(){
         this.x += this.vx*this.friction;
         this.y += this.vy*this.friction;
+    }
+
+    this.set = function(prop){
+        if(prop!== undefined)
+        {
+            for(value in prop)
+            {
+                if(this[value]!== undefined)
+                this[value] = prop[value];
+            }
+        }
     }
 }
 
