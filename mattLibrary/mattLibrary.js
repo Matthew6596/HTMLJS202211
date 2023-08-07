@@ -38,14 +38,16 @@ function follow(obj,target,rate){
 }
 
 function draw(arr){
-    for(var dr=0; dr<arr.length; dr++){
-        arr[dr].draw();
-    }
+    for(var dr=0; dr<arr.length; dr++){arr[dr].draw();}
+}
+function drawImg(arr){
+    for(var dr=0; dr<arr.length; dr++){arr[dr].drawImage();}
+}
+function setImgData(arr,data){
+    for(var as=0; as<arr.length; as++){arr[as].setImgData(data);}
 }
 function move(arr){
-    for(var dr=0; dr<arr.length; dr++){
-        arr[dr].move();
-    }
+    for(var dr=0; dr<arr.length; dr++){arr[dr].move();}
 }
 
 function pointIn(x,y,obj){
@@ -157,6 +159,7 @@ function Obj(obj){
     this.angle = 0;
     this.friction = 1;
     this.img = new Image(); //img object, .src
+    this.img.src = "images/spritesheet.png";
     this.imgData = {
         x:0, //Starting position, relative to img
         y:0,
@@ -197,7 +200,7 @@ function Obj(obj){
                 ctx.lineWidth = this.lineWidth;
                 ctx.beginPath();
                 ctx.translate(this.x,this.y);
-                ctx.arc(0,0,this.width/2,0,Math.PI/180,true)
+                ctx.arc(0,0,this.width/2,0,Math.PI/180,true);
                 ctx.closePath();
                 ctx.fill();
                 ctx.stroke();
@@ -297,6 +300,17 @@ function Obj(obj){
             }
         }
     }
+
+    this.setImgData = function(data){
+        if(data!== undefined)
+        {
+            for(value in data)
+            {
+                if(this.imgData[value]!== undefined)
+                this.imgData[value] = data[value];
+            }
+        }
+    }
 }
 
 function Text(obj){
@@ -391,9 +405,9 @@ function Bar(obj){
         ctx.translate(this.x,this.y);
         ctx.rotate(toRadians(this.angle));
         ctx.fillRect(-this.width/2,-this.height/2,this.width,this.height);
-        ctx.strokeRect(-this.width/2,-this.height/2,this.width,this.height);
         ctx.fillStyle = this.color;
         ctx.fillRect((-this.width+this.lineWidth)/2,(-this.height+this.lineWidth)/2,this.width*(this.value/this.maxVal),this.height-this.lineWidth);
+        ctx.strokeRect(-this.width/2,-this.height/2,this.width,this.height);
         ctx.restore();
     }
 
@@ -414,6 +428,72 @@ function Bar(obj){
     }
 }
 
+function Toggle(obj){
+    this.x = 0;
+    this.y = 0;
+
+    this.width = 1;
+    this.height = 1;
+
+    this.vx = 0;
+    this.vy = 0;
+    this.friction = 1;
+    this.angle = 0;
+
+    this.color = "grey";
+    this.offCol = "red";
+    this.onCol = "lime";
+    this.lineWidth = 0;
+
+    this.on = false;
+
+    if(obj!== undefined)
+    {
+        for(value in obj)
+        {
+            if(this[value]!== undefined)
+            this[value] = obj[value];
+        }
+    }
+
+    this.left = function(){return this.x-this.width/2;}
+    this.right = function(){return this.x+this.width/2;}
+    this.top = function(){return this.y-this.height/2;}
+    this.bottom = function(){return this.y+this.height/2;}
+
+    this.draw = function(){
+        ctx.save();
+        ctx.fillStyle = (this.on)?(this.onCol):(this.offCol);
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = this.lineWidth;
+        ctx.translate(this.x,this.y);
+        ctx.rotate(toRadians(this.angle));
+        ctx.fillRect(-this.width/2,-this.height/2,this.width,this.height);
+        ctx.strokeRect(-this.width/2,-this.height/2,this.width,this.height);
+        ctx.restore();
+    }
+
+    this.move = function(){
+        this.x += this.vx*this.friction;
+        this.y += this.vy*this.friction;
+    }
+
+    this.set = function(prop){
+        if(prop!== undefined)
+        {
+            for(value in prop)
+            {
+                if(this[value]!== undefined)
+                this[value] = prop[value];
+            }
+        }
+    }
+
+    this.toggle = function(){
+        this.on = !this.on;
+    }
+}
+
 /*--------------------------GAMESTATES/MAIN--------------------------*/
 var currentState = "default";
 var gamestates = {
@@ -431,6 +511,8 @@ function changeState(state){
     currentState = state;
     gamestateInits[state]();
 }
+
+//ADD transitioner - gamestate that goes inbetween transitions <<<<<<<<<<<<<<< ADDD THINGY THINGY ADDD
 
 function main(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -460,12 +542,11 @@ function moveCamera(){
     //Move the camera towards the target
     follow(camera,camAim,0.1);
 
+    //Move the level
     offset.x += camera.vx;
-    for(var mc=0; mc<levelObjs.length; mc++){
-        levelObjs[mc].x -= camera.vx;
-    }
     offset.y += camera.vy;
     for(var mc=0; mc<levelObjs.length; mc++){
+        levelObjs[mc].x -= camera.vx;
         levelObjs[mc].y -= camera.vy;
     }
 }
