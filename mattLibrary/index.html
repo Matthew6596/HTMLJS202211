@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>mattLibrary Demo | MonuMeowntal Games</title>
+    <title>mattLibraryV2 Demo | MonuMeowntal Games</title>
     <style>
         html,body{
             display: flex;
@@ -19,7 +19,11 @@
 </head>
 <body>
     <canvas id="canvas" height="600" width="800"></canvas>
-    <script src="mattLibrary.js"></script>
-    <script src="demo.js"></script>
+    <script src="mattLibraryV2.js"></script>
+    <script src="demoV2.js"></script>
+    <audio id="testAudio" oncanplaythrough="createSound('testAudio');">
+        <source src="../miniJam-Fusion/desolate.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
 </body>
 </html>

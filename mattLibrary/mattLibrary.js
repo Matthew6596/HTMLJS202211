@@ -38,16 +38,16 @@ function follow(obj,target,rate){
 }
 
 function draw(arr){
-    for(var dr=0; dr<arr.length; dr++){arr[dr].draw();}
+    for(const element of arr){element.draw();}
 }
 function drawImg(arr){
-    for(var dr=0; dr<arr.length; dr++){arr[dr].drawImage();}
+    for(const element of arr){element.drawImage();}
 }
 function setImgData(arr,data){
-    for(var as=0; as<arr.length; as++){arr[as].setImgData(data);}
+    for(const element of arr){element.setImgData(data);}
 }
 function move(arr){
-    for(var dr=0; dr<arr.length; dr++){arr[dr].move();}
+    for(const element of arr){element.move();}
 }
 
 function pointIn(x,y,obj){
@@ -55,7 +55,7 @@ function pointIn(x,y,obj){
 }
 
 function pushArray(arr1,arr2){
-    for(var pa=0; pa<arr1.length; pa++){arr2.push(arr1[pa]);}
+    for(const element of arr1){arr2.push(element);}
 }
 
 /*--------------------------INPUT--------------------------*/
@@ -123,15 +123,15 @@ function getKeyPress(key){ //return if key pressed
 }
 
 function getAllKeys(arr){ //return if all of the given keys are down
-    for(var gak=0; gak<arr.length; gak++){
-        if(!a_KeysDown.includes(arr[gak].toLowerCase())){return false;}
+    for(const element of arr){
+        if(!a_KeysDown.includes(element.toLowerCase())){return false;}
     }
     return true;
 }
 
 function getAnyKey(arr){ //return if any of the given keys are down
-    for(var gak=0; gak<arr.length; gak++){
-        if(a_KeysDown.includes(arr[gak].toLowerCase())){return true;}
+    for(const element of arr){
+        if(a_KeysDown.includes(element.toLowerCase())){return true;}
     }
     return false;
 }
@@ -535,8 +535,8 @@ function moveCamera(){
     camAim.move();
 
     //Test camera target collisions
-    for(var mc=0; mc<camBorders.length; mc++){
-        camAim.collides(camBorders[mc]);
+    for(const element of camBorders){
+        camAim.collides(element);
     }
 
     //Move the camera towards the target
@@ -545,9 +545,9 @@ function moveCamera(){
     //Move the level
     offset.x += camera.vx;
     offset.y += camera.vy;
-    for(var mc=0; mc<levelObjs.length; mc++){
-        levelObjs[mc].x -= camera.vx;
-        levelObjs[mc].y -= camera.vy;
+    for(const element of levelObjs){
+        element.x -= camera.vx;
+        element.y -= camera.vy;
     }
 }
 
