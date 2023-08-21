@@ -29,11 +29,8 @@ setCameraTarget(player);
 //Creating a button
 var testBtn = new Btn([],{x:canvas.width-90,y:50,stroke:"black",lineWidth:2,width:120,height:60,
 pressed:function(){ //When the button is pressed/clicked...
-    if(camTarget==player){ //Swap camera between the player and background objects
-        setCameraTarget(bg);
-    }else{
-        setCameraTarget(player);
-    }
+    //Swap camera between the player and background objects
+    setCameraTarget((camTarget==player)?(bg):(player));
 }});
 //Changing the text within the button
 testBtn.textObj.text = "Cam Btn";

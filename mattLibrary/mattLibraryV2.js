@@ -11,7 +11,13 @@ var timer = setInterval(main,1000/60); //fps = bottom number
 
 /*--------------------------FUNCTIONS--------------------------*/
 function randNum(low, high){return Math.random()*(high-low)+low;}
-function randInt(lo, hi){return Math.round(randNum(lo, hi));}
+function randInt(lo, hi){
+    let _tempNum = Math.round(randNum(lo-1, hi+1));
+    while(_tempNum==lo-1||_tempNum==hi+1){
+        _tempNum = Math.round(randNum(lo-1, hi+1));
+    }
+    return _tempNum;
+}
 function percent(chance){ return (randNum(0,100)<=chance);}
 
 function toRadians(deg){return deg*(Math.PI/180);}
@@ -347,6 +353,22 @@ const components = {
             }
         }
     },
+    "paragraph":function(_obj){
+        _obj.shape = "paragraph";
+        _obj.lines = [];
+        _obj.spacing = 24;
+        _obj.maxCharPerLine = 20;
+        _obj.updateLines = function(){
+            _obj.lines = [];
+            let _tempTxt = _obj.text+" ";
+            while(_tempTxt.length>0){
+                let _textSlice = _tempTxt.substring(0,_tempTxt.lastIndexOf(" ",_obj.maxCharPerLine));
+                _obj.lines.push(new Text([],{x:_obj.x,y:_obj.y+(_obj.spacing*_obj.lines.length),text:_textSlice.trim()}));
+                _tempTxt = _tempTxt.substring(_tempTxt.indexOf(_textSlice)+_textSlice.length+1);
+            }
+            
+        }
+    },
 };
 const shapeDraws = {
     "rect":function(_obj){
@@ -406,6 +428,14 @@ const shapeDraws = {
         ctx.save();
         shapeDraws["text"](_obj.textObj);
     },
+    "paragraph":function(_obj){
+        ctx.restore();
+        _obj.lines.forEach(element => {
+            ctx.save();
+            shapeDraws["text"](element);
+            ctx.restore();
+        });
+    },
 };
 /*--------------------------OBJECTS--------------------------*/
 function Obj(comps,obj){
@@ -414,6 +444,12 @@ function Obj(comps,obj){
 
 function Text(comps,obj){
     let _tempComp = ["shape-render","text"];
+    pushArray(comps,_tempComp);
+    components["default"](this,_tempComp,obj);
+}
+
+function Paragraph(comps,obj){
+    let _tempComp = ["shape-render","text","paragraph"];
     pushArray(comps,_tempComp);
     components["default"](this,_tempComp,obj);
 }
@@ -514,49 +550,27 @@ function playSound(_name){
 }
 
 /*--------------------------LOCAL-STORAGE--------------------------*/
-//I stole this code teehee
-function getLocalStorageMaxSize(error) {
-    if (localStorage) {
-      var max = 10 * 1024 * 1024,
-          i = 64,
-          string1024 = '',
-          string = '',
-          // generate a random key
-          testKey = 'size-test-' + Math.random().toString(),
-          minimalFound = 0,
-          error = error || 25e4;
-  
-      // fill a string with 1024 symbols / bytes    
-      while (i--) string1024 += 1e16;
-  
-      i = max / 1024;
-  
-      // fill a string with 'max' amount of symbols / bytes    
-      while (i--) string += string1024;
-  
-      i = max;
-  
-      // binary search implementation
-      while (i > 1) {
-        try {
-          localStorage.setItem(testKey, string.substr(0, i));
-          localStorage.removeItem(testKey);
-  
-          if (minimalFound < i - error) {
-            minimalFound = i;
-            i = i * 1.5;
-          }
-          else break;
-        } catch (e) {
-          localStorage.removeItem(testKey);
-          i = minimalFound + (i - minimalFound) / 2;
-        }
-      }
-  
-      return minimalFound;
+function encode(_num){
+    let charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!@#$%^&*()-=_+[]{}|;<>.?/"; //88
+    let output = "";
+    let _tempArr = [];
+    while(_num>=1){
+        _tempArr.push(Math.floor(_num%charset.length));
+        _num /= charset.length;
     }
-  }
-  
-  //Testing
-  console.log(getLocalStorageMaxSize()); // takes .3s
-  console.log(getLocalStorageMaxSize(.1)); // takes 2s, but way more exact
+    for(let i=_tempArr.length-1; i>=0; i--){
+        output += charset.charAt(_tempArr[i]);
+    }
+    return output;
+}
+function decode(_str){
+    let charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!@#$%^&*()-=_+[]{}|;<>.?/"; //88
+    let output = 0;
+    let _count = 1;
+    while(_str.length>0){
+        output += charset.indexOf(_str.charAt(_str.length-1))*_count;
+        _count *= charset.length;
+        _str = _str.substring(0,_str.length-1);
+    }
+    return output;
+}

@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>mattLibraryV2 Demo | MonuMeowntal Games</title>
+    <title>project_quackqt</title>
     <link rel="icon" type="image/x-icon" href="../images/logo2icon.png">
     <style>
         html,body{
             display: flex;
             justify-content: center;
             background-color: rgb(222, 222, 222);
+            overflow: hidden;
         }
         canvas{
             border: 1px solid black;
@@ -19,12 +20,8 @@
     </style>
 </head>
 <body>
-    <canvas id="canvas" height="600" width="800"></canvas>
-    <script src="mattLibraryV2.js"></script>
-    <script src="demoV2.js"></script>
-    <audio id="testAudio" oncanplaythrough="createSound('testAudio');">
-        <source src="../miniJam-Fusion/desolate.mp3" type="audio/mpeg">
-        Your browser does not support the audio element.
-    </audio>
+    <canvas id="canvas" height="600" width="400"></canvas>
+    <script src="../mattLibrary/mattLibraryV2.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
