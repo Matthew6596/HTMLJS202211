@@ -1,0 +1,54 @@
+@font-face {
+    font-family: cramaten;
+    src: url(../../fonts/Cramaten.ttf);
+}
+
+html,body{
+    display:flex;
+    justify-content: center;
+    background-color:rgb(200, 200, 200);
+}
+#toolbar{
+    display:flex;
+    justify-content: center;
+    margin-bottom: 4px;
+}
+#mainSection{
+    display:flex;
+    justify-content: center;
+    border:1px solid black;
+}
+#canvas{
+    border:1px solid black;
+    background-color: white;
+}
+.smallHr{
+    border-style: dashed;
+    border-color: rgb(133, 133, 133);
+}
+.bigHr{
+    border-color: rgb(33, 33, 33);
+    border-width: 2px;
+}
+#properties,#options{
+    background-color: rgb(241, 241, 241);
+    width:200px;
+    border:1px solid black;
+    padding-left:2px;
+    word-wrap: break-word;
+    overflow-y: auto;
+    text-align: center;
+}
+
+#canvasWInp,#canvasHInp{
+    width: 60px;
+    margin-right: 4px;
+}
+
+#exportBtn{
+    margin-left:50px;
+}
+
+button{
+    margin-left:6px;
+}

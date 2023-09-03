@@ -1,9 +1,9 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 mattLibrary.js by Matthew A. Satterfield - (begun 05/21/2023)
-Version 0
+Version 1
 
-To Do:
-    -uhhh idk
+Was used for: plant fusers, gloop shloop boss, dark deluge city
+No longer in use for MonuMeowntal upcoming/in-progress projects
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 

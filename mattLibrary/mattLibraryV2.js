@@ -48,6 +48,9 @@ function setImgData(arr,data){
 function move(arr){
     for(const element of arr){element.move();}
 }
+function animate(arr){
+    for(const element of arr){element.animate();}
+}
 
 function pointIn(x,y,obj){
     return ((x>=obj.left())&&(x<=obj.right()))&&((y>=obj.top())&&(y<=obj.bottom()));
@@ -59,6 +62,49 @@ function pushArray(arr1,arr2){
 
 function getFontSize(_font){
     return (_font.substring(_font.lastIndexOf(" ",_font.indexOf("px")),_font.indexOf("px")));
+}
+
+function findTag(arr,tag){
+    return arr.filter(function(a){return a.tag==tag;})[0];
+}
+function findTags(arr,tag){
+    return arr.filter(function(a){return a.tag==tag;});
+}
+function pushTagtoArray(arr1,arr2,tag){
+    pushArray(findTags(arr1,tag),arr2);
+}
+function findProp(arr,prop,val){
+    return arr.filter(function(a){return a[prop]==val;})[0];
+}
+function findProps(arr,prop,val){
+    return arr.filter(function(a){return a[prop]==val;});
+}
+
+function getRandElement(arr){
+    return arr[randInt(0,arr.length-1)];
+}
+
+function rgbToHex(col){
+    let _comma1 = col.indexOf(",");
+    let _comma2 = col.indexOf(",",_comma1+1);
+    let _end = (col.indexOf(",",_comma2+1)!=-1)?(col.indexOf(",",_comma2+1)):(col.indexOf(")"));
+    let _cols = [encode(Number(col.substring(col.indexOf("(")+1,_comma1)),16),
+                encode(Number(col.substring(_comma1+1,_comma2)),16),
+                encode(Number(col.substring(_comma2+1,_end)),16)];
+    for(let i=0; i<3; i++){
+        if(_cols[i]<10){_cols[i]="0"+_cols[i];}
+        if(_cols[i]<1){_cols[i]="0"+_cols[i];}
+    }
+    return "#"+_cols[0]+_cols[1]+_cols[2];
+}
+
+function duplicateObj(obj){
+    let dupe = new Obj([],{});
+    let _props = Object.entries(obj);
+    for (const element of _props) {
+        dupe[element[0]] = element[1];
+    }
+    return dupe;
 }
 
 /*--------------------------INPUT--------------------------*/
@@ -152,6 +198,7 @@ const components = {
         _obj.width = 1;
         _obj.height = 1;
         _obj.angle = 0;
+        _obj.tag = "";
         
         if(_comps!== undefined)
         {
@@ -194,18 +241,25 @@ const components = {
             _obj.y += _obj.vy;
         }
     },
-    "shape-render":function(_obj){
-        _obj.color = "black";
-        _obj.stroke = "rgba(0,0,0,0)";
-        _obj.lineWidth = 1;
-        _obj.shape = "rect";
+    "render":function(_obj){
+        _obj.priority = 0;
+        _obj.show = true;
         _obj.draw = function(){
             ctx.save();
             shapeDraws[_obj.shape](_obj);
             ctx.restore();
         }
     },
+    "shape-render":function(_obj){
+        components["render"](_obj);
+        _obj.color = "rgb(0,0,0)";
+        _obj.stroke = "rgba(0,0,0,0)";
+        _obj.lineWidth = 1;
+        _obj.shape = "rect";
+    },
     "image-render":function(_obj){
+        components["render"](_obj);
+        _obj.shape = "image";
         _obj.img = new Image(); //img object, .src
         _obj.img.src = "images/spritesheet.png";
         _obj.imgData = {
@@ -226,14 +280,6 @@ const components = {
                 }
             }
         }
-        _obj.draw = function(){
-            ctx.save();
-            ctx.translate(_obj.x,_obj.y);
-            ctx.scale(_obj.imgData.flipX,_obj.imgData.flipY);
-            ctx.rotate(toRadians(_obj.angle));
-            ctx.drawImage(_obj.img, _obj.imgData.x, _obj.imgData.y, _obj.imgData.width, _obj.imgData.height, -_obj.width/2, -_obj.height/2, _obj.width, _obj.height);
-            ctx.restore();
-        }
     },
     "collision":function(_obj){
         _obj.left = function(){return _obj.x-_obj.width/2;}
@@ -242,10 +288,43 @@ const components = {
         _obj.bottom = function(){return _obj.y+_obj.height/2;}
 
         _obj.hits = function(obj){
-            return (((_obj.right()>=obj.left())
-            &&(_obj.left()<=obj.right()))&&
-            ((_obj.bottom()>=obj.top())
-            &&(_obj.top()<=obj.bottom())));
+            return ((_obj.right()>=obj.left()&&_obj.left()<=obj.right())
+                    &&(_obj.bottom()>=obj.top()&&_obj.top()<=obj.bottom()));
+        }
+    },
+    "collision-points":function(_obj){
+        _obj.leftPoint = function(){return {x:_obj.left(),y:_obj.y};}
+        _obj.rightPoint = function(){return {x:_obj.right(),y:_obj.y};}
+        _obj.topPoint = function(){return {x:_obj.x,y:_obj.top()};}
+        _obj.bottomPoint = function(){return {x:_obj.x,y:_obj.bottom()};}
+
+        _obj.topLeftPoint = function(){return {x:_obj.left(),y:_obj.top()};}
+        _obj.topRightPoint = function(){return {x:_obj.right(),y:_obj.top()};}
+        _obj.bottomLeftPoint = function(){return {x:_obj.left(),y:_obj.bottom()};}
+        _obj.bottomRightPoint = function(){return {x:_obj.right(),y:_obj.bottom()};}
+
+        _obj.pointHits = function(_point,obj){
+            return ((_point.x>obj.left()&&_point.x<obj.right())
+                    &&(_point.y>obj.top()&&_point.y<obj.bottom()));
+        }
+    },
+    "collider":function(_obj){
+        _obj.colliding = false;
+        _obj.collides = function(obj){
+            _obj.colliding = false;
+            let _l = [_obj.leftPoint(),_obj.topLeftPoint(),_obj.bottomLeftPoint()];
+            let _r = [_obj.rightPoint(),_obj.topRightPoint(),_obj.bottomRightPoint()];
+            let _t = [_obj.topPoint(),_obj.topLeftPoint(),_obj.topRightPoint()];
+            let _b = [_obj.bottomPoint(),_obj.bottomLeftPoint(),_obj.bottomRightPoint()];
+            if(_obj.pointHits(_l[0],obj)||(_obj.pointHits(_l[1],obj)&&(obj.right()-_l[1].x<=obj.bottom()-_l[1].y))||(_obj.pointHits(_l[2],obj)&&(obj.right()-_l[2].x<=_l[2].y-obj.top()))){
+                _obj.x=_obj.width/2+obj.right(); _obj.colliding = true;
+            }else if(_obj.pointHits(_r[0],obj)||(_obj.pointHits(_r[1],obj)&&(_r[1].x-obj.left()<=obj.bottom()-_r[1].y))||(_obj.pointHits(_r[2],obj)&&(_r[2].x-obj.left()<=_r[2].y-obj.top()))){
+                _obj.x=-_obj.width/2+obj.left(); _obj.colliding = true;
+            }else if(_obj.pointHits(_t[0],obj)||_obj.pointHits(_t[1],obj)||_obj.pointHits(_t[2],obj)){
+                _obj.y=_obj.height/2+obj.bottom(); _obj.colliding = true;
+            }else if(_obj.pointHits(_b[0],obj)||_obj.pointHits(_b[1],obj)||_obj.pointHits(_b[2],obj)){
+                _obj.y=-_obj.height/2+obj.top(); _obj.colliding = true;
+            }
         }
     },
     "state-manager":function(_obj){
@@ -254,45 +333,6 @@ const components = {
         _obj.doState = function(){
             if(_obj.states["all"]!==undefined){_obj.states["all"]();}
             _obj.states[_obj.currentState]();
-        }
-    },
-    "old-collider":function(_obj){
-        _obj.collides = function(obj){ //goofy collision bruh
-            if(_obj.hits(obj)){
-                var a_temp = [
-                    Math.abs(_obj.right()-obj.left()),
-                    Math.abs(_obj.left()-obj.right()),
-                    Math.abs(_obj.bottom()-obj.top()),
-                    Math.abs(_obj.top()-obj.bottom()),
-                ];
-                a_temp.sort(function(a, b){return b-a});
-                switch(a_temp[3]){
-                    case(Math.abs(_obj.right()-obj.left())):
-                    while(_obj.right()>obj.left()){
-                        _obj.x--;
-                    }
-                    _obj.vx=0;
-                    break;
-                    case(Math.abs(_obj.left()-obj.right())):
-                    while(_obj.left()<obj.right()){
-                        _obj.x++;
-                    }
-                    _obj.vx=0;
-                    break;
-                    case(Math.abs(_obj.bottom()-obj.top())):
-                    while(_obj.bottom()>obj.top()){
-                        _obj.y--;
-                    }
-                    _obj.vy=0;
-                    break;
-                    case(Math.abs(_obj.top()-obj.bottom())):
-                    while(_obj.top()<obj.bottom()){
-                        _obj.y++;
-                    }
-                    _obj.vy=0;
-                    break;
-                }
-            }
         }
     },
     "text":function(_obj){
@@ -308,33 +348,34 @@ const components = {
         _obj.shape = "bar";
     },
     "toggle":function(_obj){
-        _obj.offCol = "red";
-        _obj.onCol = "lime";
+        _obj.offCol = "rgb(255,0,0)";
+        _obj.onCol = "rgb(50,255,50)";
         _obj.on = false;
+        _obj.shape = "toggle";
         _obj.toggle = function(){
             _obj.on = !_obj.on;
         }
     },
     "button":function(_obj){
-        _obj.textObj = new Text([],{});
         _obj.shape = "button";
-        _obj.colors = {default:"lightgrey",hover:"darkgrey",down:"grey",pressed:"white"};
         _obj.textXOffset = 0;
         _obj.textYOffset = 0;
-        _obj.selected = false;
-        _obj.down = false;
+        _obj.colors = {default:"rgb(211,211,211)",hover:"rgb(169,169,169)",down:"rgb(128,128,128)",pressed:"rgb(255,255,255)"};
+        _obj.textObj = new Text([],{});
+        _obj.btnSelected = false;
+        _obj.btnDown = false;
         _obj.condition = function(){return (clicked&&mouseInsideObj(_obj));}
         _obj.pressed = function(){console.log(_obj);}
         _obj.updateTextPos = function(){
-            _obj.textObj.set({x:_obj.x+_obj.textXOffset,y:_obj.y+_obj.textYOffset+getFontSize(_obj.textObj.font)*(.35)});
+            _obj.textObj.set({x:_obj.x+_obj.textXOffset,y:_obj.y+_obj.textYOffset+getFontSize(_obj.textObj.font)*(.35),angle:_obj.angle});
         }
         _obj.states = {
             "all":function(){
                 _obj.updateTextPos();
                 _obj.color = _obj.colors[_obj.currentState];
                 if(_obj.condition()){_obj.pressed(); _obj.currentState="pressed";}
-                else if((mouseInsideObj(_obj)&&mouseDown)||_obj.down){_obj.currentState="down";}
-                else if(mouseInsideObj(_obj)||_obj.selected){_obj.currentState="hover";}
+                else if((mouseInsideObj(_obj)&&mouseDown)||_obj.btnDown){_obj.currentState="down";}
+                else if(mouseInsideObj(_obj)||_obj.btnSelected){_obj.currentState="hover";}
                 else{_obj.currentState="default";}
             },
             "default":function(){},
@@ -363,10 +404,35 @@ const components = {
             let _tempTxt = _obj.text+" ";
             while(_tempTxt.length>0){
                 let _textSlice = _tempTxt.substring(0,_tempTxt.lastIndexOf(" ",_obj.maxCharPerLine));
-                _obj.lines.push(new Text([],{x:_obj.x,y:_obj.y+(_obj.spacing*_obj.lines.length),text:_textSlice.trim()}));
+                _obj.lines.push(new Text([],{x:_obj.x,y:_obj.y+(_obj.spacing*_obj.lines.length),text:_textSlice.trim(),align:_obj.align,font:_obj.font,color:_obj.color,stroke:_obj.stroke,lineWidth:_obj.lineWidth}));
                 _tempTxt = _tempTxt.substring(_tempTxt.indexOf(_textSlice)+_textSlice.length+1);
             }
             
+        }
+    },
+    "animation":function(_obj){
+        _obj.animData = {"default":{delay:100,loops:true,frames:[{x:0,y:0,width:1,height:1,flipX:1,flipY:1}]}};
+        _obj.animState = "default";
+        _obj.animCount = 0;
+        _obj.animFrame = 0;
+        _obj.animPlaying = true;
+        _obj.animate = function(){
+            if(_obj.animPlaying){
+                _obj.setImgData(_obj.animData[_obj.animState].frames[_obj.animFrame]);
+                if(_obj.animCount>=_obj.animData[_obj.animState].delay){
+                    _obj.animCount=0;
+                    _obj.animFrame++;
+                    if(_obj.animFrame>=_obj.animData[_obj.animState].frames.length){
+                        _obj.animFrame = (_obj.animData[_obj.animState].loops)?(0):(_obj.animData[_obj.animState].frames.length-1);
+                    }
+                }
+                _obj.animCount++;
+            }
+        }
+        _obj.setAnimState = function(_state){
+            _obj.animCount = 0;
+            _obj.animFrame = 0;
+            _obj.animState = _state;
         }
     },
 };
@@ -436,6 +502,12 @@ const shapeDraws = {
             ctx.restore();
         });
     },
+    "image":function(_obj){
+        ctx.translate(_obj.x,_obj.y);
+        ctx.scale(_obj.imgData.flipX,_obj.imgData.flipY);
+        ctx.rotate(toRadians(_obj.angle));
+        ctx.drawImage(_obj.img, _obj.imgData.x, _obj.imgData.y, _obj.imgData.width, _obj.imgData.height, -_obj.width/2, -_obj.height/2, _obj.width, _obj.height);
+    },
 };
 /*--------------------------OBJECTS--------------------------*/
 function Obj(comps,obj){
@@ -475,31 +547,71 @@ function Btn(comps,obj){
 /*--------------------------GAMESTATES/MAIN--------------------------*/
 var currentState = "default";
 var gamestates = {
-    "default":function(){
-        // "main" code
-    }
-}
-var gamestateInits = {
-    "default":function(){
-        // init code
-    }
+    "default":[
+        function(){
+            //init
+        },
+        function(){
+            //main code
+        }
+    ]
+};
+
+function changeState(state,_delays=[0,0],_transition="default"){
+    currentState = "transition";
+    transition = _transition;
+    transitions[transition][0]();
+    transitionState = 1;
+    setTimeout(function(){
+        setTimeout(function(){transitions[transition][3](); transitionState=-1;},_delays[1]);
+        transitionState = 2;
+        currentState = state;
+        gamestates[state][0]();
+    },_delays[0]);
 }
 
-function changeState(state){
-    currentState = state;
-    gamestateInits[state]();
+var transition = "default";
+var transitionState = -1;
+var transitions = {
+    "default":[
+        function(){
+            //transition init
+        },
+        function(){
+            //transition enter
+        },
+        function(){
+            //transition exit  
+        },
+        function(){
+            //transition end
+        }
+    ]
 }
-
-//ADD transitioner - gamestate that goes inbetween transitions <<<<<<<<<<<<<<< ADDD THINGY THINGY ADDD
 
 var drawObjs = [];
+var animObjs = [];
 function main(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     //
-    gamestates[currentState]();
-    draw(drawObjs);
+    gamestateManagement();
+    animate(animObjs);
+    let _drawObjs = drawObjs.filter(function(a){return a.show;});
+    _drawObjs.sort(function(a, b){return a.priority - b.priority});
+    draw(_drawObjs);
     a_KeysPressed = [];
     clicked = false;
+}
+
+function gamestateManagement(){
+    if(transitionState==-1){
+        for(let i=1; i<gamestates[currentState].length; i++){
+            gamestates[currentState][i]();
+            if(currentState=="transition"){break;}
+        }
+    }else{
+        transitions[transition][transitionState]();
+    }
 }
 
 /*--------------------------SCREEN-MOVEMENT--------------------------*/
@@ -508,14 +620,25 @@ var offset = {x:0,y:0}; //Level position
 var worldObjs = []; //Objects that move due to camera (basically not UI)
 var camTarget = {x:0,y:0}; //could set = to player, camera follows this
 var camera = {x:0,y:0}; //Stays in center of screen, is the camera aim
-var camBorders = []; //Objects that camera collides with
+var borders = []; //Objects that camera collides with
 var camFriction = 0.4;
 var camFollowRate = 0.2;
+var camPrecision = 0;
 
 function moveCamera(){
+    let tempPos = {x:camera.x,y:camera.y};
     //Camera target moves
     follow(camera,camTarget,camFollowRate);
+    if(camera.vx<camPrecision&&camera.vx>-camPrecision){camera.vx=0;}
+    if(camera.vy>-camPrecision&&camera.vy<camPrecision){camera.vy=0;}
     camera.move();
+
+    borders.forEach(element => {
+        camera.collides(element);
+    });
+
+    camera.vx = camera.x-tempPos.x;
+    camera.vy = camera.y-tempPos.y;
 
     //Move the level
     offset.x += camera.vx;
@@ -530,8 +653,21 @@ function setCameraTarget(obj){
         worldObjs.splice(worldObjs.indexOf(camera),1);
     }
     camTarget = obj;
-    camera = new Obj(["movement"],{x:canvas.width/2,y:canvas.height/2,width:1,height:1,friction:camFriction});
+    camera = new Obj(["movement","collision","collision-points","collider"],{x:canvas.width/2,y:canvas.height/2,width:canvas.width,height:canvas.height,friction:camFriction});
     worldObjs.push(camera);
+}
+function setCameraPosition(target){
+    let _pos = {x:target.x-camera.x,y:target.y-camera.y};
+    for(const element of worldObjs){
+        element.x -= _pos.x;
+        element.y -= _pos.y;
+    }
+    camera.x += _pos.x;
+    camera.y += _pos.y;
+}
+function setCamera(obj){
+    setCameraPosition(obj);
+    setCameraTarget(obj);
 }
 
 /*--------------------------AUDIO-SYSTEM--------------------------*/
@@ -550,8 +686,8 @@ function playSound(_name){
 }
 
 /*--------------------------LOCAL-STORAGE--------------------------*/
-function encode(_num){
-    let charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!@#$%^&*()-=_+[]{}|;<>.?/"; //88
+function encode(_num,_base=88){
+    let charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!@#$%^&*()-=_+[]{}|;<>.?/".substring(0,_base);
     let output = "";
     let _tempArr = [];
     while(_num>=1){
@@ -563,8 +699,8 @@ function encode(_num){
     }
     return output;
 }
-function decode(_str){
-    let charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!@#$%^&*()-=_+[]{}|;<>.?/"; //88
+function decode(_str,_base=88){
+    let charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!@#$%^&*()-=_+[]{}|;<>.?/".substring(0,_base);
     let output = 0;
     let _count = 1;
     while(_str.length>0){

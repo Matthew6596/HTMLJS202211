@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level Creator for mattLibraryV2 | MonuMeowntal Games</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="../../images/logo2icon.png">
+</head>
+<body>
+    <div id="container">
+        <div id="toolbar">
+            <button id="camResetBtn" onclick="cam.set({x:origin.x,y:origin.y});setCamera(cam);" style="margin-right: 50px;">Cam Reset</button>
+            <button id="selectBtn" onclick="editState='select';">Select</button>
+            <button id="moveBtn" onclick="editState='move';">Move</button>
+            <button id="rotateBtn" onclick="editState='rotate';">Rotate</button>
+            <button id="scaleBtn" onclick="editState='scale';">Scale</button>
+            <button id="exportBtn" onclick="setCamera(origin);exportCode();setCamera(cam);">Export</button>
+        </div>
+
+        <div id="mainSection">
+            <div id="options">
+                <hr class="bigHr">
+                <p style="font-weight: bold;">Options</p>
+                <hr class="smallHr">
+                Canvas Width/Height: <br>
+                <input type="number" value="800" id="canvasWInp" onchange="canvas.width = canvasW.value;">
+                <input type="number" value="600" id="canvasHInp" onchange=
+                "if(canvasH.value<40){canvasH.value=40;}canvas.height = canvasH.value; optionsSection.style.height=canvasH.value+'px'; propertiesSection.style.height=canvasH.value+'px';">
+                <hr class="smallHr">
+                Add New Object: <br>
+                <select id="addObjList">
+                    <option value="Obj">Obj</option>
+                    <option value="Text">Text</option>
+                    <option value="Paragraph">Paragraph</option>
+                    <option value="Bar">Bar</option>
+                    <option value="Toggle">Toggle</option>
+                    <option value="Btn">Btn</option>
+                  </select>
+                <input type="button" value="Add" id="addObjBtn" onclick="addObj();">
+                <hr class="smallHr">
+                Add New Component to Selected Object: <br>
+                <select id="addComList">
+                    <option value="movement">Movement</option>
+                    <option value="shape-render">Shape-render</option>
+                    <option value="image-render">Image-render</option>
+                    <option value="collision">Collision</option>
+                    <option value="collision-points">Collision-points</option>
+                    <option value="collider">Collider</option>
+                    <option value="state-manager">State-Manager</option>
+                    <option value="text">Text</option>
+                    <option value="bar">Bar</option>
+                    <option value="toggle">Toggle</option>
+                    <option value="button">Button</option>
+                    <option value="paragraph">Paragraph</option>
+                    <option value="animation">Animation</option>
+                  </select>
+                <input type="button" value="Add" id="addComBtn" onclick="addCom();">
+                <hr class="smallHr">
+                Show Selection Outline: <br>
+                <input type="checkbox" id="showSelectInp" onchange="showSelected=showSelectInp.checked;" checked> <br>
+                Selection Color: <br>
+                <input type="color" value="#0000FF" id="selectionColorInp" onchange="selection.stroke=selColInp.value;">
+                <hr class="smallHr">
+                Show Hidden Objects: <br>
+                <input type="checkbox" id="showHiddenInp" onchange="showHidden=showHiddenInp.checked;" checked> <br>
+                Hidden Object Color: <br>
+                <input type="color" value="#FF0000" id="hiddenColorInp">
+                <hr class="smallHr">
+                <hr class="bigHr">
+                <p style="font-weight: bold;">Export Options</p>
+                <hr class="smallHr">
+                Separate Tags to Arrays: <br>
+                <input type="checkbox" id="tagToArrInp" onchange="tagsToArrays=tagToArrInp.checked;">
+                <hr class="smallHr">
+            </div>
+            <canvas id="canvas" width="800" height="600"></canvas>
+            <div id="properties">
+            </div>
+        </div>
+
+        <div id="codeSection">
+        </div>
+
+    </div>
+
+    <script src="../mattLibraryV2.js"></script>
+    <script src="page.js"></script>
+</body>
+</html>

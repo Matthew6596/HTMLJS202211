@@ -2,7 +2,7 @@ var mainTxt = new Paragraph([],{text:"The Rebecca Compliment Generator 2000!    
 var mainBtn = new Btn([],{x:canvas.width/2,y:canvas.height/2+40+canvas.height,width:360,height:100,
 stroke:"black",lineWidth:2,colors:{default:"rgb(235, 54, 229)",hover:"rgb(49, 235, 225)",down:"rgb(50, 71, 252)",pressed:"rgb(234, 237, 66)"},
 pressed:function(){
-    mainTxt.text = sentenceStructures[randInt(0,sentenceStructures.length-1)]();
+    mainTxt.text = getRandElement(sentenceStructures)();
 }});
 mainBtn.textObj.set({text:"Generate Becca Compliment!",font:"bold 24px Arial"});
 
@@ -16,23 +16,20 @@ drawObjs = [mainTxt,mainBtn];
 pushArray([mainTxt,mainBtn,cam],worldObjs);
 
 gamestates = {
-    "default":function(){
+    "default":[function(){},
+    function(){
         mainTxt.updateLines();
         mainBtn.doState();
         moveCamera();
-    }
+    }]
 };
 
-function getRandThing(arr){
-    return arr[randInt(0,arr.length-1)];
-}
-
 const sentenceStructures = [
-    function(){return ("I "+getRandThing(ferb)+" your "+getRandThing(adjs)+" "+getRandThing(thingsILikeAboutRebecca)+"!");},
-    function(){return ("I "+getRandThing(ferb)+" you!");},
-    function(){return ("You are so "+getRandThing(adjs)+"!");},
-    function(){return ("Your "+getRandThing(adjs)+" "+getRandThing(thingsILikeAboutRebecca)+" is so "+getRandThing(adjs)+"!");},
-    function(){return (getRandThing(customCompliments))},
+    function(){return ("I "+getRandElement(ferb)+" your "+getRandElement(adjs)+" "+getRandElement(thingsILikeAboutRebecca)+"!");},
+    function(){return ("I "+getRandElement(ferb)+" you!");},
+    function(){return ("You are so "+getRandElement(adjs)+"!");},
+    function(){return ("Your "+getRandElement(adjs)+" "+getRandElement(thingsILikeAboutRebecca)+" is so "+getRandElement(adjs)+"!");},
+    function(){return (getRandElement(customCompliments))},
 ];
 
 const thingsILikeAboutRebecca = [
@@ -72,6 +69,7 @@ const ferb = [
     "want be surrounded by",
     "want to marry",
     "am so grateful for",
+    "have the biggest crush on",
 ];
 
 const adjs = [
@@ -99,4 +97,8 @@ const customCompliments = [
     "Words cannot describe how absolutely adorable you are!",
     "I think about you all of the time!",
     "Seeing you happy is the greatest thing in the world!",
+    "Nobody is perfect, but you get really close!",
+    ";)",
+    "❤️",
+    "I have such strong feelings for you!",
 ];
