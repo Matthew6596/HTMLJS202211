@@ -112,6 +112,7 @@ function addCom(){
         //Removing hidden obj
         if(addComList.value=="shape-render"||addComList.value=="image-render"){
             hidden_a.splice(hidden_a.indexOf(findProp(hidden_a,"id",selectedObj.id)),1);
+            drawObjs.splice(drawObjs.indexOf(findProp(drawObjs,"id",selectedObj.id)),1);
             worldObjs.splice(worldObjs.indexOf(findProp(worldObjs,"id",selectedObj.id)),1);
         }
     }
@@ -160,11 +161,32 @@ function exportCode(){
     selectedObj = undefined;
     clearPropertiesSection();
     let _code = document.createElement("p");
-    _code.innerHTML = "importObjs = [";
-    objects_a.forEach(element => {
-        _code.innerHTML += convertObjToCode(element);
-    });
-    _code.innerHTML += "];";
+    if(tagsToArrays){
+        let tempArr = [];
+        for(let i=0; i<objects_a.length; i++){
+            tempArr[i] = objects_a[i];
+        }
+        while(tempArr.length>0){
+            let init = (tempArr[0].tag=="")?("importObjs = ["):("a_"+tempArr[0].tag+" = [");
+            _code.innerHTML += init;
+            let _tempArr = findTags(tempArr,tempArr[0].tag);
+            _tempArr.forEach(element => {
+                _code.innerHTML += convertObjToCode(element);
+            });
+            _code.innerHTML += "];";
+            for (const element of _tempArr) {
+                if(tempArr.includes(element)){
+                    tempArr.splice(tempArr.indexOf(element),1);
+                }
+            }
+        }
+    }else{
+        _code.innerHTML = "importObjs = [";
+        objects_a.forEach(element => {
+            _code.innerHTML += convertObjToCode(element);
+        });
+        _code.innerHTML += "];";
+    }
     _code.style.font = "6px Arial";
     propertiesSection.appendChild(_code);
     propertyElements = [_code];
@@ -191,6 +213,15 @@ function convertObjToCode(obj){
     }
     _objCode += "}),";
     return _objCode;
+}
+
+function setInpPropVal(propName,_inpVal){
+    let subObj = selectedObj;
+    while(propName.includes(".")){
+        subObj = selectedObj[propName.substr(0,propName.indexOf("."))];
+        propName = propName.substr(propName.indexOf(".")+1);
+    }
+    subObj[propName] = _inpVal;
 }
 
 //CONST LISTS
@@ -271,7 +302,6 @@ const editMode = {
     "move":function(){
         //Check for mouse movement and change selected obj Position
         selectedObj.set({x:mousex,y:mousey});
-        if(btns_a.includes(selectedObj)){selectedObj.updateTextPos();}
 
         selection.set({x:selectedObj.x,y:selectedObj.y});
     },
@@ -284,7 +314,6 @@ const editMode = {
     "rotate":function(){
         //Check for mouse movement and change selected obj Angle
         selectedObj.set({angle:getAngle(mousex-selectedObj.x,mousey-selectedObj.y)});
-        if(btns_a.includes(selectedObj)){selectedObj.updateTextPos();}
 
         selection.set({angle:selectedObj.angle});
     },
@@ -307,9 +336,10 @@ const createProperty = {
         _tempHr.style.borderStyle = "dashed";
         _tempHr.style.borderColor = "rgb(133,133,133)";
         if(_prop[0]=="show"){
-            _tempInp.onchange = function(){selectedObj[propNamePrefix+_prop[0]]=_tempInp.checked; selectObj(selectedObj); 
+            let _prefix = propNamePrefix;
+            _tempInp.onchange = function(){setInpPropVal(_prefix+_prop[0],_tempInp.checked); selectObj(selectedObj); 
                 if(_tempInp.checked){
-                    let _tempGhost = hidden_a.filter(function(a){return a.id==selectedObj.id;})[0];
+                    let _tempGhost = findProp(hidden_a,"id",selectedObj.id);
                     hidden_a.splice(hidden_a.indexOf(_tempGhost),1);
                     drawObjs.splice(drawObjs.indexOf(_tempGhost),1);
                     worldObjs.splice(worldObjs.indexOf(_tempGhost),1);
@@ -322,7 +352,8 @@ const createProperty = {
                 }
             };
         }else{
-            _tempInp.onchange = function(){selectedObj[propNamePrefix+_prop[0]]=_tempInp.checked; selectObj(selectedObj);};
+            let _prefix = propNamePrefix;
+            _tempInp.onchange = function(){setInpPropVal(_prefix+_prop[0],_tempInp.checked); selectObj(selectedObj);};
         }
         propertiesSection.appendChild(_tempLabel);
         propertiesSection.appendChild(_tempInp);
@@ -343,7 +374,8 @@ const createProperty = {
         let _tempHr = document.createElement("hr");
         _tempHr.style.borderStyle = "dashed";
         _tempHr.style.borderColor = "rgb(133,133,133)";
-        _tempInp.onchange = function(){selectedObj[propNamePrefix+_prop[0]]=Number(_tempInp.value); selectObj(selectedObj);};
+        let _prefix = propNamePrefix;
+        _tempInp.onchange = function(){setInpPropVal(_prefix+_prop[0],Number(_tempInp.value)); selectObj(selectedObj);};
         propertiesSection.appendChild(_tempLabel);
         propertiesSection.appendChild(_tempInp);
         propertiesSection.appendChild(_tempHr);
@@ -375,7 +407,8 @@ const createProperty = {
             }
             _tempInp.value = _prop[1];
         }
-        _tempInp.onchange = function(){selectedObj[propNamePrefix+_prop[0]]=_tempInp.value; selectObj(selectedObj);};
+        let _prefix = propNamePrefix;
+        _tempInp.onchange = function(){setInpPropVal(_prefix+_prop[0],_tempInp.value); selectObj(selectedObj);};
         _tempInp.style.margin = "0px";
         propertiesSection.appendChild(_tempLabel);
         propertiesSection.appendChild(_tempInp);
@@ -430,11 +463,14 @@ const createProperty = {
                 }
             }
         }else{
+            propNamePrefix += _prop[0]+".";
             for (let i=0; i<_objProps.length; i++) {
                 if(!ignoreProperties.includes(_objProps[i][0])){
+                    
                     createProperty[typeof _objProps[i][1]](_objProps[i]);
                 }
             }
+            propNamePrefix = "";
         }
         //ADD BOLDED HR
         propertiesSection.appendChild(_tempHr[2]);

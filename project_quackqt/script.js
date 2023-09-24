@@ -1,18 +1,24 @@
-var mainTxt = new Paragraph([],{text:"The Rebecca Compliment Generator 2000!               I love you Rebecca!",x:canvas.width/2,y:80+canvas.height,font:"32px Calibri",maxCharPerLine:30});
-var mainBtn = new Btn([],{x:canvas.width/2,y:canvas.height/2+40+canvas.height,width:360,height:100,
-stroke:"black",lineWidth:2,colors:{default:"rgb(235, 54, 229)",hover:"rgb(49, 235, 225)",down:"rgb(50, 71, 252)",pressed:"rgb(234, 237, 66)"},
+var mainTxt = new Paragraph([],{text:"The Rebecca Compliment Generator 2000!               I love you Pumpkin!",x:canvas.width/2,y:80+canvas.height,font:"28px Calibri",maxCharPerLine:24,spacing:32});
+var mainBtn = new Btn([],{x:canvas.width/2,y:canvas.height/2+40+canvas.height,width:280,height:80,
+stroke:"black",lineWidth:2,colors:{default:"#58d2d6",hover:"#429b9e",down:"#1e6b63",pressed:"#1e6b63"},
 pressed:function(){
     mainTxt.text = getRandElement(sentenceStructures)();
 }});
-mainBtn.textObj.set({text:"Generate Becca Compliment!",font:"bold 24px Arial"});
+mainBtn.set({text:"Generate Becca Compliment!",font:"bold 18px Arial"});
 
 canvas.style.background = "rgb(186, 225, 230)";
+var bg = new Obj(["image-render"],{x:canvas.width/2,y:canvas.height/2,width:canvas.width,height:canvas.height,priority:-2});
+bg.img.src = "images/quackqt_bg.png";
+bg.setImgData({width:canvas.width,height:canvas.height});
+var fg = new Obj(["image-render"],{x:canvas.width/2,y:canvas.height/2,width:canvas.width,height:canvas.height,priority:2});
+fg.img.src = "images/quackqt_fg.png";
+fg.setImgData({width:canvas.width,height:canvas.height});
 
 var cam = new Obj([],{x:canvas.width/2,y:canvas.height/2-40+canvas.height});
 
 setCameraTarget(cam);
 
-drawObjs = [mainTxt,mainBtn];
+drawObjs = [mainTxt,mainBtn,bg,fg];
 pushArray([mainTxt,mainBtn,cam],worldObjs);
 
 gamestates = {
@@ -25,34 +31,34 @@ gamestates = {
 };
 
 const sentenceStructures = [
-    function(){return ("I "+getRandElement(ferb)+" your "+getRandElement(adjs)+" "+getRandElement(thingsILikeAboutRebecca)+"!");},
+    function(){return ("I "+getRandElement(ferb)+" your "+getRandElement(adjs)+" "+getRandElement(thingsILikeAboutRebecca)[0]+"!");},
     function(){return ("I "+getRandElement(ferb)+" you!");},
     function(){return ("You are so "+getRandElement(adjs)+"!");},
-    function(){return ("Your "+getRandElement(adjs)+" "+getRandElement(thingsILikeAboutRebecca)+" is so "+getRandElement(adjs)+"!");},
+    function(){let _t=getRandElement(thingsILikeAboutRebecca); return ("Your "+getRandElement(adjs)+" "+_t[0]+" "+_t[1]+" so "+getRandElement(adjs)+"!");},
     function(){return (getRandElement(customCompliments))},
 ];
 
 const thingsILikeAboutRebecca = [
-    "sense of humor",
-    "hair",
-    "cuteness",
-    "smell",
-    "beauty",
-    "voice",
-    "kind heart",
-    "fashion sense",
-    "brown glasses",
-    "overalls",
-    "lips",
-    "brown eyes",
-    "warm hugs",
-    "soft cheeks",
-    "body",
-    "face",
-    "personality",
-    "rubber ducky collection",
-    "smile",
-    "interests",
+    ["sense of humor","is"],
+    ["hair","is"],
+    ["cuteness","is"],
+    ["smell","is"],
+    ["beauty","is"],
+    ["voice","is"],
+    ["kind heart","is"],
+    ["fashion sense","is"],
+    ["brown glasses","are"],
+    ["overalls","are"],
+    ["lips","are"],
+    ["brown eyes","are"],
+    ["warm hugs","are"],
+    ["soft cheeks","are"],
+    ["body","is"],
+    ["face","is"],
+    ["personality","is"],
+    ["rubber ducky collection","is"],
+    ["smile","is"],
+    ["interests","are"],
 ];
 
 const ferb = [
@@ -70,6 +76,7 @@ const ferb = [
     "want to marry",
     "am so grateful for",
     "have the biggest crush on",
+    "want to feel",
 ];
 
 const adjs = [
@@ -86,6 +93,9 @@ const adjs = [
     "enchanting",
     "blissful",
     "huggable",
+    "benevolent",
+    "endearing",
+    "charming",
 ];
 
 const customCompliments = [
@@ -101,4 +111,8 @@ const customCompliments = [
     ";)",
     "❤️",
     "I have such strong feelings for you!",
+    "Wow!",
+    "I love when your voice gets all soft, it's adorable!",
+    "I love holding your hand!",
+    "I love hugging you so much!",
 ];

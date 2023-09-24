@@ -1,5 +1,5 @@
 //Creating a player
-var player = new Obj(["shape-render","movement","state-manager","collision","collision-points","collider"],{x:300,y:200,width:40,height:40,color:"lime",currentState:"default",friction:0.8});
+var player = new Obj(["shape-render","movement","state-manager","collider"],{x:300,y:200,width:40,height:40,color:"lime",currentState:"default",friction:0.8});
 
 //Creating the player states
 player.states = {
@@ -83,6 +83,9 @@ function myMain(_scrnChange){
     if(getKeyPress("keyF")){changeState(_scrnChange,[1000,1000],"default");}
     //Sets camera target to the wall
     if(getKeyPress("keyE")){setCamera(wall);}
+    //Zooms in/out camera
+    if(getKeyPress("bracketLeft")){setCameraZoom(1.1);}
+    if(getKeyPress("bracketRight")){setCameraZoom(0.9);}
     //Allows camera movement
     moveCamera();
     //Runs the player state (player state created above)
