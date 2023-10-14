@@ -161,38 +161,44 @@ function exportCode(){
     selectedObj = undefined;
     clearPropertiesSection();
     let _code = document.createElement("p");
-    if(tagsToArrays){
-        let tempArr = [];
+    let _subPropsCode;
+    let _indCnt = 0;
+    if(tagsToArrays){ //Put objects in multiple arrays based on the tag
+        let tempArr = []; //all Objs temp array
         for(let i=0; i<objects_a.length; i++){
             tempArr[i] = objects_a[i];
         }
-        while(tempArr.length>0){
-            let init = (tempArr[0].tag=="")?("importObjs = ["):("a_"+tempArr[0].tag+" = [");
+        while(tempArr.length>0){ //While objects are still unsorted
+            let init = (tempArr[0].tag=="")?("importObjs = ["):("a_"+tempArr[0].tag+" = ["); //Array init
             _code.innerHTML += init;
-            let _tempArr = findTags(tempArr,tempArr[0].tag);
+            let _tempArr = findTags(tempArr,tempArr[0].tag); //Get arr of objects w/ tag
             _tempArr.forEach(element => {
-                _code.innerHTML += convertObjToCode(element);
+                _code.innerHTML += convertObjToCode(element,_subPropsCode,tempArr[0].tag); //Fill arr code w/ objs
+                _indCnt++;
             });
+            _indCnt = 0;
             _code.innerHTML += "];";
             for (const element of _tempArr) {
                 if(tempArr.includes(element)){
-                    tempArr.splice(tempArr.indexOf(element),1);
+                    tempArr.splice(tempArr.indexOf(element),1); //objs are sorted, so remove from temp arr
                 }
             }
         }
-    }else{
+    }else{ //Put all objects in one array
         _code.innerHTML = "importObjs = [";
-        objects_a.forEach(element => {
-            _code.innerHTML += convertObjToCode(element);
+        objects_a.forEach(element => { //Convert all objs into code into this arr
+            _code.innerHTML += convertObjToCode(element,_subPropsCode,"importObjs");
+            _indCnt++;
         });
         _code.innerHTML += "];";
     }
+    _code.innerHTML += _subPropsCode;
     _code.style.font = "6px Arial";
     propertiesSection.appendChild(_code);
     propertyElements = [_code];
 }
 
-function convertObjToCode(obj){
+function convertObjToCode(obj,initCode,arrName,ind){
     //return string
     let _objCode = "new " + obj.type+"([";
     //loop through comps
@@ -203,9 +209,15 @@ function convertObjToCode(obj){
     //loop through props
     let _props = Object.entries(obj);
     for (const element of _props) {
-        if(!ignoreProperties.includes(element[0])&&typeof element[1]!="function"&&typeof element[1]!="object"){
+        if(!ignoreProperties.includes(element[0])&&typeof element[1]!="function"){
             if(typeof element[1] == "string"){
                 _objCode += element[0]+":'"+element[1]+"',";
+            }else if(typeof element[1]=="object"){
+                //Loop through obj props to set after the arr
+                //Only for literal Objects
+                if(element.tag===undefined){
+                    initCode += convertObjToCode2(arrName,ind,element);
+                }
             }else{
                 _objCode += element[0]+":"+element[1]+",";
             }
@@ -213,6 +225,27 @@ function convertObjToCode(obj){
     }
     _objCode += "}),";
     return _objCode;
+}
+
+function convertObjToCode2(parentArr,objInd,objProp){
+    let _props = Object.entries(objProp[1]);
+    let _setCode = "";
+    
+    for (const element of _props) {
+        if(!ignoreProperties.includes(element[0])&&typeof element[1]!="function"){
+
+            if(typeof element[1]=="string"){
+                _setCode += parentArr+"["+objInd+"]["+objProp[0]+"]["+element[0]+"]="+"'"+element[1]+"';";
+            }else if(typeof element[1]=="object"){
+                //idk :skull:
+            }else{
+                _setCode += parentArr+"["+objInd+"]["+objProp[0]+"]["+element[0]+"]="+element[1]+";";
+            }
+
+        }
+    }
+
+    return _setCode;
 }
 
 function setInpPropVal(propName,_inpVal){
