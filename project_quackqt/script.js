@@ -59,6 +59,7 @@ const thingsILikeAboutRebecca = [
     ["rubber ducky collection","is"],
     ["smile","is"],
     ["interests","are"],
+    ["bucket hat","is"],
 ];
 
 const ferb = [
@@ -115,4 +116,5 @@ const customCompliments = [
     "I love when your voice gets all soft, it's adorable!",
     "I love holding your hand!",
     "I love hugging you so much!",
+    "I love you pumpkin ;)",
 ];

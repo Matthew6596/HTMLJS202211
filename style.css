@@ -1,13 +1,27 @@
 
 /*Horizontal Things!*/
-html,body,header,#navArea,.section,#mainBox,.btnSection,.gameSection,footer,header{
+html,body,header,#navArea,.section,#mainBox,.btnSection,.gameSection,footer,.horzDiv,#mainImg,.gameImg,.gameBox{
     display: flex;
     justify-content: center;
+}
+
+body{
+    background-color: rgb(193, 205, 211);
 }
 
 @font-face {
     font-family: cascadia;
     src: url(fonts/Cascadia.ttf);
+}
+
+@font-face {
+    font-family: gills;
+    src: url(fonts/GillSansCondUltraBoNova.ttf);
+}
+
+@font-face {
+    font-family: lucidaFax;
+    src: url(fonts/Lucida\ Fax\ Regular.ttf);
 }
 
 
@@ -19,7 +33,7 @@ html,body,header,#navArea,.section,#mainBox,.btnSection,.gameSection,footer,head
     height: 1440px; /*scaled down 1.5x*/
 }
 
-#headerBox,#mainBox{
+#headerBox,#mainBox,.gameBox,#leftBtn,#rightBtn{
     box-shadow:0px 0px 0px 2px black inset;
     background-color: #A4C7A2;
 }
@@ -35,14 +49,20 @@ header{
 }
 
 #title{
-    height:79px;
+    height:90px;
     text-align: center;
+    font-family: gills, sans-serif;
+    font-size: 38px;
+    margin-top: -38px;
+    color: #1f1f1f;
+    -webkit-text-stroke-width: 3px;
+    -webkit-text-stroke-color: white;
 }
 
 #contacts,nav{
     width:299px;
     display: grid;
-    font-family: cascadia;
+    font-family: cascadia, monospace;
     font-size: 16pt;
 }
 
@@ -90,12 +110,53 @@ nav{
 other header elements
 */
 
+@keyframes mainMove1 {
+    from {width: 187px; background-color: #BFD1BE;}
+    to {width: 213px; background-color: #778C84;}
+}
+@keyframes mainMove2 {
+    from {width: 213px; background-color: #778C84;}
+    to {width: 187px; background-color: #BFD1BE;}
+}
+.mainBtn{
+    animation: mainMove2 0.2s;
+    height: 43px;
+    width: 187px;
+    box-shadow:0px 0px 0px 1px black inset;
+    background-color: #BFD1BE;
+    text-decoration: none;
+    color:black;
+    text-align: center;
+    padding-top:10px;
+    font-family: cascadia,sans-serif;
+    font-size: 20pt;
+}
+.mainBtn:hover{
+    animation: mainMove1 0.2s forwards;
+}
+
+#mainTitle{
+    font-size: 24pt;
+    font-family: gills,sans-serif;
+}
+
 #section1{
     height:336px;
 }
 
+.gameDesc{
+    font-family: lucidaFax,'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 16pt;
+    text-align: center;
+}
+
 #mainBox{
     width: 939px;
+    height: 306px;
+}
+
+#mainText,#mainImg{
+    width: 469.5px;
     height: 306px;
 }
 
@@ -106,22 +167,125 @@ other main elements
 #section2{
     height:270px;
 }
+#bgBox{
+    position: absolute;
+    background-color: #597A57;
+    opacity: 0.5;
+    width: 1280px;
+    height: 180px;
+    margin: 30px;
+}
+.midImg{
+    width: 313px;
+    height: 240px;
+    outline: black solid 2px;
+    z-index: 1;
+}
 
 /*
 other section2 elements
 */
 
 #section3{
-    height:319px;
+    height:333px;
     padding: 5px 0px;
 }
+#bgBox2{
+    position: absolute;
+    background-color: #597A57;
+    opacity: 0.75;
+    width: 1280px;
+    height: 343px;
+}
 
+@keyframes btnHov1 {
+    from {background-color: #A4C7A2;}
+    to {background-color: #788F77;}
+}
+@keyframes btnHov2 {
+    from {background-color: #788F77;}
+    to {background-color: #A4C7A2;}
+}
+
+#leftBtn,#rightBtn{
+    animation: btnHov2 0.2s;
+    z-index: 1;
+}
+#leftBtn{
+    margin-right: 505px;
+}
+#rightBtn{
+    margin-left: 505px;
+}
+#leftBtn:hover,#rightBtn:hover{
+    animation: btnHov1 0.2s;
+    background-color: #788F77;
+}
+
+.gameBox{
+    width: 449px;
+    height: 333px;
+    position: absolute;
+}
+#gameBox1{
+    margin-right: 485px;
+}
+#gameBox2{
+    margin-left: 485px;
+}
+.gameImg{
+    margin-top:16px;
+    margin-right: 5px;
+}
+.gameText{
+    width:205px;
+}
+
+@keyframes playMove1 {
+    from {width: 133px; background-color: #BFD1BE;}
+    to {width: 157px; background-color: #778C84;}
+}
+@keyframes playMove2 {
+    from {width: 157px; background-color: #778C84;}
+    to {width: 133px; background-color: #BFD1BE;}
+}
+.gameBtn{
+    animation: playMove2 0.2s;
+    height: 43px;
+    width: 133px;
+    box-shadow:0px 0px 0px 1px black inset;
+    background-color: #BFD1BE;
+    text-decoration: none;
+    color:black;
+    text-align: center;
+    padding-top:10px;
+    font-family: cascadia,sans-serif;
+    font-size: 20pt;
+}
+.gameBtn:hover{
+    animation: playMove1 0.2s forwards;
+}
+
+#gameTitle{
+    font-size: 20pt;
+    font-family: gills,sans-serif;
+}
+
+#section1{
+    height:336px;
+}
+
+.gameDesc2{
+    font-family: lucidaFax,'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 12pt;
+    text-align: center;
+}
 /*
 other section3 elements
 */
 
 footer{
-    margin-top: 45px;
-    height: 94px;
+    margin-top: 35px;
+    height: 90px;
     background-color: #597A57;
 }
