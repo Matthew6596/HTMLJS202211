@@ -77,7 +77,6 @@ const ferb = [
     "want to marry",
     "am so grateful for",
     "have the biggest crush on",
-    "want to feel",
 ];
 
 const adjs = [
@@ -113,7 +112,7 @@ const customCompliments = [
     "❤️",
     "I have such strong feelings for you!",
     "Wow!",
-    "I love when your voice gets all soft, it's adorable!",
+    "I love when your voice so much, it's adorable!",
     "I love holding your hand!",
     "I love hugging you so much!",
     "I love you pumpkin ;)",
