@@ -1,24 +1,29 @@
-var mainTxt = new Paragraph([],{text:"The Rebecca Compliment Generator 2000!               I love you Pumpkin!",x:canvas.width/2,y:80+canvas.height,font:"28px Calibri",maxCharPerLine:24,spacing:32});
-var mainBtn = new Btn([],{x:canvas.width/2,y:canvas.height/2+40+canvas.height,width:280,height:80,
-stroke:"black",lineWidth:2,colors:{default:"#58d2d6",hover:"#429b9e",down:"#1e6b63",pressed:"#1e6b63"},
+var mainTxt = new Paragraph([],{text:"The Rebecca Compliment Generator 2000!               I love you Pumpkin!",x:canvas.width/2,y:canvas.height*3/2-35,font:"28px Calibri",maxCharPerLine:24,spacing:32,color:"#340d40"});
+var mainBtn = new Btn([],{x:canvas.width/2,y:canvas.height/2+120+canvas.height,width:280,height:80,
+stroke:"#340d40",lineWidth:2,colors:{default:"#d69dec",hover:"#bc66db",down:"#81309c",pressed:"#f1ddf8"},
 pressed:function(){
     mainTxt.text = getRandElement(sentenceStructures)();
 }});
 mainBtn.set({text:"Generate Becca Compliment!",font:"bold 18px Arial"});
+mainBtn.textObj.color = "#340d40";
 
-canvas.style.background = "rgb(186, 225, 230)";
+canvas.style.background = "#e6c2f3";
 var bg = new Obj(["image-render"],{x:canvas.width/2,y:canvas.height/2,width:canvas.width,height:canvas.height,priority:-2});
 bg.img.src = "images/quackqt_bg.png";
 bg.setImgData({width:canvas.width,height:canvas.height});
 var fg = new Obj(["image-render"],{x:canvas.width/2,y:canvas.height/2,width:canvas.width,height:canvas.height,priority:2});
 fg.img.src = "images/quackqt_fg.png";
 fg.setImgData({width:canvas.width,height:canvas.height});
+var tImgOutline = new Obj(["shape-render"],{x:canvas.width/2,y:canvas.height/2-170,width:230,height:230,priority:3,lineWidth:2,stroke:"#84329e",color:"rgba(0,0,0,0)"});
+var titleImg = new Obj(["image-render"],{x:canvas.width/2,y:canvas.height/2-170,width:230,height:230,priority:2});
+titleImg.img.src = "images/beccaLoveTitle.png";
+titleImg.setImgData({width:512,height:512});
 
 var cam = new Obj([],{x:canvas.width/2,y:canvas.height/2-40+canvas.height});
 
 setCameraTarget(cam);
 
-drawObjs = [mainTxt,mainBtn,bg,fg];
+drawObjs = [mainTxt,mainBtn,titleImg,tImgOutline];
 pushArray([mainTxt,mainBtn,cam],worldObjs);
 
 gamestates = {
@@ -96,6 +101,8 @@ const adjs = [
     "benevolent",
     "endearing",
     "charming",
+    "enriching",
+    "spectacular",
 ];
 
 const customCompliments = [
@@ -112,8 +119,11 @@ const customCompliments = [
     "❤️",
     "I have such strong feelings for you!",
     "Wow!",
-    "I love when your voice so much, it's adorable!",
+    "I love your voice so much, it's adorable!",
     "I love holding your hand!",
     "I love hugging you so much!",
+    "I love kissing you so much!",
     "I love you pumpkin ;)",
+    "You mean so much to me!",
+    "I believe in you!",
 ];
