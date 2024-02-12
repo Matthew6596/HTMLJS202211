@@ -1,12 +1,42 @@
+//Main text
 var mainTxt = new Paragraph([],{text:"The Rebecca Compliment Generator 2000!               I love you Pumpkin!",x:canvas.width/2,y:canvas.height*3/2-35,font:"28px Calibri",maxCharPerLine:24,spacing:32,color:"#340d40"});
+//Main button
 var mainBtn = new Btn([],{x:canvas.width/2,y:canvas.height/2+120+canvas.height,width:280,height:80,
 stroke:"#340d40",lineWidth:2,colors:{default:"#d69dec",hover:"#bc66db",down:"#81309c",pressed:"#f1ddf8"},
 pressed:function(){
     mainTxt.text = getRandElement(sentenceStructures)();
+    readIndex = numRead();
+    complimentsRead.push(mainTxt.text);
+    readTxt.text = "Total compliments read: "+numRead();
 }});
 mainBtn.set({text:"Generate Becca Compliment!",font:"bold 18px Arial"});
 mainBtn.textObj.color = "#340d40";
 
+//View all compliments stuff ---
+//prev btn
+var prevBtn = new Btn([],{x:canvas.width/2-80,y:2*canvas.height-30,width:120,height:40
+,stroke:"#340d40",lineWidth:2,colors:{default:"#d69dec",hover:"#bc66db",down:"#81309c",pressed:"#f1ddf8"},
+pressed:function(){
+    readIndex--;
+    mainTxt.text = complimentsRead[readIndex];
+},condition:function(){return (clicked&&mouseInsideObj(this)&&readIndex>0);}
+});
+prevBtn.set({text:"< Previous",font:"18px Arial"});
+prevBtn.textObj.color = "#340d40";
+//next btn
+var nextBtn = new Btn([],{x:canvas.width/2+80,y:2*canvas.height-30,width:120,height:40
+,stroke:"#340d40",lineWidth:2,colors:{default:"#d69dec",hover:"#bc66db",down:"#81309c",pressed:"#f1ddf8"},
+pressed:function(){
+    readIndex++;
+    mainTxt.text = complimentsRead[readIndex];
+},condition:function(){return (clicked&&mouseInsideObj(this)&&readIndex<numRead()-1);}
+});
+nextBtn.set({text:"Next >",font:"18px Arial"});
+nextBtn.textObj.color = "#340d40";
+//total num read txt
+var readTxt = new Text([],{x:canvas.width/2,y:canvas.height+10,text:"Total compliments read: 0",font:"14px Arial",color:"#340d40"});
+
+//Static decor
 canvas.style.background = "#e6c2f3";
 var bg = new Obj(["image-render"],{x:canvas.width/2,y:canvas.height/2,width:canvas.width,height:canvas.height,priority:-2});
 bg.img.src = "images/quackqt_bg.png";
@@ -19,13 +49,20 @@ var titleImg = new Obj(["image-render"],{x:canvas.width/2,y:canvas.height/2-170,
 titleImg.img.src = "images/beccaLoveTitle.png";
 titleImg.setImgData({width:512,height:512});
 
+//Intro anim
 var cam = new Obj([],{x:canvas.width/2,y:canvas.height/2-40+canvas.height});
-
 setCameraTarget(cam);
 
-drawObjs = [mainTxt,mainBtn,titleImg,tImgOutline];
-pushArray([mainTxt,mainBtn,cam],worldObjs);
+//Draw objs
+drawObjs = [mainTxt,mainBtn,titleImg,tImgOutline,prevBtn,nextBtn,readTxt];
+pushArray([mainTxt,mainBtn,cam,prevBtn,nextBtn,readTxt],worldObjs);
 
+//Compliments read
+var complimentsRead = [];
+var readIndex = -1;
+function numRead(){return complimentsRead.length;}
+
+//Gamestates
 gamestates = {
     "default":[function(){},
     function(){
@@ -35,6 +72,7 @@ gamestates = {
     }]
 };
 
+//Sentence structures
 const sentenceStructures = [
     function(){return ("I "+getRandElement(ferb)+" your "+getRandElement(adjs)+" "+getRandElement(thingsILikeAboutRebecca)[0]+"!");},
     function(){return ("I "+getRandElement(ferb)+" you!");},
@@ -43,6 +81,7 @@ const sentenceStructures = [
     function(){return (getRandElement(customCompliments))},
 ];
 
+//<3
 const thingsILikeAboutRebecca = [
     ["sense of humor","is"],
     ["hair","is"],
@@ -66,7 +105,7 @@ const thingsILikeAboutRebecca = [
     ["interests","are"],
     ["bucket hat","is"],
 ];
-
+//<3
 const ferb = [
     "like",
     "love",
@@ -83,7 +122,7 @@ const ferb = [
     "am so grateful for",
     "have the biggest crush on",
 ];
-
+//<3
 const adjs = [
     "kissable",
     "lovely",
@@ -104,7 +143,7 @@ const adjs = [
     "enriching",
     "spectacular",
 ];
-
+//<3 <3 <3
 const customCompliments = [
     "I love you!",
     "I am so glad to have you in my life!",
