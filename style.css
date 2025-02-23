@@ -35,7 +35,7 @@ body{
 
 #headerBox,#mainBox,.gameBox,#leftBtn,#rightBtn{
     box-shadow:0px 0px 0px 2px black inset;
-    background-color: #A4C7A2;
+    background-color: #a4c7a2;
 }
 
 header{

@@ -1,0 +1,89 @@
+@font-face {
+    font-family: cascadia;
+    src: url(fonts/Cascadia.ttf);
+}
+
+@font-face {
+    font-family: gills;
+    src: url(fonts/GillSansCondUltraBoNova.ttf);
+}
+
+@font-face {
+    font-family: lucidaFax;
+    src: url(fonts/Lucida\ Fax\ Regular.ttf);
+}
+
+#mainContainer{
+    border: 1px solid black;
+    background-image: linear-gradient(#868DCE, #D2F7EC);
+    width: 1280px;
+    height: 1440px; /*scaled down 1.5x*/
+}
+#header{
+    box-shadow:0px 0px 0px 2px black inset;
+    background-color: #A4C7A2;
+    width: 800px;
+    height: 60px;
+}
+.headerBtn{
+    height: 20px;
+    margin-top: 20px;
+    width: 100px;
+    text-align: center;
+}
+.gameContainer{
+    box-shadow:0px 0px 0px 2px black inset;
+    background-color: #A4C7A2;
+    width: 1000px;
+    height: min-content;
+    padding-bottom: 40px;
+}
+body{
+     background-color: rgb(193, 205, 211);
+}   
+h1{
+    font-family:monospace;
+}
+img{
+    margin-top: 10px;
+}
+a:hover{
+    background-color: rgb(157, 182, 228);
+}
+ol{
+    border-left:1px solid black;
+}
+li{
+    list-style-type:circle;
+    margin-bottom:8px;
+}
+a{
+    border: 1px solid black;
+    text-decoration: none;
+    padding-left: 2px;
+    padding-right: 2px;
+    font-family:monospace;
+    font-size:12pt;
+}
+.center{
+    display: flex;
+    justify-content: center;
+}
+.hoz{
+    display: flex;
+    justify-content: center;
+    width: 1280px;
+}
+
+#title{
+    height: 60px;
+    text-align: center;
+    font-family: gills, sans-serif;
+    font-size: 22px;
+    margin-top: -26px;
+    margin-left: 180px;
+    margin-right: 180px;
+    color: #1f1f1f;
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: white;
+}

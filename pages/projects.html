@@ -4,48 +4,26 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>List of All Projects | MonuMeowntal Games</title>
+    <title>Projects | MonuMeowntal Games</title>
+    <link rel="stylesheet" href="projectsStyle.css">
     <link rel="icon" type="image/x-icon" href="../images/logo2icon.png">
-    <style>
-        header{
-            display: flex;
-            justify-content: center;
-            width:400px;
-            border-top:1px solid black;
-            border-left:1px solid black;
-            border-top-left-radius: 16px;
-        }
-        h1{
-            font-family:monospace;
-        }
-        img{
-            margin-top: 10px;
-        }
-        a:hover{
-            background-color: rgb(157, 182, 228);
-        }
-        ol{
-            border-left:1px solid black;
-        }
-        li{
-            list-style-type:circle;
-            margin-bottom:8px;
-        }
-        a{
-            border: 1px solid black;
-            text-decoration: none;
-            padding-left: 2px;
-            padding-right: 2px;
-            font-family:monospace;
-            font-size:12pt;
-        }
-    </style>
 </head>
-<body>
-    <header>
-        <img src="../images/logo2.png" alt="MonuMeowntal Logo" width="40px" height="40px">
-        <h1>List of All Projects</h1>
+<body class="center">
+<div id="mainContainer">
+
+    <header class="center" style="margin-top: 40px;">
+        <div id="header" class="hoz">
+            <a href="../index.html" class="headerBtn">Home Page</a>
+        <div id="title"><h1>Projects</h1></div>
+            <a href="resume.html" class="headerBtn">Resume</a>
+        </div>
     </header>
+    <div class="center">
+        <div class="center gameContainer">
+            <a href="gameDownload.html?gameid=1">test button here</a>
+        <p>hi test</p>
+        </div>
+    </div>
     <ol>
         <a href="../index.html">Back</a>
         <br>
@@ -66,5 +44,6 @@
         <li><a href="../darkDelugeCity/index.html">The Dark Deluge City</a></li>
         <li><a href="MusicTheatres.html">Music of The Theatres</a></li>
     </ol>
+</div>
 </body>
 </html>
